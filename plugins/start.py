@@ -61,13 +61,17 @@ async def start_command(client: Client, message: Message):
             if "verify_" in message.text:
                 _, token = message.text.split("_", 1)
                 if verify_status['verify_token'] != token:
-                    return await message.reply("⚠️ 𝖨𝗇𝗏𝖺𝗅𝗂𝖽 𝗍𝗈𝗄𝖾𝗇. 𝖯𝗅𝖾𝖺𝗌𝖾 /start 𝖺𝗀𝖺𝗂𝗇.")
+                    return await message.reply_photo(
+                        photo=PREMIUM_PIC,
+                        caption="<b>⚠️ 𝖨𝗇𝗏𝖺𝗅𝗂𝖽 𝗍𝗈𝗄𝖾𝗇. 𝖯𝗅𝖾𝖺𝗌𝖾 /start 𝖺𝗀𝖺𝗂𝗇.</b>"
+                    )
 
                 await db.update_verify_status(id, is_verified=True, verified_time=time.time())
                 current = await db.get_verify_count(id)
                 await db.set_verify_count(id, current + 1)
-                return await message.reply(
-                    f"✅ 𝗧𝗼𝗸𝗲𝗻 𝘃𝗲𝗿𝗶𝗳𝗶𝗲𝗱! Vᴀʟɪᴅ ғᴏʀ {get_exp_time(VERIFY_EXPIRE)}"
+                return await message.reply_photo(
+                    photo=PREMIUM_PIC,
+                    caption=f"<b>✅ 𝗧𝗼𝗸𝗲𝗻 𝘃𝗲𝗿𝗶𝗳𝗶𝗲𝗱! Vᴀʟɪᴅ ғᴏʀ {get_exp_time(VERIFY_EXPIRE)}</b>"
                 )
 
             if not verify_status['is_verified'] and not is_premium and not (is_super_premium and SUPER_PREMIUM_ENABLED):
@@ -79,8 +83,15 @@ async def start_command(client: Client, message: Message):
                      InlineKeyboardButton("• ᴛᴜᴛᴏʀɪᴀʟ •", url=TUT_VID)],
                     [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
                 ]
-                return await message.reply(
-                    f"𝗬𝗼𝘂𝗿 𝘁𝗼𝗸𝗲𝗻 𝗵𝗮𝘀 𝗲𝘅𝗽𝗶𝗿𝗲𝗱. 𝗣𝗹𝗲𝗮𝘀𝗲 𝗿𝗲𝗳𝗿𝗲𝘀𝗵 𝘆𝗼𝘂𝗿 𝘁𝗼𝗸𝗲𝗻 𝘁𝗼 𝗰𝗼𝗻𝘁𝗶𝗻𝘂𝗲..\n\n<b>Tᴏᴋᴇɴ Tɪᴍᴇᴏᴜᴛ:</b> {get_exp_time(VERIFY_EXPIRE)}\n\n<b>ᴡʜᴀᴛ ɪs ᴛʜᴇ ᴛᴏᴋᴇɴ??</b>\n\nᴛʜɪs ɪs ᴀɴ ᴀᴅs ᴛᴏᴋᴇɴ. ᴘᴀssɪɴɢ ᴏɴᴇ ᴀᴅ ᴀʟʟᴏᴡs ʏᴏᴜ ᴛᴏ ᴜsᴇ ᴛʜᴇ ʙᴏᴛ ғᴏʀ {get_exp_time(VERIFY_EXPIRE)} ᴀғᴛᴇʀ ᴛʜᴇ ᴛᴏᴋᴇɴ ɢᴇᴛs ᴇxᴘɪʀᴇᴅ ᴀɢᴀɪɴ ᴛʜᴇ ᴀᴅ ᴛᴏᴋᴇɴ ɪs ʀᴇǫᴜɪʀᴇᴅ.",
+                return await message.reply_photo(
+                    photo=PREMIUM_PIC,
+                    caption=(
+                        f"<b>𝗬𝗼𝘂𝗿 𝘁𝗼𝗸𝗲𝗻 𝗵𝗮𝘀 𝗲𝘅𝗽𝗶𝗿𝗲𝗱. 𝗣𝗹𝗲𝗮𝘀𝗲 𝗿𝗲𝗳𝗿𝗲𝘀𝗵 𝘆𝗼𝘂𝗿 𝘁𝗼𝗸𝗲𝗻 𝘁𝗼 𝗰𝗼𝗻𝘁𝗶𝗻𝘂𝗲..</b>\n\n"
+                        f"<b>Tᴏᴋᴇɴ Tɪᴍᴇᴏᴜᴛ:</b> {get_exp_time(VERIFY_EXPIRE)}\n\n"
+                        f"<b>ᴡʜᴀᴛ ɪs ᴛʜᴇ ᴛᴏᴋᴇɴ??</b>\n\n"
+                        f"<b>ᴛʜɪs ɪs ᴀɴ ᴀᴅs ᴛᴏᴋᴇɴ. ᴘᴀssɪɴɢ ᴏɴᴇ ᴀᴅ ᴀʟʟᴏᴡs ʏᴏᴜ ᴛᴏ ᴜsᴇ ᴛʜᴇ ʙᴏᴛ ғᴏʀ {get_exp_time(VERIFY_EXPIRE)} ᴀғᴛᴇʀ ᴛʜᴇ ᴛᴏᴋᴇɴ ɢᴇᴛs ᴇxᴘɪʀᴇᴅ ᴀɢᴀɪɴ ᴛʜᴇ ᴀᴅ ᴛᴏᴋᴇɴ ɪs ʀᴇǫᴜɪʀᴇᴅ.</b>\n\n"
+                        f"<blockquote><b>ᴛᴏ ᴀᴠᴏɪᴅᴇ ᴛᴏᴋᴇɴ ᴛᴀᴋᴇ ᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ.</b></blockquote>"
+                    ),
                     reply_markup=InlineKeyboardMarkup(btn)
                 )
 
@@ -289,45 +300,123 @@ async def not_joined(client: Client, message: Message):
 
 
 #=====================================================================================##
-# Callback Query Handler
-@Bot.on_callback_query()
-async def cb_handler(client: Bot, query: CallbackQuery):
-    data = query.data
-    
-    if data == "about":
-        await query.message.edit_text(
-            text=ABOUT_MSG,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("🔒 Close", callback_data="close")]]
-            )
-        )
-        
-    elif data == "help":
-        await query.message.edit_text(
-            text=HELP_MSG,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("🔒 Close", callback_data="close")]]
-            )
-        )
-        
-    elif data == "premium":
-        user_id = query.from_user.id
-        status_message = await check_user_plan(user_id)
-        await query.message.edit_text(
-            text=f"{status_message}\n\n<b>Contact Admin to buy premium:</b>\n@rohit_1888",
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("🔒 Close", callback_data="close")]]
-            )
-        )
-        
-    elif data == "close":
-        await query.message.delete()
-        try:
-            await query.message.reply_to_message.delete()
-        except:
-            pass
 
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Callback Query Handler
+BATCH_FILE_CAPTION = """<b>Here is your file 
+
+Hey {first} !
+  
+<blockquote expandable> Your File is Ready, But You need to join channel to continue</blockquote>
+
+👤Name: {name}
+📊Size: {size}
+📂Type: {type}
+⏳Duration: {duration} 
+
+👇click here to download👇</b>"""
+
+
+@Bot.on_callback_query(filters.regex(r"^file_(.*)"))
+async def get_file(bot: Bot, m: CallbackQuery):
+    
+    file_id = m.data.split("_", 1)[1]
+    file_info = await db.get_file(file_id)
+    
+    if file_info is None:
+        await m.answer("File not found!", show_alert=True)
+        return
+    
+    if not await is_subscribed(bot, m.from_user.id):
+        return await not_joined(bot, m.message)
+
+    await m.answer()
+
+    user_id = m.from_user.id
+    is_premium = await is_premium_user(user_id)
+    is_super_premium = await is_super_premium_user(user_id)
+    banned_users = await db.get_ban_users()
+
+    if user_id in banned_users:
+        await m.message.reply_text(
+            "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>\n\n"
+            "<i>Contact support if you think this is a mistake.</i>",
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
+            )
+        )
+        return
+
+    # Verification logic for file access
+    if SHORTLINK_URL or SHORTLINK_API:
+        verify_status = await db.get_verify_status(user_id)
+        
+        if not verify_status['is_verified'] and not is_premium and not (is_super_premium and SUPER_PREMIUM_ENABLED):
+            if verify_status['is_verified'] and VERIFY_EXPIRE < (time.time() - verify_status['verified_time']):
+                await db.update_verify_status(user_id, is_verified=False)
+                
+            token = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+            await db.update_verify_status(user_id, verify_token=token, link="")
+            link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, f'https://telegram.dog/{bot.username}?start=verify_{token}')
+            
+            btn = [
+                [InlineKeyboardButton("• ᴏᴘᴇɴ ʟɪɴᴋ •", url=link),
+                 InlineKeyboardButton("• ᴛᴜᴛᴏʀɪᴀʟ •", url=TUT_VID)],
+                [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
+            ]
+            
+            await m.message.reply_photo(
+                photo=PREMIUM_PIC,
+                caption=(
+                    f"<b>𝗬𝗼𝘂𝗿 𝘁𝗼𝗸𝗲𝗻 𝗵𝗮𝘀 𝗲𝘅𝗽𝗶𝗿𝗲𝗱. 𝗣𝗹𝗲𝗮𝘀𝗲 𝗿𝗲𝗳𝗿𝗲𝘀𝗵 𝘆𝗼𝘂𝗿 𝘁𝗼𝗸𝗲𝗻 𝘁𝗼 𝗰𝗼𝗻𝘁𝗶𝗻𝘂𝗲..</b>\n\n"
+                    f"<b>Tᴏᴋᴇɴ Tɪᴍᴇᴏᴜᴛ:</b> {get_exp_time(VERIFY_EXPIRE)}\n\n"
+                    f"<b>ᴡʜᴀᴛ ɪs ᴛʜᴇ ᴛᴏᴋᴇɴ??</b>\n\n"
+                    f"<b>ᴛʜɪs ɪs ᴀɴ ᴀᴅs ᴛᴏᴋᴇɴ. ᴘᴀssɪɴɢ ᴏɴᴇ ᴀᴅ ᴀʟʟᴏᴡs ʏᴏᴜ ᴛᴏ ᴜsᴇ ᴛʜᴇ ʙᴏᴛ ғᴏʀ {get_exp_time(VERIFY_EXPIRE)} ᴀғᴛᴇʀ ᴛʜᴇ ᴛᴏᴋᴇɴ ɢᴇᴛs ᴇxᴘɪʀᴇᴅ ᴀɢᴀɪɴ ᴛʜᴇ ᴀᴅ ᴛᴏᴋᴇɴ ɪs ʀᴇǫᴜɪʀᴇᴅ.</b>\n\n"
+                    f"<blockquote><b>ᴛᴏ ᴀᴠᴏɪᴅᴇ ᴛᴏᴋᴇɴ ᴛᴀᴋᴇ ᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ.</b></blockquote>"
+                ),
+                reply_markup=InlineKeyboardMarkup(btn)
+            )
+            return
+    
+    # Get file details
+    file_name = file_info.get('file_name', 'Unknown')
+    file_size = file_info.get('file_size', 0)
+    file_type = file_info.get('file_type', 'Unknown')
+    duration = file_info.get('duration', 'Unknown')
+    
+    if file_size:
+        if file_size < 1024:
+            size = f"{file_size} B"
+        elif file_size < 1024*1024:
+            size = f"{file_size/1024:.2f} KB"
+        elif file_size < 1024*1024*1024:
+            size = f"{file_size/(1024*1024):.2f} MB"
+        else:
+            size = f"{file_size/(1024*1024*1024):.2f} GB"
+    else:
+        size = "Unknown"
+
+    caption = BATCH_FILE_CAPTION.format(
+        first=m.from_user.first_name,
+        name=file_name,
+        size=size,
+        type=file_type,
+        duration=duration if duration != 'Unknown' else 'N/A'
+    )
+
+    # Determine protect content based on user status
+    if SUPER_PREMIUM_ENABLED and is_super_premium:
+        protect_content_setting = SUPER_PREMIUM_PROTECT_CONTENT
+    else:
+        protect_content_setting = PROTECT_CONTENT
+
+    try:
+        await bot.send_cached_media(
+            chat_id=m.from_user.id,
+            file_id=file_info['file_id'],
+            caption=caption,
+            protect_content=protect_content_setting
+        )
+        await m.message.delete()
+    except Exception as e:
+        print(f"Error sending file: {e}")
+        await m.answer("Error occurred while sending file!", show_alert=True)
