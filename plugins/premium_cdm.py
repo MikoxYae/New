@@ -459,11 +459,21 @@ async def auto_start_monitoring(client):
     
     print("✅ Automatic premium monitoring started successfully!")
 
-# Auto-trigger monitoring when bot starts (using any command as trigger)
-@Bot.on_message(filters.private)
-async def trigger_auto_monitoring(client: Client, message: Message):
-    """Automatically start monitoring when bot receives any message"""
-    global monitoring_started
-    
-    if not monitoring_started:
-        asyncio.create_task(auto_start_monitoring(client))
+# Manual command to start monitoring (for admin use)
+@Bot.on_message(filters.command('start_premium_monitoring') & filters.private & admin)
+async def start_monitoring_existing_users(client: Client, message: Message):
+    """Start monitoring all existing premium users"""
+    await auto_start_monitoring(client)
+    await message.reply("✅ Started monitoring all existing premium and super premium users for expiry reminders.")
+
+# COMMENTED OUT: Auto-trigger monitoring when bot starts
+# This was interfering with the /start command, so it's commented out
+# If you want automatic monitoring, use /start_premium_monitoring command instead
+
+# @Bot.on_message(filters.private)
+# async def trigger_auto_monitoring(client: Client, message: Message):
+#     """Automatically start monitoring when bot receives any message"""
+#     global monitoring_started
+#     
+#     if not monitoring_started:
+#         asyncio.create_task(auto_start_monitoring(client))
