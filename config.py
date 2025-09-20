@@ -26,7 +26,7 @@ PREMIUM_PIC = os.environ.get("PREMIUM_PIC", "https://graph.org/file/9eaf27dbab4b
 SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "linkshortify.com")
 SHORTLINK_API = os.environ.get("SHORTLINK_API", "d568956721f5beb08837393f7e8efbccffeb1902")
 VERIFY_EXPIRE = int(os.environ.get('VERIFY_EXPIRE', "43200"))
-TUT_VID = os.environ.get("TUT_VID","https://t.me/Download_By_Miko/4")
+TUT_VID = os.environ.get("TUT_VID","https://t.me/Download_By_Miko/5")
 #------------------------------------------------------------------------------------------------------------------------------------------------
 SUPER_PREMIUM_ENABLED = os.environ.get("SUPER_PREMIUM_ENABLED", "True") == "True"
 SUPER_PREMIUM_PROTECT_CONTENT = os.environ.get("SUPER_PREMIUM_PROTECT_CONTENT", "False") == "True"
