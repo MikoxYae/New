@@ -1,22 +1,17 @@
-━━━━━━━━━━━━━━━━━━━━
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 
 <h2 align="center">
-    ──「 ғɪʟᴇ sᴛᴏʀᴇ ᴘʀᴏ 」──
+    ──「ᴍɪᴋᴏ ᴀᴅᴠᴀɴᴄᴇ ᴛᴏᴋᴇɴ ғɪʟᴇ sʜᴀʀɪɴɢ ʙᴏᴛ」──
 </h2>
 
 <p align="center">
-  <img src="https://graph.org/file/8581e33195ed8183a3253.jpg">
+  <img src="https://i.imgur.com/PXphMya.jpeg">
+</p>
 </p>
 
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 
-![Typing SVG](https://readme-typing-svg.herokuapp.com/?lines=FILE+SHARING+!;CREATED+BY+CODEFLIX+DEVELOPER!;A+ADVANCE+BOT+WITH+COOL+FEATURE!)
-</p>
-
- ━━━━━━━━━━━━━━━━━
-
-
-
-<details><summary><b>📌 ғᴇᴀᴛᴜʀᴇs:</b></summary>
+<details><summary><b>📌 ғᴇᴀᴛᴜʀᴇs :</b></summary>
 
 <b>🚀 Key Features:</b>
 
@@ -47,7 +42,7 @@
 * `DATABASE_URL` Your mongo db url
 * `DATABASE_NAME` Your mongo db session name
 * `ADMINS` Optional: A space separated list of user_ids of Admins, they can only create links
-* `START_MESSAGE` Optional: start message of bot, use HTML and <a href='https://github.com/codeflix-bots/filestore/blob/master/README.md#start_message'>fillings</a>
+* `START_MESSAGE` Optional: start message of bot.
 * `PROTECT_CONTENT` Optional: True if you need to prevent files from forwarding
 
 ### Token Variables
@@ -59,52 +54,38 @@
 ## 𝐶𝑜𝑚𝑚𝑎𝑛𝑑𝑠
 
 ```
-/start - start the bot or get posts
-/batch - create link for more than one posts
-/genlink - create link for one post
-/users - view bot statistics
-/broadcast - broadcast any messages to bot users
-/dbroadcast - broadcast any messages with auto delete.
-/stats - checking your bot uptime
-/start - start the bot or get posts  
-/batch - create link for more than one posts  
-/custom_batch - create custom batch from channel/group  
-/genlink - create link for one post  
-/users - view bot statistics  
-/broadcast - broadcast any messages to bot users  
-/dbroadcast - broadcast any messages with auto delete  
-/stats - check your bot uptime  
-/dlt_time - set auto delete time for files  
-/check_dlt_time - check current delete time setting  
-/ban - ban a user from using the bot  
-/unban - unban a previously banned user  
-/banlist - get list of banned users  
-/addchnl - add a channel for force subscription  
-/delchnl - remove a force subscribe channel  
-/listchnl - view all added force subscribe channels  
-/fsub_mode - toggle force subscribe on or off  
-/pbroadcast - pin a broadcast to all user's chat 
-/add_admin - add a new admin  
-/deladmin - remove an admin  
-/admins - list all current admins  
-/addpremium - grant premium access to a user  
-/premium_users - list all premium users  
-/remove_premium - revoke premium from a user  
-/myplan - check your premium status  
-/count - count shortner clicks  
-/delreq - removed users that left chnl and not getting request fsub
+start - Start The Bot Or Get Posts  
+batch - Create Link For More Than One Posts  
+genlink - Create Link For One Post  
+custom_batch - Create Custom Batch From Channel/Group  
+users - View Bot Statistics  
+broadcast - Broadcast Any Messages To Bot Users  
+dbroadcast - Broadcast Any Messages With Auto Delete  
+stats - Check Your Bot Uptime  
+dlt_time - Set Auto Delete Time For Files  
+check_dlt_time - Check Current Delete Time Setting  
+ban - Ban A User From Using The Bot  
+unban - Unban A Previously Banned User  
+banlist - Get List Of Banned Users  
+addchnl - Add A Channel For Force Subscription  
+delchnl - Remove A Force Subscribe Channel  
+listchnl - View All Added Force Subscribe Channels  
+fsub_mode - Toggle Force Subscribe On Or Off  
+pbroadcast - Pin A Broadcast To All User's Chat  
+add_admin - Add A New Admin  
+deladmin - Remove An Admin  
+admins - List All Current Admins  
+addpremium - Grant Premium Access To A User  
+premium_users - List All Premium Users
+remove_premium - revoke premium from a user
+add_super_premium - Grant Super Premium Access To A User  
+super_premium_users - List All Super Premium Users
+remove_super_premium - revoke super premium from a user
+
+myplan - Check Your Premium Status  
+count - Count Shortner Clicks  
 ```
-
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
-
-<h3>「 ᴏᴛʜᴇʀ ʙʀᴀɴᴄʜᴇs 」
-</h3>
-
-- <b>[sʜᴏʀᴛɴᴇʀ](https://github.com/Codeflix-Bots/FileStore/tree/shortner)  ➻  [ᴡɪᴛʜᴏᴜᴛ sʜᴏʀᴛɴᴇʀ](https://github.com/Codeflix-Bots/FileStore/tree/Master) </b>
-
-<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
-
-
 <details>
 <summary><h3>
 - <b> ᴅᴇᴘʟᴏʏᴍᴇɴᴛ ᴍᴇᴛʜᴏᴅs </b>
@@ -139,26 +120,21 @@
 </h3>
 <p>
 <pre>
-git clone https://github.com/Codeflix-Bots/FileStore
+git clone your repo link
+cd repo name
+tmux new -s session name # For running 24/7 
 # Install Packages
-pip3 install -U -r requirements.txt
-Edit info.py with variables as given below then run bot
-python3 bot.py
+pip3 install -r requirements.txt
+python3 main.py
+tmux kill-session -t session name # Note For Stop Running Bot
 </pre>
 </p>
 </details>
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
+
 
 <h3>「 ᴄʀᴇᴅɪᴛs 」
 </h3>
 
-- <b>[ᴄᴏᴅᴇғʟɪx ʙᴏᴛs](https://t.me/codeflix_bots)  ➻  [ᴜᴘᴅᴀᴛᴇs](https://t.me/codeflix_bots) </b>
-- <b>[ʏᴀᴛᴏ](https://github.com/sewxiy)  ➻  [sᴏᴍᴇᴛʜɪɴɢ](https://t.me/cosmic_freak) </b>
-- <b>[ʀᴏʜɪᴛ](https://github.com/rohit3607)  ➻  [sᴏᴍᴇᴛʜɪɴɢ](https://t.me/FILE_SHARINGBOTS/17) </b>
- 
-<b>ᴀɴᴅ ᴀʟʟ [ᴛʜᴇ ᴄᴏɴᴛʀɪʙᴜᴛᴏʀs](https://telegram.me/codeflix-bots) ᴡʜᴏ ʜᴇʟᴩᴇᴅ ɪɴ ᴍᴀᴋɪɴɢ file store ʙᴏᴛ ᴜsᴇꜰᴜʟ & ᴩᴏᴡᴇʀꜰᴜʟ 🖤 </b>
-
-## 📌  𝑵𝒐𝒕𝒆
-
-ᴊᴜꜱᴛ ꜰᴏʀᴋ ᴛʜᴇ ʀᴇᴘᴏ ᴀɴᴅ ᴇᴅɪᴛ ᴀꜱ ᴘᴇʀ ʏᴏᴜʀ ɴᴇᴇᴅꜱ.
-
-<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
+- <b>[ᴅᴇᴠʟᴏᴘᴇʀ](https://t.me/Yae_X_Miko).</b>
+- <b>[ɢɪᴛ ʜᴜʙ](https://github.com/MikoxYae).</b> 
