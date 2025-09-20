@@ -63,7 +63,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             photo=PREMIUM_PIC,
             caption=(
                 f"<b>If You Want To Buy This Bot Premium Membership Than Go to That bot and follow this step</b>\n\n"
-                f"<b>Step 1 Go To This Bot And Start.</b>\n"
+                f"<b>Step 1 Go To This Bot [@Authorised_seller_bot] And Start.</b>\n"
                 f"<b>Step 2 Send /premium_mode For Normal Premium Membership. Send /super_premium_mode For Super Premium Membership.</b>\n"
                 f"<b>Step 3 Select Your Choice Normal Premium | Super Premium.</b>\n\n"
                 f"<b>What You Get In Premium.</b>\n\n"
