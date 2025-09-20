@@ -85,7 +85,7 @@ class Bot(Client):
         await app.setup()
         await web.TCPSite(app, "0.0.0.0", PORT).start()
 
-        try: await self.send_message(OWNER_ID, text = f"<b>𝗠𝗔𝗦𝗧𝗘𝗥 𝗬𝗢𝗨𝗥 𝗕𝗢𝗧 𝗜𝗦 𝗕𝗔𝗖𝗞 𝗢𝗡𝗟𝗜𝗡𝗘.</b>)
+        try: await self.send_message(OWNER_ID, text = f"<b>𝗠𝗔𝗦𝗧𝗘𝗥 𝗬𝗢𝗨𝗥 𝗕𝗢𝗧 𝗜𝗦 𝗕𝗔𝗖𝗞 𝗢𝗡𝗟𝗜𝗡𝗘.</b>")
         except: pass
 
     async def stop(self, *args):
@@ -96,7 +96,7 @@ class Bot(Client):
         """Run the bot."""
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.start())
-        self.LOGGER(__name__).info("Bot is now running. Thanks to @rohit_1888")
+        self.LOGGER(__name__).info("Bot is now running.")
         try:
             loop.run_forever()
         except KeyboardInterrupt:
