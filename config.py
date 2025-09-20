@@ -63,7 +63,7 @@ CMD_TXT = """<blockquote><b>» ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs:</b></blockqu
 <b>›› /super_premium_users :</b> ʟɪsᴛ sᴜᴘᴇʀ ᴘʀᴇᴍɪᴜᴍ ᴜsᴇʀs
 <b>›› /my_super_plan :</b> ᴄʜᴇᴄᴋ sᴜᴘᴇʀ ᴘʀᴇᴍɪᴜᴍ sᴛᴀᴛᴜs"""
 #------------------------------------------------------------------------------------------------------------------------------------------------
-CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", None")
+CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", None)
 PROTECT_CONTENT = True if os.environ.get('PROTECT_CONTENT', "True") == "True" else False
 DISABLE_CHANNEL_BUTTON = os.environ.get("DISABLE_CHANNEL_BUTTON", None) == 'True'
 #------------------------------------------------------------------------------------------------------------------------------------------------
