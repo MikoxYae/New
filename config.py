@@ -4,17 +4,17 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 #------------------------------------------------------------------------------------------------------------------------------------------------
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8095711612:AAF5GAs3wkyFwvptkRNQJKHTRJP8Vp6bcUE")
-APP_ID = int(os.environ.get("APP_ID", "27704224"))
-API_HASH = os.environ.get("API_HASH", "c2e33826d757fe113bc154fcfabc987d")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8016094531:AAEFAH8J-6e6h3RZybBFuRHWiCW9DjAmvo4")
+APP_ID = int(os.environ.get("APP_ID", "28614709")) #Your API ID from my.telegram.org
+API_HASH = os.environ.get("API_HASH", "f36fd2ee6e3d3a17c4d244ff6dc1bac8") #Your API Hash from my.telegram.org
 #------------------------------------------------------------------------------------------------------------------------------------------------
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1002729018369"))
-OWNER = os.environ.get("OWNER", "Yae_X_Miko")
-OWNER_ID = int(os.environ.get("OWNER_ID", "8108281129"))
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1002655926509")) #Your db channel Id
+OWNER = os.environ.get("OWNER", "Kunchahiye") # Owner username without @
+OWNER_ID = int(os.environ.get("OWNER_ID", "7834818115")) # Owner id
 #------------------------------------------------------------------------------------------------------------------------------------------------
-DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Angel:aloksingh@angel.4qdpllb.mongodb.net/?retryWrites=true&w=majority&appName=Angel")
-DB_NAME = os.environ.get("DATABASE_NAME", "Angle")
-PORT = os.environ.get("PORT", "1011")
+DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Pookies:Aloksingh@pookies.f2waah9.mongodb.net/?retryWrites=true&w=majority&appName=Pookies")
+DB_NAME = os.environ.get("DATABASE_NAME", "Pookies")
+PORT = os.environ.get("PORT", "6000")
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "200"))
 #------------------------------------------------------------------------------------------------------------------------------------------------
 BAN_SUPPORT = os.environ.get("BAN_SUPPORT", None)
@@ -23,8 +23,8 @@ START_PIC = os.environ.get("START_PIC", "https://telegra.ph/file/a6aa096874ef37d
 FORCE_PIC = os.environ.get("FORCE_PIC", "https://telegra.ph/file/a6aa096874ef37dfb7924-8fc85569d0fb5fa66c.jpg")
 PREMIUM_PIC = os.environ.get("PREMIUM_PIC", "https://graph.org/file/9eaf27dbab4ba6d729111-553004f7a5a2a2ab86.jpg")
 #------------------------------------------------------------------------------------------------------------------------------------------------
-SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "linkshortify.com")
-SHORTLINK_API = os.environ.get("SHORTLINK_API", "d568956721f5beb08837393f7e8efbccffeb1902")
+SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "teraurl.com")
+SHORTLINK_API = os.environ.get("SHORTLINK_API", "49c24f550cdd1d41c8a9f5f225125778addcbad0")
 VERIFY_EXPIRE = int(os.environ.get('VERIFY_EXPIRE', "43200"))
 TUT_VID = os.environ.get("TUT_VID","https://t.me/Download_By_Miko/5")
 #------------------------------------------------------------------------------------------------------------------------------------------------
