@@ -189,16 +189,18 @@ async def start_command(client: Client, message: Message):
                 print(f"Error updating notification with 'Get File Again' button: {e}")
     else:
         reply_markup = InlineKeyboardMarkup(
-            [
-                    [InlineKeyboardButton("𝗔𝗻𝗴𝗹𝗲 𝗕𝗮𝘀𝗲", url="https://t.me/Angle_Base")],
-
     [
-                    InlineKeyboardButton("𝗔𝗯𝗼𝘂𝘁", callback_data = "about"),
-                    InlineKeyboardButton('𝗛𝗲𝗹𝗽', callback_data = "help")
-
+        [
+            InlineKeyboardButton("𝗔𝗻𝗴𝗹𝗲 𝗕𝗮𝘀𝗲", url="https://t.me/Angle_Base"),
+            InlineKeyboardButton("𝗕𝗼𝘁 𝗨𝗽𝗱𝗮𝘁𝗲", url="https://t.me/+RGdbXr7HS804MmRl")
+        ],
+        [
+            InlineKeyboardButton("𝗔𝗯𝗼𝘂𝘁", callback_data="about"),
+            InlineKeyboardButton("𝗛𝗲𝗹𝗽", callback_data="help")
+        ]
     ]
-            ]
-        )
+)
+
         await message.reply_photo(
             photo=START_PIC,
             caption=START_MSG.format(
