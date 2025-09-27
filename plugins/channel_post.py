@@ -25,12 +25,13 @@ async def channel_post(client: Client, message: Message):
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
 
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
+    # Updated message format with custom text
+    custom_message = f"{link}\n\n<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ:  <a href=\"https://t.me/+S95mGGbWHFRmNjM1\"> 𝗛ᴇᴀᴠᴇɴ 𝗕ᴀsᴇ</a> \n\nɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
 
-    await reply_text.edit(f"<b>{link}</b>", reply_markup=reply_markup, disable_web_page_preview = True)
+    await reply_text.edit(custom_message, disable_web_page_preview = True)
 
     if not DISABLE_CHANNEL_BUTTON:
-        await post_message.edit_reply_markup(reply_markup)
+        await post_message.edit_reply_markup(None)
 
 
 @Bot.on_message(filters.private & admin & filters.command('batch'))
@@ -63,8 +64,11 @@ async def batch(client: Client, message: Message):
     string = f"get-{f_msg_id * abs(client.db_channel.id)}-{s_msg_id * abs(client.db_channel.id)}"
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
-    await second_message.reply_text(f"<b>{link}</b>", quote=True, reply_markup=reply_markup)
+    
+    # Updated message format with custom text
+    custom_message = f"{link}\n\n<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ:  <a href=\"https://t.me/+S95mGGbWHFRmNjM1\"> 𝗛ᴇᴀᴠᴇɴ 𝗕ᴀsᴇ</a> \n\nɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
+    
+    await second_message.reply_text(custom_message, quote=True)
 
 
 @Bot.on_message(filters.private & admin & filters.command('genlink'))
@@ -83,8 +87,11 @@ async def link_generator(client: Client, message: Message):
 
     base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
     link = f"https://t.me/{client.username}?start={base64_string}"
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
-    await channel_message.reply_text(f"<b>{link}</b>", quote=True, reply_markup=reply_markup)
+    
+    # Updated message format with custom text
+    custom_message = f"{link}\n\n<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ:  <a href=\"https://t.me/+S95mGGbWHFRmNjM1\"> 𝗛ᴇᴀᴠᴇɴ 𝗕ᴀsᴇ</a> \n\nɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
+    
+    await channel_message.reply_text(custom_message, quote=True)
 
 
 @Bot.on_message(filters.private & admin & filters.command("custom_batch"))
@@ -126,5 +133,7 @@ async def custom_batch(client: Client, message: Message):
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
 
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
-    await message.reply(f"<b>Here is your custom batch link:</b>\n\n{link}", reply_markup=reply_markup)
+    # Updated message format with custom text
+    custom_message = f"<b>Here is your custom batch link:</b>\n\n{link}\n\n<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ:  <a href=\"https://t.me/+S95mGGbWHFRmNjM1\"> 𝗛ᴇᴀᴠᴇɴ 𝗕ᴀsᴇ</a> \n\nɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
+
+    await message.reply(custom_message)
