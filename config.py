@@ -23,8 +23,8 @@ START_PIC = os.environ.get("START_PIC", "https://telegra.ph/file/a6aa096874ef37d
 FORCE_PIC = os.environ.get("FORCE_PIC", "https://telegra.ph/file/a6aa096874ef37dfb7924-8fc85569d0fb5fa66c.jpg")
 PREMIUM_PIC = os.environ.get("PREMIUM_PIC", "https://graph.org/file/9eaf27dbab4ba6d729111-553004f7a5a2a2ab86.jpg")
 #------------------------------------------------------------------------------------------------------------------------------------------------
-SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "arolinks.com")
-SHORTLINK_API = os.environ.get("SHORTLINK_API", "28ba4d675abf8136cf70c9d09747446d2cdfb9df")
+SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "joinurls.com")
+SHORTLINK_API = os.environ.get("SHORTLINK_API", "fa639b47b66bf82bd965720976783158528b0fae")
 VERIFY_EXPIRE = int(os.environ.get('VERIFY_EXPIRE', "43200"))
 TUT_VID = os.environ.get("TUT_VID","https://t.me/Download_By_Miko/5")
 #------------------------------------------------------------------------------------------------------------------------------------------------
