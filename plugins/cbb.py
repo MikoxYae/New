@@ -43,7 +43,7 @@ def generate_upi_qr(amount, plan_type, duration):
     
     return bio
 
-@Bot.on_callback_query()
+@Bot.on_callback_query(filters.regex(r"^(help|about|start|premium|normal_premium|super_premium|normal_|super_|payment_done|close)"))
 async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
 
