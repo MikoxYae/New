@@ -23,8 +23,8 @@ START_PIC = os.environ.get("START_PIC", "https://telegra.ph/file/a6aa096874ef37d
 FORCE_PIC = os.environ.get("FORCE_PIC", "https://telegra.ph/file/a6aa096874ef37dfb7924-8fc85569d0fb5fa66c.jpg")
 PREMIUM_PIC = os.environ.get("PREMIUM_PIC", "https://graph.org/file/9eaf27dbab4ba6d729111-553004f7a5a2a2ab86.jpg")
 #------------------------------------------------------------------------------------------------------------------------------------------------
-SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "teraurl.com")
-SHORTLINK_API = os.environ.get("SHORTLINK_API", "49c24f550cdd1d41c8a9f5f225125778addcbad0")
+SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "teralink.in")
+SHORTLINK_API = os.environ.get("SHORTLINK_API", "f54ed1e48c3f9f58ba50f540bb778befb1101709")
 VERIFY_EXPIRE = int(os.environ.get('VERIFY_EXPIRE', "43200"))
 TUT_VID = os.environ.get("TUT_VID","https://t.me/Download_By_Miko/5")
 #------------------------------------------------------------------------------------------------------------------------------------------------
