@@ -19,3 +19,6 @@ bs4
 shortzy
 aiofiles
 asyncio
+
+qrcode[pil]
+Pillow
