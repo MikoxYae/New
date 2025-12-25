@@ -4,17 +4,17 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 #------------------------------------------------------------------------------------------------------------------------------------------------
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8463442994:AAFg2iGUMZXQ8u63oWlI_jfYLWxXCL1ioBU")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8256404708:AAGcXV_GlSPBCzsSIDRyR_52CR03fnFoqkw")
 APP_ID = int(os.environ.get("APP_ID", "28614709")) #Your API ID from my.telegram.org
 API_HASH = os.environ.get("API_HASH", "f36fd2ee6e3d3a17c4d244ff6dc1bac8") #Your API Hash from my.telegram.org
 #------------------------------------------------------------------------------------------------------------------------------------------------
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1002943393896")) #Your db channel Id
-OWNER = os.environ.get("OWNER", "Iam_addictive") # Owner username without @
-OWNER_ID = int(os.environ.get("OWNER_ID", "8302391282")) # Owner id
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003290096463")) #Your db channel Id
+OWNER = os.environ.get("OWNER", "Yae_N_Miko") # Owner username without @
+OWNER_ID = int(os.environ.get("OWNER_ID", "8136381258")) # Owner id
 #------------------------------------------------------------------------------------------------------------------------------------------------
-DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Pookies:Aloksingh@pookies.cv6yqnl.mongodb.net/?appName=Pookies")
-DB_NAME = os.environ.get("DATABASE_NAME", "Pookies")
-PORT = os.environ.get("PORT", "7777")
+DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Test:aloksingh@cluster0.iomykdc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+DB_NAME = os.environ.get("DATABASE_NAME", "Angle")
+PORT = os.environ.get("PORT", "8031")
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "200"))
 #------------------------------------------------------------------------------------------------------------------------------------------------
 BAN_SUPPORT = os.environ.get("BAN_SUPPORT", None)
@@ -23,10 +23,10 @@ START_PIC = os.environ.get("START_PIC", "https://graph.org/file/c3298a2f4d623e7f
 FORCE_PIC = os.environ.get("FORCE_PIC", "https://graph.org/file/c3298a2f4d623e7f204c1-882cbd3ff41094cb41.jpg")
 PREMIUM_PIC = os.environ.get("PREMIUM_PIC", "https://graph.org/file/c3298a2f4d623e7f204c1-882cbd3ff41094cb41.jpg")
 #------------------------------------------------------------------------------------------------------------------------------------------------
-SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "makelinks.in")
-SHORTLINK_API = os.environ.get("SHORTLINK_API", "c99387f9400b8a01999616a2e6417de59cc1b4b6")
+SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "snapurlz.com")
+SHORTLINK_API = os.environ.get("SHORTLINK_API", "46ae25586d58db2a443d4560a2e31aa5f9f06980")
 VERIFY_EXPIRE = int(os.environ.get('VERIFY_EXPIRE', "43200"))
-TUT_VID = os.environ.get("TUT_VID","https://t.me/How_To_Take_Tokens/6")
+TUT_VID = os.environ.get("TUT_VID","https://t.me/How_To_Take_Tokens/12")
 #------------------------------------------------------------------------------------------------------------------------------------------------
 SUPER_PREMIUM_ENABLED = os.environ.get("SUPER_PREMIUM_ENABLED", "True") == "True"
 SUPER_PREMIUM_PROTECT_CONTENT = os.environ.get("SUPER_PREMIUM_PROTECT_CONTENT", "False") == "True"
