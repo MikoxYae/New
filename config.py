@@ -4,7 +4,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 #------------------------------------------------------------------------------------------------------------------------------------------------
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8016094531:AAEFAH8J-6e6h3RZybBFuRHWiCW9DjAmvo4")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8463442994:AAFg2iGUMZXQ8u63oWlI_jfYLWxXCL1ioBU")
 APP_ID = int(os.environ.get("APP_ID", "28614709")) #Your API ID from my.telegram.org
 API_HASH = os.environ.get("API_HASH", "f36fd2ee6e3d3a17c4d244ff6dc1bac8") #Your API Hash from my.telegram.org
 #------------------------------------------------------------------------------------------------------------------------------------------------
@@ -12,27 +12,27 @@ CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1002943393896")) #Your db channe
 OWNER = os.environ.get("OWNER", "Kunchahiye") # Owner username without @
 OWNER_ID = int(os.environ.get("OWNER_ID", "7834818115")) # Owner id
 #------------------------------------------------------------------------------------------------------------------------------------------------
-DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Pookies:Aloksingh@pookies.f2waah9.mongodb.net/?retryWrites=true&w=majority&appName=Pookies")
+DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Pookies:Aloksingh@pookies.cv6yqnl.mongodb.net/?appName=Pookies")
 DB_NAME = os.environ.get("DATABASE_NAME", "Pookies")
-PORT = os.environ.get("PORT", "6000")
+PORT = os.environ.get("PORT", "7777")
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "200"))
 #------------------------------------------------------------------------------------------------------------------------------------------------
 BAN_SUPPORT = os.environ.get("BAN_SUPPORT", None)
 #------------------------------------------------------------------------------------------------------------------------------------------------
-START_PIC = os.environ.get("START_PIC", "https://telegra.ph/file/a6aa096874ef37dfb7924-8fc85569d0fb5fa66c.jpg")
-FORCE_PIC = os.environ.get("FORCE_PIC", "https://telegra.ph/file/a6aa096874ef37dfb7924-8fc85569d0fb5fa66c.jpg")
-PREMIUM_PIC = os.environ.get("PREMIUM_PIC", "https://graph.org/file/9eaf27dbab4ba6d729111-553004f7a5a2a2ab86.jpg")
+START_PIC = os.environ.get("START_PIC", "https://graph.org/file/c3298a2f4d623e7f204c1-882cbd3ff41094cb41.jpg")
+FORCE_PIC = os.environ.get("FORCE_PIC", "https://graph.org/file/c3298a2f4d623e7f204c1-882cbd3ff41094cb41.jpg")
+PREMIUM_PIC = os.environ.get("PREMIUM_PIC", "https://graph.org/file/c3298a2f4d623e7f204c1-882cbd3ff41094cb41.jpg")
 #------------------------------------------------------------------------------------------------------------------------------------------------
-SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "teralink.in")
-SHORTLINK_API = os.environ.get("SHORTLINK_API", "f54ed1e48c3f9f58ba50f540bb778befb1101709")
+SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "makelinks.in")
+SHORTLINK_API = os.environ.get("SHORTLINK_API", "c99387f9400b8a01999616a2e6417de59cc1b4b6")
 VERIFY_EXPIRE = int(os.environ.get('VERIFY_EXPIRE', "43200"))
-TUT_VID = os.environ.get("TUT_VID","https://t.me/Download_By_Miko/5")
+TUT_VID = os.environ.get("TUT_VID","https://t.me/How_To_Take_Tokens/6")
 #------------------------------------------------------------------------------------------------------------------------------------------------
 SUPER_PREMIUM_ENABLED = os.environ.get("SUPER_PREMIUM_ENABLED", "True") == "True"
 SUPER_PREMIUM_PROTECT_CONTENT = os.environ.get("SUPER_PREMIUM_PROTECT_CONTENT", "False") == "True"
 #------------------------------------------------------------------------------------------------------------------------------------------------
-HELP_TXT = "<b>ɪ ᴀᴍ ᴊᴜsᴛ ғɪʟᴇ sʜᴀʀɪɴɢ ʙᴏᴛ. ɴᴏᴛʜɪɴɢ ʜᴇʀᴇ ʏᴏᴜ ᴄᴀɴ ɢᴏ ʙᴀᴄᴋ.\nɪғ ʏᴏᴜ ᴡᴀɴᴛ ᴘᴀɪᴅ ʙᴏᴛ ʜᴏsᴛɪɴɢ ʏᴏᴜ ᴄᴀɴ ᴅᴍ ᴍᴇ ʜᴇʀᴇ @Yae_X_Miko</b>"
-ABOUT_TXT = "<b>◈ ᴄʀᴇᴀᴛᴏʀ: <a href=https://t.me/Yae_X_Miko>『𝚈𝚊𝚎 𝙼𝚒𝚔𝚘』❋𝄗⃝🦋 ⌞𝚆𝚊𝚛𝚕𝚘𝚛𝚍𝚜⌝ ㊋</a></b>"#--------------------------------------------
+ABOUT_TXT = ""
+HELP_TXT = ""
 START_MSG = os.environ.get("START_MESSAGE", "<b>ʜᴇʟʟᴏ {first}\n\nɪ ᴀᴍ ғɪʟᴇ sᴛᴏʀᴇ ʙᴏᴛ, ɪ ᴄᴀɴ sᴛᴏʀᴇ ᴘʀɪᴠᴀᴛᴇ ғɪʟᴇs ɪɴ sᴘᴇᴄɪғɪᴇᴅ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ᴏᴛʜᴇʀ ᴜsᴇʀs ᴄᴀɴ ᴀᴄᴄᴇss ɪᴛ ғʀᴏᴍ sᴘᴇᴄɪᴀʟ ʟɪɴᴋ.</b>")
 FORCE_MSG = os.environ.get("FORCE_SUB_MESSAGE", "ʜᴇʟʟᴏ {first}\n\n<b>ᴊᴏɪɴ ᴏᴜʀ ᴄʜᴀɴɴᴇʟs ᴀɴᴅ ᴛʜᴇɴ ᴄʟɪᴄᴋ ᴏɴ ʀᴇʟᴏᴀᴅ button ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ʀᴇǫᴜᴇꜱᴛᴇᴅ ꜰɪʟᴇ.</b>")
 #------------------------------------------------------------------------------------------------------------------------------------------------
