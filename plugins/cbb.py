@@ -9,19 +9,15 @@ from io import BytesIO
 # UPI Payment Details
 UPI_ID = "7348433876@mbk"
 
-# Premium Pricing
+# Premium Pricing - Updated Plans
 NORMAL_PREMIUM_PRICES = {
-    "7days": 50,
-    "1month": 150,
-    "3months": 400,
-    "6months": 700,
-    "1year": 1200
+    "14days": 89,
+    "1month": 170
 }
 
 SUPER_PREMIUM_PRICES = {
-    "7days": 90,
-    "1month": 300,
-    "3months": 700
+    "14days": 150,
+    "1month": 280
 }
 
 # Store user payment info temporarily
@@ -103,7 +99,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             f"<b>𝗪𝗵𝗮𝘁 𝗬𝗼𝘂 𝗚𝗲𝘁 𝗜𝗻 𝗡𝗼𝗿𝗺𝗮𝗹 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗠𝗲𝗺𝗯𝗲𝗿𝘀𝗵𝗶𝗽.</b>\n\n"
             f"• ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴛᴏ ᴛᴀᴋᴇ ᴛᴏᴋᴇɴ.\n"
             f"• ʏᴏᴜʀ ғᴏʀᴡᴀʀᴅ ᴏᴘᴛɪᴏɴ ᴡɪʟʟ ʙᴇ ɴᴏᴛ ᴇɴᴀʙʟᴇᴅ [ᴍᴇᴀɴs ʏᴏᴜ ᴄᴀɴ'ᴛ sᴀᴠᴇ ғɪʟᴇs ɪɴ ʏᴏᴜʀ ɢᴀʟʟᴇʀʏ ᴏʀ ɪɴ ᴏᴛʜᴇʀ ᴄʜᴀɴɴᴇʟ ɢʀᴏᴜᴘs].\n\n"
-            f"<b>𝗪𝗵𝗮𝘁 𝗬𝗼𝘂 𝗚𝗲𝘁 𝗜𝗻 𝗦𝘂𝗽𝗲𝗿 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗠𝗲𝗺𝗯𝗲𝗿𝘀𝗵𝗶𝗽.</b>\n\n"
+            f"<b>𝗪𝗵𝗮𝘁 𝗬𝗼𝘂 𝗚𝗲𝘁 𝗜𝗻 𝗦𝘂𝗽𝗲𝗿 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗠𝗲𝗍𝗺𝗯𝗲𝗿𝘀𝗵𝗶𝗽.</b>\n\n"
             f"• ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴛᴏ ᴛᴀᴋᴇ ᴛᴏᴋᴇɴ.\n"
             f"• ʏᴏᴜʀ ғᴏʀᴡᴀʀᴅ ᴏᴘᴛɪᴏɴ ᴡɪʟʟ ʙᴇ ᴇɴᴀʙʟᴇᴅ [ᴍᴇᴀɴs ʏᴏᴜ ᴄᴀɴ sᴀᴠᴇ ғɪʟᴇs ɪɴ ʏᴏᴜʀ ɢᴀʟʟᴇʀʏ ᴏʀ ɪɴ ᴏᴛʜᴇʀ ᴄʜᴀɴɴᴇʟ ɢʀᴏᴜᴘs]."
         )
@@ -142,16 +138,12 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("7 Days - ₹50", callback_data="normal_7days"),
-                        InlineKeyboardButton("1 Month - ₹150", callback_data="normal_1month")
+                        InlineKeyboardButton("14 Days - ₹89", callback_data="normal_14days"),
+                        InlineKeyboardButton("1 Month - ₹170", callback_data="normal_1month")
                     ],
                     [
-                        InlineKeyboardButton("3 Months - ₹400", callback_data="normal_3months"),
-                        InlineKeyboardButton("6 Months - ₹700", callback_data="normal_6months")
-                    ],
-                    [
-                        InlineKeyboardButton("1 Year - ₹1200", callback_data="normal_1year"),
-                        InlineKeyboardButton("🔙 Back", callback_data="premium")
+                        InlineKeyboardButton("🔙 Back", callback_data="premium"),
+                        InlineKeyboardButton("🔒 Close", callback_data="close")
                     ]
                 ]
             )
@@ -173,12 +165,12 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("7 Days - ₹90", callback_data="super_7days"),
-                        InlineKeyboardButton("1 Month - ₹300", callback_data="super_1month")
+                        InlineKeyboardButton("14 Days - ₹150", callback_data="super_14days"),
+                        InlineKeyboardButton("1 Month - ₹280", callback_data="super_1month")
                     ],
                     [
-                        InlineKeyboardButton("3 Months - ₹700", callback_data="super_3months"),
-                        InlineKeyboardButton("🔙 Back", callback_data="premium")
+                        InlineKeyboardButton("🔙 Back", callback_data="premium"),
+                        InlineKeyboardButton("🔒 Close", callback_data="close")
                     ]
                 ]
             )
@@ -200,7 +192,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         
         payment_text = (
             f"<b>💳 Normal Premium Payment</b>\n\n"
-            f"<b>Plan:</b> {plan_duration.replace('days', ' Days').replace('month', ' Month').replace('year', ' Year').title()}\n"
+            f"<b>Plan:</b> {plan_duration.replace('days', ' Days').replace('month', ' Month').title()}\n"
             f"<b>Amount:</b> ₹{amount}\n\n"
             f"<b>📱 ɪɴsᴛʀᴜᴄᴛɪᴏɴs:</b>\n"
             f"1. sᴄᴀɴ ᴛʜᴇ ϙʀ ᴄᴏᴅᴇ ᴡɪᴛʜ ᴀɴʏ ᴜᴘɪ ᴀᴘᴘ.\n"
@@ -246,7 +238,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             f"2. ᴘᴀʏ ᴛʜᴇ ᴇxᴀᴄᴛ ᴀᴍᴏᴜɴᴛ : ₹{amount}\n"
             f"3. ᴄʟɪᴄᴋ ᴏɴ ɪ ʜᴀᴠᴇ ᴘᴀɪᴅ ᴛʜᴇɴ sᴇɴᴅ ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ ɪɴ ʙᴏᴛ ᴛᴏ sᴇɴᴅ ᴛʜᴇᴍ ᴛᴏ ᴏᴡɴᴇʀ.\n"
             f"4. ʏᴏᴜ ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʟ ʙᴇ ᴀᴄᴛɪᴠᴀᴛᴇᴅ sᴏᴏɴ ᴏɴᴄᴇ ᴏᴡɴᴇʀ ᴡɪʟʟ ᴄᴀᴍᴇ ᴏɴʟɪɴᴇ.\n\n"
-            f"⚠️ <b>ᴡᴀʀɴɪɴɢ:</b> ɪғ ᴘᴀʏᴍᴇɴᴛ ɪs ᴍᴀᴅᴇ ᴀғᴛᴇʀ 11:00 ᴘᴍ (ᴀᴛ ɴɪɢʜᴛ) ᴛʜᴇɴ ᴀᴄᴛɪᴠᴀᴛɪᴏɴ ᴅᴇᴘᴇɴᴅs ᴏɴ ᴏᴡɴᴇʀ ᴀᴠᴀɪʟᴀʙɪʟɪᴛʏ (ɪғ ᴏᴡɴᴇʀ ᴏɴʟɪɴᴇ ᴛʜᴇɴ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʟ ʙᴇ ᴀᴄᴛɪᴠᴇ. ɪғ ᴏᴡɴᴇʀ ɪs ɴᴏᴛ ᴀᴄᴛɪᴠᴇ ᴛʜᴇɴ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʟ ʙᴇ ᴀᴄᴛɪᴠᴇ ɪɴ ᴍᴏʀɴɪɴɢ)."
+            f"⚠️ <b>ᴡᴀʀɴɪɴɢ:</b> ɪғ ᴘᴀʏᴍᴇɴᴛ ɪs ᴍᴀᴅᴇ ᴀғᴛᴇʀ 11:00 ᴘᴍ (ᴀᴛ ɴɪɢʜᴛ) ᴛʜᴇɴ ᴀᴄᴛɪᴠᴀᴛɪᴏɴ ᴅᴇᴘᴇɴᴅs ᴏɴ ᴏᴡɴᴇʀ ᴀᴠᴀɪʟᴀʙɪʟɪᴛʏ (ɪғ ᴏᴡɴᴇʀ ᴏɴʟɪɴᴇ ᴛʜᴇɴ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʟ ʙᴇ ᴀᴄᴛɪᴠᴇ. ɪғ ᴏᴡɴᴇʀ ɪs ɴᴏᴛ ᴀᴄᴛɪᴠᴇ ᴛʜᴇɴ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʙᴇ ᴀᴄᴛɪᴠᴇ ɪɴ ᴍᴏʀɴɪɴɢ)."
         )
         
         await query.message.delete()
@@ -359,30 +351,22 @@ async def forward_payment_screenshot(client: Bot, message: Message):
             f"<b>User ID:</b> <code>{user_id}</code>\n"
             f"<b>Username:</b> @{message.from_user.username or 'None'}\n"
             f"<b>Plan Type:</b> {payment_info['plan_type']}\n"
-            f"<b>Duration:</b> {payment_info['duration'].replace('days', ' Days').replace('month', ' Month').replace('year', ' Year').title()}\n"
+            f"<b>Duration:</b> {payment_info['duration'].replace('days', ' Days').replace('month', ' Month').title()}\n"
             f"<b>Amount:</b> ₹{payment_info['amount']}\n\n"
             f"<b>Use the command to activate:</b>\n"
         )
         
         if payment_info['plan_type'] == "Normal Premium":
             # Convert duration to command format
-            if payment_info['duration'] == "7days":
-                caption += f"<code>/addpremium {user_id} 7 d</code>"
+            if payment_info['duration'] == "14days":
+                caption += f"<code>/addpremium {user_id} 14 d</code>"
             elif payment_info['duration'] == "1month":
                 caption += f"<code>/addpremium {user_id} 30 d</code>"
-            elif payment_info['duration'] == "3months":
-                caption += f"<code>/addpremium {user_id} 90 d</code>"
-            elif payment_info['duration'] == "6months":
-                caption += f"<code>/addpremium {user_id} 180 d</code>"
-            elif payment_info['duration'] == "1year":
-                caption += f"<code>/addpremium {user_id} 365 d</code>"
         else:  # Super Premium
-            if payment_info['duration'] == "7days":
-                caption += f"<code>/add_super_premium {user_id} 7 d</code>"
+            if payment_info['duration'] == "14days":
+                caption += f"<code>/add_super_premium {user_id} 14 d</code>"
             elif payment_info['duration'] == "1month":
                 caption += f"<code>/add_super_premium {user_id} 30 d</code>"
-            elif payment_info['duration'] == "3months":
-                caption += f"<code>/add_super_premium {user_id} 90 d</code>"
         
         await client.send_photo(
             chat_id=OWNER_ID,
