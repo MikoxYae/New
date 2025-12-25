@@ -273,7 +273,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             text=f"ʜᴇʟʟᴏ {first_name} {last_name} ᴘʟᴇᴀsᴇ sᴇɴᴅ ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ ғᴏʀ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ. ᴏɴᴄᴇ ʏᴏᴜ ᴀʀᴇ ᴠᴇʀɪғɪᴇᴅ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʟ ʙᴇ ᴀᴄᴛɪᴠᴇ sᴏᴏɴ!",
             reply_markup=InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("👤 Owner", url="https://t.me/Angel_Owner_bot"),
+                    InlineKeyboardButton("👤 Owner", url="https://t.me/Iam_addictive"),
                     InlineKeyboardButton("📢 Channel", url="https://t.me/+sSi9iWidSjg1Y2Ex")
                 ]
             ])
