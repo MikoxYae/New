@@ -9,8 +9,8 @@ APP_ID = int(os.environ.get("APP_ID", "28614709")) #Your API ID from my.telegram
 API_HASH = os.environ.get("API_HASH", "f36fd2ee6e3d3a17c4d244ff6dc1bac8") #Your API Hash from my.telegram.org
 #------------------------------------------------------------------------------------------------------------------------------------------------
 CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1002943393896")) #Your db channel Id
-OWNER = os.environ.get("OWNER", "Kunchahiye") # Owner username without @
-OWNER_ID = int(os.environ.get("OWNER_ID", "7834818115")) # Owner id
+OWNER = os.environ.get("OWNER", "Iam_addictive") # Owner username without @
+OWNER_ID = int(os.environ.get("OWNER_ID", "8302391282")) # Owner id
 #------------------------------------------------------------------------------------------------------------------------------------------------
 DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Pookies:Aloksingh@pookies.cv6yqnl.mongodb.net/?appName=Pookies")
 DB_NAME = os.environ.get("DATABASE_NAME", "Pookies")
