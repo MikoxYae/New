@@ -4,15 +4,15 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 #------------------------------------------------------------------------------------------------------------------------------------------------
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8256404708:AAGcXV_GlSPBCzsSIDRyR_52CR03fnFoqkw")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8417356865:AAHV1GEeeT7Gq9tVNrANRv-hiFD1OV8gwrA")
 APP_ID = int(os.environ.get("APP_ID", "28614709")) #Your API ID from my.telegram.org
 API_HASH = os.environ.get("API_HASH", "f36fd2ee6e3d3a17c4d244ff6dc1bac8") #Your API Hash from my.telegram.org
 #------------------------------------------------------------------------------------------------------------------------------------------------
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003290096463")) #Your db channel Id
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003249797203")) #Your db channel Id
 OWNER = os.environ.get("OWNER", "Yae_N_Miko") # Owner username without @
 OWNER_ID = int(os.environ.get("OWNER_ID", "8136381258")) # Owner id
 #------------------------------------------------------------------------------------------------------------------------------------------------
-DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Test:aloksingh@cluster0.iomykdc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Angle:Aloksingh@angle.be47a1n.mongodb.net/?appName=Angle")
 DB_NAME = os.environ.get("DATABASE_NAME", "Angle")
 PORT = os.environ.get("PORT", "8031")
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "200"))
