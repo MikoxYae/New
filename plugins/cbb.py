@@ -7,7 +7,7 @@ import qrcode
 from io import BytesIO
 
 # UPI Payment Details
-UPI_ID = "cuteheavenpremium@upi"
+UPI_ID = "7348433876@mbk"
 
 # Premium Pricing
 NORMAL_PREMIUM_PRICES = {
@@ -396,8 +396,8 @@ async def forward_payment_screenshot(client: Bot, message: Message):
             "<b>ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʟ ʙᴇ ᴀᴄᴛɪᴠᴀᴛᴇᴅ sᴏᴏɴ!</b>",
             reply_markup=InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("👤 Owner", url="https://t.me/Angel_Owner_bot"),
-                    InlineKeyboardButton("📢 Channel", url="https://t.me/+sSi9iWidSjg1Y2Ex")
+                    InlineKeyboardButton("👤 Owner", url="https://t.me/Yae_N_Miko"),
+                    InlineKeyboardButton("📢 Channel", url="https://t.me/+vDWmV0TcGJE3ZmIx")
                 ]
             ])
         )
