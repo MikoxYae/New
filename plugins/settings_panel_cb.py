@@ -1,12 +1,11 @@
 import asyncio
 import psutil
-from pyrogram import filters
+from pyrogram import filters, StopPropagation
 from pyrogram.types import (
     CallbackQuery, Message,
     InlineKeyboardMarkup, InlineKeyboardButton
 )
 from pyrogram.enums import ChatMemberStatus, ChatType
-from pyrogram.errors import StopPropagation
 from bot import Bot
 from config import OWNER_ID
 from database.database import db
@@ -203,7 +202,7 @@ async def settings_cb(client: Bot, query: CallbackQuery):
 
     # ══════════════════════════════════════════════════════════
     #  STATS
-    # ══════════════════════════════════════════════════════════
+    # ═���════════════════════════════════════════════════════════
 
     elif data == "stg_stats":
         _pending.pop(uid, None)
@@ -312,7 +311,7 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         channels = await db.show_channels()
         if not channels:
             await _edit(query,
-                "<b>❌ No force-sub channels found.\nAdd channels first via Force Sub.</b>",
+                "<b>�� No force-sub channels found.\nAdd channels first via Force Sub.</b>",
                 InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_back")]])
             )
             return
@@ -365,7 +364,7 @@ async def settings_cb(client: Bot, query: CallbackQuery):
 
     # ══════════════════════════════════════════════════════════
     #  AUTO DELETE PANEL
-    # ══════════════════════════════════════════════════════════
+    # ═══════════════════════════════════════════════════��══════
 
     elif data == "stg_autodel":
         _pending.pop(uid, None)
@@ -541,7 +540,7 @@ async def handle_settings_input(client: Bot, message: Message):
             await patch(f"<b>❌ Failed:</b> <code>{e}</code>",
                         InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_fsub")]]))
 
-    # ── AUTO DELETE SET ──────────────────────────────────────
+    # ── AUTO DELETE SET ──────────────────────────────��───────
     elif action == "autodel_set":
         try:
             seconds = int(raw)
