@@ -31,7 +31,10 @@ async def channel_post(client: Client, message: Message):
     await reply_text.edit(custom_message, disable_web_page_preview = True)
 
     if not DISABLE_CHANNEL_BUTTON:
-        await post_message.edit_reply_markup(None)
+        try:
+            await post_message.edit_reply_markup(None)
+        except Exception:
+            pass
 
 
 @Bot.on_message(filters.private & admin & filters.command('batch'))
