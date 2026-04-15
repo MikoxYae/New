@@ -3,19 +3,40 @@ from plugins import web_server
 import asyncio
 import pyromod.listen
 
-# ── Pyromod KeyError patch ─────────────────────────────────────────────────────
-# pyromod bug: self.listeners is a plain dict and the MESSAGE key is never seeded,
-# causing KeyError on every incoming message.  Patch the installed source once.
-import os as _os
-_pyromod_client_path = "/usr/local/lib/python3.10/dist-packages/pyromod/listen/client.py"
-if _os.path.exists(_pyromod_client_path):
-    with open(_pyromod_client_path, "r") as _f:
-        _src = _f.read()
-    _BAD  = "for listener in self.listeners[listener_type]:"
-    _GOOD = "for listener in self.listeners.get(listener_type, []):"
-    if _BAD in _src:
-        with open(_pyromod_client_path, "w") as _f:
-            _f.write(_src.replace(_BAD, _GOOD))
+# ── Pyromod 1.5 KeyError fix ───────────────────────────────────────────────────
+# pyromod 1.5 never seeds self.listeners with enum keys so every incoming message
+# crashes with KeyError.  Patch BOTH source files once at startup.
+import os as _os, re as _re
+
+def _patch_pyromod():
+    # Patch 1 – client.py: use .get() so a missing key returns []
+    _p1 = "/usr/local/lib/python3.10/dist-packages/pyromod/listen/client.py"
+    if _os.path.exists(_p1):
+        _src = open(_p1).read()
+        _fixed = _re.sub(
+            r'for listener in self\.listeners\[listener_type\]:',
+            'for listener in self.listeners.get(listener_type, []):',
+            _src
+        )
+        if _fixed != _src:
+            open(_p1, "w").write(_fixed)
+
+    # Patch 2 – message_handler.py: wrap the whole check in try/except KeyError
+    _p2 = "/usr/local/lib/python3.10/dist-packages/pyromod/listen/message_handler.py"
+    if _os.path.exists(_p2):
+        _src = open(_p2).read()
+        # Wrap check_if_has_matching_listener body
+        _BAD  = "        listener = client.get_listener_matching_with_data(data, ListenerTypes.MESSAGE)"
+        _GOOD = (
+            "        try:\n"
+            "            listener = client.get_listener_matching_with_data(data, ListenerTypes.MESSAGE)\n"
+            "        except (KeyError, Exception):\n"
+            "            return"
+        )
+        if _BAD in _src and _GOOD.replace("\n", "\n") not in _src:
+            open(_p2, "w").write(_src.replace(_BAD, _GOOD))
+
+_patch_pyromod()
 # ───────────────────────────────────────────────────────────────────────────────
 from pyrogram import Client
 from pyrogram.enums import ParseMode
@@ -66,6 +87,14 @@ class Bot(Client):
 
     async def start(self):
         await super().start()
+        # Seed pyromod listeners dict so no KeyError on first message
+        try:
+            from pyromod.listen import ListenerTypes as _LT
+            for _lt in _LT:
+                if _lt not in self.listeners:
+                    self.listeners[_lt] = []
+        except Exception:
+            pass
         scheduler.start()
         usr_bot_me = await self.get_me()
         self.uptime = get_indian_time()
