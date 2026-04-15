@@ -4,17 +4,17 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 #------------------------------------------------------------------------------------------------------------------------------------------------
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8417356865:AAHV1GEeeT7Gq9tVNrANRv-hiFD1OV8gwrA")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8717980062:AAG__Vv0jk84s8ob3jzpvX1ZV391ieiQFkI")
 APP_ID = int(os.environ.get("APP_ID", "28614709")) #Your API ID from my.telegram.org
 API_HASH = os.environ.get("API_HASH", "f36fd2ee6e3d3a17c4d244ff6dc1bac8") #Your API Hash from my.telegram.org
 #------------------------------------------------------------------------------------------------------------------------------------------------
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003249797203")) #Your db channel Id
-OWNER = os.environ.get("OWNER", "Yae_N_Miko") # Owner username without @
-OWNER_ID = int(os.environ.get("OWNER_ID", "8136381258")) # Owner id
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003922524892")) #Your db channel Id
+OWNER = os.environ.get("OWNER", "Anythingbutnew56") # Owner username without @
+OWNER_ID = int(os.environ.get("OWNER_ID", "8229041976")) # Owner id
 #------------------------------------------------------------------------------------------------------------------------------------------------
-DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Angle:Aloksingh@angle.be47a1n.mongodb.net/?appName=Angle")
+DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Payal:Aloksingh@payal.jv2kwch.mongodb.net/?appName=Payal")
 DB_NAME = os.environ.get("DATABASE_NAME", "Angle")
-PORT = os.environ.get("PORT", "8031")
+PORT = os.environ.get("PORT", "9081")
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "200"))
 #------------------------------------------------------------------------------------------------------------------------------------------------
 BAN_SUPPORT = os.environ.get("BAN_SUPPORT", None)
