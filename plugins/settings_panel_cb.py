@@ -36,6 +36,9 @@ def _main_markup():
         [
             InlineKeyboardButton("📢 Force Sub",  callback_data="stg_fsub"),
             InlineKeyboardButton("🔄 Request Mode", callback_data="stg_reqmode")
+        ],
+        [
+            InlineKeyboardButton("⏱ Auto Delete", callback_data="stg_autodel")
         ]
     ])
 
@@ -360,6 +363,50 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         )
 
 
+    # ══════════════════════════════════════════════════════════
+    #  AUTO DELETE PANEL
+    # ══════════════════════════════════════════════════════════
+
+    elif data == "stg_autodel":
+        _pending.pop(uid, None)
+        current = await db.get_del_timer()
+        try:
+            val = int(current)
+        except Exception:
+            val = 0
+        status = f"<code>{val}s</code>" if val > 0 else "<code>Disabled</code>"
+        await _edit(query,
+            f"<b>⏱ Auto Delete</b>\n\n"
+            f"<b>Current Timer:</b> {status}\n\n"
+            "<i>Files sent by bot will be auto-deleted after the set time.</i>",
+            InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("✏️ Set Timer", callback_data="stg_autodel_set"),
+                    InlineKeyboardButton("❌ Disable",   callback_data="stg_autodel_off")
+                ],
+                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+            ])
+        )
+
+    elif data == "stg_autodel_set":
+        _pending[uid] = {"action": "autodel_set", "msg_id": query.message.id, "chat_id": query.message.chat.id}
+        await _edit(query,
+            "<b>⏱ Set Auto Delete Timer</b>\n\n"
+            "📤 Send the time in <b>seconds</b>\n"
+            "(e.g. <code>300</code> = 5 minutes, <code>3600</code> = 1 hour)\n\n"
+            "Send <code>0</code> to disable.",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="stg_autodel")]])
+        )
+
+    elif data == "stg_autodel_off":
+        _pending.pop(uid, None)
+        await db.set_del_timer(0)
+        await _edit(query,
+            "<b>✅ Auto Delete Disabled</b>\n\nFiles will no longer be auto-deleted.",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_autodel")]])
+        )
+
+
 # ═══════════════════════════════════════════════════════════════
 #  TEXT INPUT HANDLER  (for admin_add, ban_add, ban_remove, fsub_add)
 # ═══════════════════════════════════════════════════════════════
@@ -493,5 +540,31 @@ async def handle_settings_input(client: Bot, message: Message):
         except Exception as e:
             await patch(f"<b>❌ Failed:</b> <code>{e}</code>",
                         InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_fsub")]]))
+
+    # ── AUTO DELETE SET ──────────────────────────────────────
+    elif action == "autodel_set":
+        try:
+            seconds = int(raw)
+        except ValueError:
+            await patch("<b>❌ Invalid. Send a number (seconds).</b>",
+                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_autodel")]]))
+            raise StopPropagation
+
+        await db.set_del_timer(seconds)
+        if seconds == 0:
+            msg_txt = "<b>✅ Auto Delete Disabled.</b>"
+        else:
+            mins = seconds // 60
+            secs = seconds % 60
+            readable = f"{mins}m {secs}s" if mins else f"{secs}s"
+            msg_txt = f"<b>✅ Auto Delete set to <code>{seconds}s</code> ({readable}).</b>"
+
+        await patch(msg_txt,
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("✏️ Change", callback_data="stg_autodel_set"),
+                 InlineKeyboardButton("🔙 Back",   callback_data="stg_autodel")]
+            ])
+        )
+
 
     raise StopPropagation
