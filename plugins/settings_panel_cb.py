@@ -54,7 +54,8 @@ def _main_markup():
             InlineKeyboardButton("🛡 Anti Bypass", callback_data="stg_antibypass")
         ],
         [
-            InlineKeyboardButton("🔗 Shortner", callback_data="stg_shortner")
+            InlineKeyboardButton("🔗 Shortner",    callback_data="stg_shortner"),
+            InlineKeyboardButton("🔧 Maintenance", callback_data="stg_maintenance")
         ]
     ])
 
@@ -682,7 +683,57 @@ async def handle_settings_input(client: Bot, message: Message):
         except ValueError:
             await patch("<b>❌ Invalid ID. Send a valid numeric User ID.</b>",
                         InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_admin")]]))
-            raise StopPropagation
+            elif data == "stg_maintenance":
+        _pending.pop(uid, None)
+        is_on = await db.get_maintenance()
+        status_text = "🔴 ON" if is_on else "🟢 OFF"
+        toggle_label = "🟢 Turn OFF" if is_on else "🔴 Turn ON"
+        toggle_data  = "stg_maintenance_off" if is_on else "stg_maintenance_on"
+        await _edit(query,
+            f"<b>🔧 Maintenance Mode</b>
+
+"
+            f"<b>Status:</b> {status_text}
+
+"
+            f"<i>When ON — only admins can use the bot.
+"
+            f"Regular users will see a maintenance message.</i>",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton(toggle_label, callback_data=toggle_data)],
+                [InlineKeyboardButton("🔙 Back",    callback_data="stg_back")]
+            ])
+        )
+
+    elif data == "stg_maintenance_on":
+        _pending.pop(uid, None)
+        await db.set_maintenance(True)
+        await _edit(query,
+            "<b>🔧 Maintenance Mode: 🔴 ON</b>
+
+"
+            "<i>Bot is now in maintenance. Only admins can use it.</i>",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("🟢 Turn OFF", callback_data="stg_maintenance_off")],
+                [InlineKeyboardButton("🔙 Back",     callback_data="stg_maintenance")]
+            ])
+        )
+
+    elif data == "stg_maintenance_off":
+        _pending.pop(uid, None)
+        await db.set_maintenance(False)
+        await _edit(query,
+            "<b>🔧 Maintenance Mode: 🟢 OFF</b>
+
+"
+            "<i>Bot is back to normal. All users can access it.</i>",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔴 Turn ON", callback_data="stg_maintenance_on")],
+                [InlineKeyboardButton("🔙 Back",    callback_data="stg_maintenance")]
+            ])
+        )
+
+    raise StopPropagation
 
         await db.add_admin(target_id)
         await patch(
