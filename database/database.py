@@ -5,7 +5,7 @@ import motor, asyncio
 import motor.motor_asyncio
 import time
 import pymongo, os
-from config import DB_URI, DB_NAME, PROTECT_CONTENT, CUSTOM_CAPTION
+from config import DB_URI, DB_NAME, PROTECT_CONTENT, CUSTOM_CAPTION, ANTI_BYPASS_ENABLED
 import logging
 from datetime import datetime, timedelta
 
@@ -46,6 +46,7 @@ class Rohit:
         self.autho_user_data = self.database['autho_user']
         self.del_timer_data = self.database['del_timer']
         self.bot_settings_data = self.database['bot_settings']
+        self.verify_attempts_data = self.database['verify_attempts']
         self.fsub_data = self.database['fsub']   
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
@@ -155,6 +156,19 @@ class Rohit:
         if data is None:
             return CUSTOM_CAPTION
         return data.get('value')
+
+    async def set_anti_bypass(self, value: bool):
+        await self.bot_settings_data.update_one(
+            {'_id': 'anti_bypass'},
+            {'$set': {'value': bool(value)}},
+            upsert=True
+        )
+
+    async def get_anti_bypass(self):
+        data = await self.bot_settings_data.find_one({'_id': 'anti_bypass'})
+        if data is None:
+            return ANTI_BYPASS_ENABLED
+        return bool(data.get('value', ANTI_BYPASS_ENABLED))
 
 
     # CHANNEL MANAGEMENT
@@ -267,13 +281,55 @@ class Rohit:
         verify = await self.db_verify_status(user_id)
         return verify
 
-    async def update_verify_status(self, user_id, verify_token="", is_verified=False, verified_time=0, link=""):
+    async def update_verify_status(self, user_id, verify_token="", is_verified=False, verified_time=0, link="", created_at=None, risk_score=0, risk_reasons=None):
         current = await self.db_verify_status(user_id)
         current['verify_token'] = verify_token
         current['is_verified'] = is_verified
         current['verified_time'] = verified_time
         current['link'] = link
+        if created_at is not None:
+            current['created_at'] = created_at
+        if risk_reasons is not None:
+            current['risk_score'] = risk_score
+            current['risk_reasons'] = risk_reasons
         await self.db_update_verify_status(user_id, current)
+
+    async def mark_verify_passed(self, user_id, token, ip="", user_agent="", risk_score=0, risk_reasons=None):
+        current = await self.db_verify_status(user_id)
+        if current.get('verify_token') != token:
+            return False
+        current['is_verified'] = True
+        current['verified_time'] = time.time()
+        current['verified_ip'] = ip
+        current['verified_user_agent'] = user_agent
+        current['risk_score'] = risk_score
+        current['risk_reasons'] = risk_reasons or []
+        await self.db_update_verify_status(user_id, current)
+        return True
+
+    async def log_verify_attempt(self, user_id, token, ip="", user_agent="", passed=False, risk_score=0, risk_reasons=None):
+        now = time.time()
+        await self.verify_attempts_data.insert_one({
+            'user_id': int(user_id),
+            'token': token,
+            'ip': ip,
+            'user_agent': user_agent[:300] if user_agent else "",
+            'passed': bool(passed),
+            'risk_score': int(risk_score),
+            'risk_reasons': risk_reasons or [],
+            'created_at': now
+        })
+        await self.verify_attempts_data.delete_many({'created_at': {'$lt': now - 86400}})
+
+    async def count_recent_verify_attempts(self, ip="", user_agent="", seconds=600):
+        since = time.time() - seconds
+        ip_count = 0
+        ua_count = 0
+        if ip:
+            ip_count = await self.verify_attempts_data.count_documents({'ip': ip, 'created_at': {'$gte': since}})
+        if user_agent:
+            ua_count = await self.verify_attempts_data.count_documents({'user_agent': user_agent[:300], 'created_at': {'$gte': since}})
+        return ip_count, ua_count
 
     # Set verify count (overwrite with new value)
     async def set_verify_count(self, user_id: int, count: int):

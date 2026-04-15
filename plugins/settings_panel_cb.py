@@ -49,6 +49,9 @@ def _main_markup():
         [
             InlineKeyboardButton("🔐 Protect", callback_data="stg_protect"),
             InlineKeyboardButton("📝 Caption", callback_data="stg_caption")
+        ],
+        [
+            InlineKeyboardButton("🛡 Anti Bypass", callback_data="stg_antibypass")
         ]
     ])
 
@@ -525,6 +528,37 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         await _edit(query,
             "<b>✅ Custom Caption cleared.</b>",
             InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_caption")]])
+        )
+
+    elif data == "stg_antibypass":
+        _pending.pop(uid, None)
+        enabled = await db.get_anti_bypass()
+        status = "🟢 ON" if enabled else "🔴 OFF"
+        await _edit(query,
+            f"<b>🛡 Anti Bypass</b>\n\n<b>Current:</b> <code>{status}</code>\n\n<i>Default is ON. It checks suspicious browser/server requests, repeated attempts, and too-fast verification.</i>",
+            InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("🟢 ON", callback_data="stg_antibypass_on"),
+                    InlineKeyboardButton("🔴 OFF", callback_data="stg_antibypass_off")
+                ],
+                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+            ])
+        )
+
+    elif data == "stg_antibypass_on":
+        _pending.pop(uid, None)
+        await db.set_anti_bypass(True)
+        await _edit(query,
+            "<b>✅ Anti Bypass set to:</b> <code>ON</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_antibypass")]])
+        )
+
+    elif data == "stg_antibypass_off":
+        _pending.pop(uid, None)
+        await db.set_anti_bypass(False)
+        await _edit(query,
+            "<b>✅ Anti Bypass set to:</b> <code>OFF</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_antibypass")]])
         )
 
     # ══════════════════════════════════════════════════════════

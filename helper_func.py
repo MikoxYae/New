@@ -2,6 +2,7 @@ import base64
 import re
 import asyncio
 import time
+import urllib.parse
 from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
 from config import *
@@ -151,6 +152,10 @@ async def get_shortlink(url, api, link):
     shortzy = Shortzy(api_key=api, base_site=url)
     link = await shortzy.convert(link)
     return link
+
+def get_verify_link(base_url, user_id, token, bot_username):
+    bot_username = urllib.parse.quote(str(bot_username), safe="")
+    return f"{base_url.rstrip('/')}/verify/{int(user_id)}/{token}/{bot_username}"
 
 subscribed = filters.create(is_subscribed)
 admin = filters.create(check_admin)
