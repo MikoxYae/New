@@ -405,3 +405,194 @@ async def get_admin_list(client: Client, message: Message):
     
     listed = "\n".join(admin_list)
     await message.reply(f"<b>👑 Aᴅᴍɪɴs ({len(admin_list)}):</b>\n\n{listed}", reply_markup=reply_markup)
+
+
+# =====================================================================================##
+# SETTINGS PANEL CALLBACKS
+# =====================================================================================##
+
+@Bot.on_callback_query(filters.regex(r"^stg_"))
+async def settings_cb(client: Bot, query: CallbackQuery):
+    data = query.data
+
+    async def edit(caption, markup):
+        try:
+            await query.message.edit_caption(caption=caption, reply_markup=markup)
+        except Exception:
+            pass
+
+    BACK_ADMIN = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_admin")]])
+    BACK_BAN   = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_ban")]])
+    MAIN_MARKUP = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("👑 Admin", callback_data="stg_admin"),
+            InlineKeyboardButton("🚫 Ban Users", callback_data="stg_ban")
+        ]
+    ])
+    ADMIN_MARKUP = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("➕ Add", callback_data="stg_admin_add"),
+            InlineKeyboardButton("➖ Remove", callback_data="stg_admin_remove"),
+            InlineKeyboardButton("📋 List", callback_data="stg_admin_list")
+        ],
+        [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+    ])
+    BAN_MARKUP = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("➕ Add", callback_data="stg_ban_add"),
+            InlineKeyboardButton("➖ Remove", callback_data="stg_ban_remove"),
+            InlineKeyboardButton("📋 List", callback_data="stg_ban_list")
+        ],
+        [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+    ])
+
+    # ── MAIN BACK ──────────────────────────────────────────────────
+    if data == "stg_back":
+        await edit(
+            "<b>⚙️ Settings Panel</b>\n\nSelect a category to manage:",
+            MAIN_MARKUP
+        )
+
+    # ── ADMIN SUBMENU ──────────────────────────────────────────────
+    elif data == "stg_admin":
+        await edit("<b>👑 Admin Management</b>\n\nChoose an action:", ADMIN_MARKUP)
+
+    elif data == "stg_admin_add":
+        await edit(
+            "<b>➕ Add Admin</b>\n\n📤 Send the <b>User ID</b> of the user to add as admin:\n\n<i>You have 60 seconds.</i>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="stg_admin")]])
+        )
+        try:
+            resp = await client.ask(
+                chat_id=query.message.chat.id,
+                text="",
+                filters=filters.text & filters.private,
+                timeout=60
+            )
+            try:
+                admin_id = int(resp.text.strip())
+            except ValueError:
+                await resp.delete()
+                await edit("<b>❌ Invalid ID. Must be a numeric User ID.</b>", BACK_ADMIN)
+                return
+            await db.add_admin(admin_id)
+            await resp.delete()
+            await edit(
+                f"<b>✅ User <code>{admin_id}</code> added as Admin successfully.</b>",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("➕ Add Another", callback_data="stg_admin_add"),
+                     InlineKeyboardButton("🔙 Back", callback_data="stg_admin")]
+                ])
+            )
+        except Exception:
+            await edit("<b>⏰ Timed out. No input received.</b>", BACK_ADMIN)
+
+    elif data == "stg_admin_remove":
+        admins = await db.get_all_admins()
+        if not admins:
+            await edit("<b>📋 No admins found to remove.</b>", BACK_ADMIN)
+            return
+        buttons = []
+        for aid in admins:
+            try:
+                user = await client.get_users(aid)
+                label = f"❌ {user.first_name} ({aid})"
+            except Exception:
+                label = f"❌ {aid}"
+            buttons.append([InlineKeyboardButton(label, callback_data=f"stg_deladmin_{aid}")])
+        buttons.append([InlineKeyboardButton("🔙 Back", callback_data="stg_admin")])
+        await edit("<b>➖ Remove Admin</b>\n\nTap an admin to remove them:", InlineKeyboardMarkup(buttons))
+
+    elif data.startswith("stg_deladmin_"):
+        aid = int(data.replace("stg_deladmin_", ""))
+        await db.del_admin(aid)
+        await edit(
+            f"<b>✅ Admin <code>{aid}</code> has been removed.</b>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back to Admin", callback_data="stg_admin")]])
+        )
+
+    elif data == "stg_admin_list":
+        admins = await db.get_all_admins()
+        if not admins:
+            text = "<b>📋 Admin List is empty.</b>"
+        else:
+            lines = "\n".join([f"• <code>{aid}</code>" for aid in admins])
+            text = f"<b>📋 Admins ({len(admins)}):</b>\n\n{lines}"
+        await edit(text, BACK_ADMIN)
+
+    # ── BAN SUBMENU ────────────────────────────────────────────────
+    elif data == "stg_ban":
+        await edit("<b>🚫 Ban Management</b>\n\nChoose an action:", BAN_MARKUP)
+
+    elif data == "stg_ban_add":
+        await edit(
+            "<b>🚫 Ban User</b>\n\n📤 Send the <b>User ID</b> to ban:\n\n<i>You have 60 seconds.</i>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="stg_ban")]])
+        )
+        try:
+            resp = await client.ask(
+                chat_id=query.message.chat.id,
+                text="",
+                filters=filters.text & filters.private,
+                timeout=60
+            )
+            try:
+                uid = int(resp.text.strip())
+            except ValueError:
+                await resp.delete()
+                await edit("<b>❌ Invalid ID. Must be a numeric User ID.</b>", BACK_BAN)
+                return
+            if uid == OWNER_ID or uid in await db.get_all_admins():
+                await resp.delete()
+                await edit("<b>⛔ Cannot ban an admin or owner.</b>", BACK_BAN)
+                return
+            await db.add_ban_user(uid)
+            await resp.delete()
+            await edit(
+                f"<b>✅ User <code>{uid}</code> has been banned.</b>",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("➕ Ban Another", callback_data="stg_ban_add"),
+                     InlineKeyboardButton("🔙 Back", callback_data="stg_ban")]
+                ])
+            )
+        except Exception:
+            await edit("<b>⏰ Timed out. No input received.</b>", BACK_BAN)
+
+    elif data == "stg_ban_remove":
+        await edit(
+            "<b>➖ Unban User</b>\n\n📤 Send the <b>User ID</b> to unban:\n\n<i>You have 60 seconds.</i>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="stg_ban")]])
+        )
+        try:
+            resp = await client.ask(
+                chat_id=query.message.chat.id,
+                text="",
+                filters=filters.text & filters.private,
+                timeout=60
+            )
+            try:
+                uid = int(resp.text.strip())
+            except ValueError:
+                await resp.delete()
+                await edit("<b>❌ Invalid ID. Must be a numeric User ID.</b>", BACK_BAN)
+                return
+            await db.del_ban_user(uid)
+            await resp.delete()
+            await edit(
+                f"<b>✅ User <code>{uid}</code> has been unbanned.</b>",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("➖ Unban Another", callback_data="stg_ban_remove"),
+                     InlineKeyboardButton("🔙 Back", callback_data="stg_ban")]
+                ])
+            )
+        except Exception:
+            await edit("<b>⏰ Timed out. No input received.</b>", BACK_BAN)
+
+    elif data == "stg_ban_list":
+        banned = await db.get_ban_users()
+        if not banned:
+            text = "<b>📋 No banned users.</b>"
+        else:
+            lines = "\n".join([f"• <code>{uid}</code>" for uid in banned])
+            text = f"<b>🚫 Banned Users ({len(banned)}):</b>\n\n{lines}"
+        await edit(text, BACK_BAN)
