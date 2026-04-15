@@ -10,7 +10,6 @@ from datetime import datetime
 from config import *
 from database.db_premium import *
 from database.database import *
-from database.premium_database import remove_expired_super_premium_users
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import logging
 
@@ -18,7 +17,6 @@ logging.getLogger("apscheduler").setLevel(logging.WARNING)
 
 scheduler = AsyncIOScheduler(timezone="Asia/Kolkata")
 scheduler.add_job(remove_expired_users, "interval", seconds=10)
-scheduler.add_job(remove_expired_super_premium_users, "interval", seconds=30)
 
 async def daily_reset_task():
     try:

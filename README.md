@@ -78,9 +78,6 @@ admins - List All Current Admins
 addpremium - Grant Premium Access To A User  
 premium_users - List All Premium Users
 remove_premium - revoke premium from a user
-add_super_premium - Grant Super Premium Access To A User  
-super_premium_users - List All Super Premium Users
-remove_super_premium - revoke super premium from a user
 myplan - Check Your Premium Status  
 count - Count Shortner Clicks  
 ```

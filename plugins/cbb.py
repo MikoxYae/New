@@ -6,25 +6,16 @@ from database.database import *
 import qrcode
 from io import BytesIO
 
-# UPI Payment Details
 UPI_ID = "7348433876@mbk"
 
-# Premium Pricing - Updated Plans
 NORMAL_PREMIUM_PRICES = {
     "14days": 89,
     "1month": 170
 }
 
-SUPER_PREMIUM_PRICES = {
-    "14days": 150,
-    "1month": 280
-}
-
-# Store user payment info temporarily
 user_payment_info = {}
 
 def generate_upi_qr(amount, plan_type, duration):
-    """Generate UPI QR code"""
     upi_string = f"upi://pay?pa={UPI_ID}&pn=Premium&am={amount}&cu=INR&tn={plan_type}_{duration}"
     
     qr = qrcode.QRCode(version=1, box_size=10, border=4)
@@ -39,7 +30,7 @@ def generate_upi_qr(amount, plan_type, duration):
     
     return bio
 
-@Bot.on_callback_query(filters.regex(r"^(help|about|start|premium|normal_premium|super_premium|normal_|super_|payment_done|close)"))
+@Bot.on_callback_query(filters.regex(r"^(help|about|start|premium|normal_premium|normal_|payment_done|close)"))
 async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
 
@@ -95,13 +86,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await query.message.delete()
         premium_text = (
             f"ʜᴇʟʟᴏ {query.from_user.first_name} {query.from_user.last_name}\n\n"
-            f"ʜᴇʀᴇ ʏᴏᴜ ᴄᴀɴ ʙᴜʏ ᴏᴜʀ ɴᴏʀᴍᴀʟ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ᴏʀ sᴜᴘᴇʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀsʜɪᴘ ᴏꜰ sᴇʟᴇᴄᴛᴇᴅ ʙᴏᴛ. ᴄʟɪᴄᴋ ᴏɴ ɴᴏʀᴍᴀʟ ᴘʀᴇᴍɪᴜᴍ ᴀɴᴅ sᴜᴘᴇʀ ᴘʀᴇᴍɪᴜᴍ ᴛᴏ sᴛᴀʀᴛ ʙᴜʏɪɴɢ.\n\n"
+            f"ʜᴇʀᴇ ʏᴏᴜ ᴄᴀɴ ʙᴜʏ ᴏᴜʀ ɴᴏʀᴍᴀʟ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ᴏꜰ sᴇʟᴇᴄᴛᴇᴅ ʙᴏᴛ. ᴄʟɪᴄᴋ ᴏɴ ɴᴏʀᴍᴀʟ ᴘʀᴇᴍɪᴜᴍ ᴛᴏ sᴛᴀʀᴛ ʙᴜʏɪɴɢ.\n\n"
             f"<b>𝗪𝗵𝗮𝘁 𝗬𝗼𝘂 𝗚𝗲𝘁 𝗜𝗻 𝗡𝗼𝗿𝗺𝗮𝗹 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗠𝗲𝗺𝗯𝗲𝗿𝘀𝗵𝗶𝗽.</b>\n\n"
             f"• ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴛᴏ ᴛᴀᴋᴇ ᴛᴏᴋᴇɴ.\n"
-            f"• ʏᴏᴜʀ ғᴏʀᴡᴀʀᴅ ᴏᴘᴛɪᴏɴ ᴡɪʟʟ ʙᴇ ɴᴏᴛ ᴇɴᴀʙʟᴇᴅ [ᴍᴇᴀɴs ʏᴏᴜ ᴄᴀɴ'ᴛ sᴀᴠᴇ ғɪʟᴇs ɪɴ ʏᴏᴜʀ ɢᴀʟʟᴇʀʏ ᴏʀ ɪɴ ᴏᴛʜᴇʀ ᴄʜᴀɴɴᴇʟ ɢʀᴏᴜᴘs].\n\n"
-            f"<b>𝗪𝗵𝗮𝘁 𝗬𝗼𝘂 𝗚𝗲𝘁 𝗜𝗻 𝗦𝘂𝗽𝗲𝗿 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗠𝗲𝗍𝗺𝗯𝗲𝗿𝘀𝗵𝗶𝗽.</b>\n\n"
-            f"• ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴛᴏ ᴛᴀᴋᴇ ᴛᴏᴋᴇɴ.\n"
-            f"• ʏᴏᴜʀ ғᴏʀᴡᴀʀᴅ ᴏᴘᴛɪᴏɴ ᴡɪʟʟ ʙᴇ ᴇɴᴀʙʟᴇᴅ [ᴍᴇᴀɴs ʏᴏᴜ ᴄᴀɴ sᴀᴠᴇ ғɪʟᴇs ɪɴ ʏᴏᴜʀ ɢᴀʟʟᴇʀʏ ᴏʀ ɪɴ ᴏᴛʜᴇʀ ᴄʜᴀɴɴᴇʟ ɢʀᴏᴜᴘs]."
+            f"• ʏᴏᴜʀ ғᴏʀᴡᴀʀᴅ ᴏᴘᴛɪᴏɴ ᴡɪʟʟ ʙᴇ ɴᴏᴛ ᴇɴᴀʙʟᴇᴅ [ᴍᴇᴀɴs ʏᴏᴜ ᴄᴀɴ'ᴛ sᴀᴠᴇ ғɪʟᴇs ɪɴ ʏᴏᴜʀ ɢᴀʟʟᴇʀʏ ᴏʀ ɪɴ ᴏᴛʜᴇʀ ᴄʜᴀɴɴᴇʟ ɢʀᴏᴜᴘs]."
         )
         
         await client.send_photo(
@@ -111,8 +99,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("Normal Premium", callback_data="normal_premium"),
-                        InlineKeyboardButton("Super Premium", callback_data="super_premium")
+                        InlineKeyboardButton("Normal Premium", callback_data="normal_premium")
                     ],
                     [
                         InlineKeyboardButton("🔙 Back", callback_data="start"),
@@ -149,39 +136,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             )
         )
 
-    elif data == "super_premium":
-        await query.message.delete()
-        super_premium_text = (
-            f"<b>𝗪𝗵𝗮𝘁 𝗬𝗼𝘂 𝗚𝗲𝘁 𝗜𝗻 𝗦𝘂𝗽𝗲𝗿 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗠𝗲𝗺𝗯𝗲𝗿𝘀𝗵𝗶𝗽.</b>\n\n"
-            f"• ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴛᴏ ᴛᴀᴋᴇ ᴛᴏᴋᴇɴ.\n"
-            f"• ʏᴏᴜʀ ғᴏʀᴡᴀʀᴅ ᴏᴘᴛɪᴏɴ ᴡɪʟʟ ʙᴇ ᴇɴᴀʙʟᴇᴅ [ᴍᴇᴀɴs ʏᴏᴜ ᴄᴀɴ sᴀᴠᴇ ғɪʟᴇs ɪɴ ʏᴏᴜʀ ɢᴀʟʟᴇʀʏ ᴏʀ ɪɴ ᴏᴛʜᴇʀ ᴄʜᴀɴɴᴇʟ ɢʀᴏᴜᴘs].\n"
-            f"• ᴘʟᴇᴀsᴇ sᴇʟᴇᴄᴛ ᴘʟᴀɴ ɢɪᴠᴇɴ ʙᴇʟᴏᴡ."
-        )
-        
-        await client.send_photo(
-            chat_id=query.message.chat.id,
-            photo=PREMIUM_PIC,
-            caption=super_premium_text,
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton("14 Days - ₹150", callback_data="super_14days"),
-                        InlineKeyboardButton("1 Month - ₹280", callback_data="super_1month")
-                    ],
-                    [
-                        InlineKeyboardButton("🔙 Back", callback_data="premium"),
-                        InlineKeyboardButton("🔒 Close", callback_data="close")
-                    ]
-                ]
-            )
-        )
-
-    # Normal Premium Plan Handlers
     elif data.startswith("normal_"):
         plan_duration = data.replace("normal_", "")
         amount = NORMAL_PREMIUM_PRICES.get(plan_duration, 0)
         
-        # Store user payment info
         user_payment_info[query.from_user.id] = {
             "plan_type": "Normal Premium",
             "duration": plan_duration,
@@ -215,48 +173,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # Super Premium Plan Handlers
-    elif data.startswith("super_"):
-        plan_duration = data.replace("super_", "")
-        amount = SUPER_PREMIUM_PRICES.get(plan_duration, 0)
-        
-        # Store user payment info
-        user_payment_info[query.from_user.id] = {
-            "plan_type": "Super Premium",
-            "duration": plan_duration,
-            "amount": amount
-        }
-        
-        qr_code = generate_upi_qr(amount, "Super_Premium", plan_duration)
-        
-        payment_text = (
-            f"<b>💳 Super Premium Payment</b>\n\n"
-            f"<b>Plan:</b> {plan_duration.replace('days', ' Days').replace('month', ' Month').title()}\n"
-            f"<b>Amount:</b> ₹{amount}\n\n"
-            f"<b>📱 ɪɴsᴛʀᴜᴄᴛɪᴏɴs:</b>\n"
-            f"1. sᴄᴀɴ ᴛʜᴇ ϙʀ ᴄᴏᴅᴇ ᴡɪᴛʜ ᴀɴʏ ᴜᴘɪ ᴀᴘᴘ.\n"
-            f"2. ᴘᴀʏ ᴛʜᴇ ᴇxᴀᴄᴛ ᴀᴍᴏᴜɴᴛ : ₹{amount}\n"
-            f"3. ᴄʟɪᴄᴋ ᴏɴ ɪ ʜᴀᴠᴇ ᴘᴀɪᴅ ᴛʜᴇɴ sᴇɴᴅ ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ ɪɴ ʙᴏᴛ ᴛᴏ sᴇɴᴅ ᴛʜᴇᴍ ᴛᴏ ᴏᴡɴᴇʀ.\n"
-            f"4. ʏᴏᴜ ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʟ ʙᴇ ᴀᴄᴛɪᴠᴀᴛᴇᴅ sᴏᴏɴ ᴏɴᴄᴇ ᴏᴡɴᴇʀ ᴡɪʟʟ ᴄᴀᴍᴇ ᴏɴʟɪɴᴇ.\n\n"
-            f"⚠️ <b>ᴡᴀʀɴɪɴɢ:</b> ɪғ ᴘᴀʏᴍᴇɴᴛ ɪs ᴍᴀᴅᴇ ᴀғᴛᴇʀ 11:00 ᴘᴍ (ᴀᴛ ɴɪɢʜᴛ) ᴛʜᴇɴ ᴀᴄᴛɪᴠᴀᴛɪᴏɴ ᴅᴇᴘᴇɴᴅs ᴏɴ ᴏᴡɴᴇʀ ᴀᴠᴀɪʟᴀʙɪʟɪᴛʏ (ɪғ ᴏᴡɴᴇʀ ᴏɴʟɪɴᴇ ᴛʜᴇɴ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʟ ʙᴇ ᴀᴄᴛɪᴠᴇ. ɪғ ᴏᴡɴᴇʀ ɪs ɴᴏᴛ ᴀᴄᴛɪᴠᴇ ᴛʜᴇɴ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʙᴇ ᴀᴄᴛɪᴠᴇ ɪɴ ᴍᴏʀɴɪɴɢ)."
-        )
-        
-        await query.message.delete()
-        await client.send_photo(
-            chat_id=query.message.chat.id,
-            photo=qr_code,
-            caption=payment_text,
-            reply_markup=InlineKeyboardMarkup([
-                [
-                    InlineKeyboardButton("✅ I Have Paid", callback_data="payment_done"),
-                    InlineKeyboardButton("🔙 Back", callback_data="super_premium")
-                ]
-            ])
-        )
-
-    # Payment Done Handler
     elif data == "payment_done":
-        user_id = query.from_user.id
         first_name = query.from_user.first_name
         last_name = query.from_user.last_name or ""
         
@@ -304,7 +221,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await db.set_channel_mode(cid, mode)
         await query.answer(f"Force-Sub set to {'ON' if mode == 'on' else 'OFF'}")
 
-        # Refresh the same channel's mode view
         chat = await client.get_chat(cid)
         status = "🟢 ON" if mode == "on" else "🔴 OFF"
         new_mode = "off" if mode == "on" else "on"
@@ -334,17 +250,13 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(buttons)
         )
 
-
-# Handler for payment screenshot forwarding
 @Bot.on_message(filters.private & filters.photo)
 async def forward_payment_screenshot(client: Bot, message: Message):
     user_id = message.from_user.id
     
-    # Check if user has payment info stored
     if user_id in user_payment_info:
         payment_info = user_payment_info[user_id]
         
-        # Forward screenshot to owner with details
         caption = (
             f"<b>💳 New Payment Screenshot</b>\n\n"
             f"<b>User:</b> {message.from_user.mention}\n"
@@ -356,17 +268,10 @@ async def forward_payment_screenshot(client: Bot, message: Message):
             f"<b>Use the command to activate:</b>\n"
         )
         
-        if payment_info['plan_type'] == "Normal Premium":
-            # Convert duration to command format
-            if payment_info['duration'] == "14days":
-                caption += f"<code>/addpremium {user_id} 14 d</code>"
-            elif payment_info['duration'] == "1month":
-                caption += f"<code>/addpremium {user_id} 30 d</code>"
-        else:  # Super Premium
-            if payment_info['duration'] == "14days":
-                caption += f"<code>/add_super_premium {user_id} 14 d</code>"
-            elif payment_info['duration'] == "1month":
-                caption += f"<code>/add_super_premium {user_id} 30 d</code>"
+        if payment_info['duration'] == "14days":
+            caption += f"<code>/addpremium {user_id} 14 d</code>"
+        elif payment_info['duration'] == "1month":
+            caption += f"<code>/addpremium {user_id} 30 d</code>"
         
         await client.send_photo(
             chat_id=OWNER_ID,
@@ -374,7 +279,6 @@ async def forward_payment_screenshot(client: Bot, message: Message):
             caption=caption
         )
         
-        # Confirm to user with buttons
         await message.reply_text(
             "<b>✅ ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ ʜᴀs ʙᴇᴇɴ sᴇɴᴛ ᴛᴏ ᴏᴡɴᴇʀ ғᴏʀ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ.</b>\n\n"
             "<b>ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʟ ʙᴇ ᴀᴄᴛɪᴠᴀᴛᴇᴅ sᴏᴏɴ!</b>",
@@ -386,5 +290,4 @@ async def forward_payment_screenshot(client: Bot, message: Message):
             ])
         )
         
-        # Clear user payment info
         del user_payment_info[user_id]

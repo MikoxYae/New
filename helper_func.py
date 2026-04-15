@@ -9,7 +9,6 @@ from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from shortzy import Shortzy
 from pyrogram.errors import FloodWait
 from database.database import *
-from database.premium_database import is_super_premium_user
 
 async def check_admin(filter, client, update):
     try:
@@ -18,9 +17,6 @@ async def check_admin(filter, client, update):
     except Exception as e:
         print(f"! Exception in check_admin: {e}")
         return False
-
-async def check_super_premium_status(user_id):
-    return await is_super_premium_user(user_id)
 
 async def is_subscribed(client, user_id):
     channel_ids = await db.show_channels()

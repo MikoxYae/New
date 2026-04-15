@@ -17,7 +17,6 @@ from config import *
 from helper_func import *
 from database.database import *
 from database.db_premium import *
-from database.premium_database import is_super_premium_user
 
 BAN_SUPPORT = f"{BAN_SUPPORT}"
 TUT_VID = f"{TUT_VID}"
@@ -27,7 +26,6 @@ async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
     id = message.from_user.id
     is_premium = await is_premium_user(id)
-    is_super_premium = await is_super_premium_user(id)
 
     if not await db.present_user(user_id):
         try:
@@ -74,7 +72,7 @@ async def start_command(client: Client, message: Message):
                     caption=f"<b>✅ 𝗧𝗼𝗸𝗲𝗻 𝘃𝗲𝗿𝗶𝗳𝗶𝗲𝗱! Vᴀʟɪᴅ ғᴏʀ {get_exp_time(VERIFY_EXPIRE)}</b>"
                 )
 
-            if not verify_status['is_verified'] and not is_premium and not (is_super_premium and SUPER_PREMIUM_ENABLED):
+            if not verify_status['is_verified'] and not is_premium:
                 token = ''.join(random.choices(rohit.ascii_letters + rohit.digits, k=10))
                 await db.update_verify_status(id, verify_token=token, link="")
                 link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, f'https://telegram.dog/{client.username}?start=verify_{token}')
@@ -138,20 +136,14 @@ async def start_command(client: Client, message: Message):
 
             reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
 
-            # Determine protect content based on user status
-            if SUPER_PREMIUM_ENABLED and is_super_premium:
-                protect_content_setting = SUPER_PREMIUM_PROTECT_CONTENT
-            else:
-                protect_content_setting = PROTECT_CONTENT
-
             try:
                 copied_msg = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML, 
-                                            reply_markup=reply_markup, protect_content=protect_content_setting)
+                                            reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
                 codeflix_msgs.append(copied_msg)
             except FloodWait as e:
                 await asyncio.sleep(e.x)
                 copied_msg = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML, 
-                                            reply_markup=reply_markup, protect_content=protect_content_setting)
+                                            reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
                 codeflix_msgs.append(copied_msg)
             except Exception as e:
                 print(f"Failed to send message: {e}")
