@@ -51,6 +51,7 @@ class Rohit:
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
         self.shortner_settings_data = self.database['shortner_settings']
+        self.maintenance_data = self.database['maintenance']
         
 
 
@@ -358,6 +359,18 @@ class Rohit:
         result = await self.sex_data.aggregate(pipeline).to_list(length=1)
         return result[0]["total"] if result else 0
 
+
+    # MAINTENANCE MODE
+    async def get_maintenance(self):
+        doc = await self.maintenance_data.find_one({'_id': 'maintenance'})
+        return doc.get('enabled', False) if doc else False
+
+    async def set_maintenance(self, enabled: bool):
+        await self.maintenance_data.update_one(
+            {'_id': 'maintenance'},
+            {'$set': {'enabled': enabled}},
+            upsert=True
+        )
 
     # SHORTNER SETTINGS
     async def get_shortner_settings(self):
