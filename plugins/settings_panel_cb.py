@@ -45,6 +45,10 @@ def _main_markup():
         ],
         [
             InlineKeyboardButton("⏱ Auto Delete", callback_data="stg_autodel")
+        ],
+        [
+            InlineKeyboardButton("🔐 Protect", callback_data="stg_protect"),
+            InlineKeyboardButton("📝 Caption", callback_data="stg_caption")
         ]
     ])
 
@@ -459,6 +463,71 @@ async def settings_cb(client: Bot, query: CallbackQuery):
 
 
     # ══════════════════════════════════════════════════════════
+    #  CONTENT SETTINGS
+    # ══════════════════════════════════════════════════════════
+
+    elif data == "stg_protect":
+        _pending.pop(uid, None)
+        enabled = await db.get_protect_content()
+        status = "🟢 True" if enabled else "🔴 False"
+        await _edit(query,
+            f"<b>🔐 Protect Content</b>\n\n<b>Current:</b> <code>{status}</code>\n\n<i>Premium users will always receive files with protect content OFF.</i>",
+            InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("🟢 True", callback_data="stg_protect_true"),
+                    InlineKeyboardButton("🔴 False", callback_data="stg_protect_false")
+                ],
+                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+            ])
+        )
+
+    elif data == "stg_protect_true":
+        _pending.pop(uid, None)
+        await db.set_protect_content(True)
+        await _edit(query,
+            "<b>✅ Protect Content set to:</b> <code>True</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_protect")]])
+        )
+
+    elif data == "stg_protect_false":
+        _pending.pop(uid, None)
+        await db.set_protect_content(False)
+        await _edit(query,
+            "<b>✅ Protect Content set to:</b> <code>False</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_protect")]])
+        )
+
+    elif data == "stg_caption":
+        _pending.pop(uid, None)
+        caption = await db.get_custom_caption()
+        current = f"<code>{caption}</code>" if caption else "<code>Disabled</code>"
+        await _edit(query,
+            f"<b>📝 Custom Caption</b>\n\n<b>Current:</b> {current}\n\n<i>You can use {{previouscaption}} and {{filename}} placeholders.</i>",
+            InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("✏️ Set Caption", callback_data="stg_caption_set"),
+                    InlineKeyboardButton("❌ Clear", callback_data="stg_caption_clear")
+                ],
+                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+            ])
+        )
+
+    elif data == "stg_caption_set":
+        _pending[uid] = {"action": "caption_set", "msg_id": query.message.id, "chat_id": query.message.chat.id}
+        await _edit(query,
+            "<b>📝 Set Custom Caption</b>\n\n📤 Send the caption text now.\n\nAvailable placeholders:\n<code>{previouscaption}</code>\n<code>{filename}</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="stg_caption")]])
+        )
+
+    elif data == "stg_caption_clear":
+        _pending.pop(uid, None)
+        await db.set_custom_caption(None)
+        await _edit(query,
+            "<b>✅ Custom Caption cleared.</b>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_caption")]])
+        )
+
+    # ══════════════════════════════════════════════════════════
     #  AUTO DELETE PANEL
     # ═══════════════════════════════════════════════════��══════
 
@@ -635,6 +704,22 @@ async def handle_settings_input(client: Bot, message: Message):
         except Exception as e:
             await patch(f"<b>❌ Failed:</b> <code>{e}</code>",
                         InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_fsub")]]))
+
+    # ── CUSTOM CAPTION SET ───────────────────────────────────
+    elif action == "caption_set":
+        caption = raw or None
+        await db.set_custom_caption(caption)
+        if caption:
+            msg_txt = f"<b>✅ Custom Caption updated.</b>\n\n<code>{caption}</code>"
+        else:
+            msg_txt = "<b>✅ Custom Caption cleared.</b>"
+
+        await patch(msg_txt,
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("✏️ Change", callback_data="stg_caption_set"),
+                 InlineKeyboardButton("🔙 Back",   callback_data="stg_caption")]
+            ])
+        )
 
     # ── AUTO DELETE SET ──────────────────────────────��───────
     elif action == "autodel_set":
