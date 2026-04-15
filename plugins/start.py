@@ -231,15 +231,18 @@ async def not_joined(client: Client, message: Message):
                     name = data.title
 
                     if mode == "on":
-                        # Join request link — sirf request send karna kaafi hai
+                        link = await db.get_request_link(chat_id)
                         try:
-                            invite = await client.create_chat_invite_link(
-                                chat_id=chat_id,
-                                creates_join_request=True
-                            )
-                            link = invite.invite_link
+                            if not link:
+                                invite = await client.create_chat_invite_link(
+                                    chat_id=chat_id,
+                                    creates_join_request=True
+                                )
+                                link = invite.invite_link
+                                await db.set_request_link(chat_id, link)
                         except Exception:
-                            link = data.invite_link or await client.export_chat_invite_link(chat_id)
+                            if not link:
+                                link = data.invite_link or await client.export_chat_invite_link(chat_id)
 
                     else:
                         # Direct join link
