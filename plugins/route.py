@@ -1,5 +1,6 @@
 import asyncio
 import html
+import secrets
 import socket
 import time
 from aiohttp import web
@@ -7,6 +8,16 @@ from config import ANTI_BYPASS_BLOCK_SCORE, ANTI_BYPASS_MIN_WAIT
 from database.database import db
 
 routes = web.RouteTableDef()
+
+# In-memory nonce store: (user_id, token) -> (nonce, created_at)
+# Nonces expire after 10 minutes and are one-time use
+_nonces: dict = {}
+
+def _clean_nonces():
+    now = time.time()
+    expired = [k for k, v in _nonces.items() if now - v[1] > 600]
+    for k in expired:
+        _nonces.pop(k, None)
 
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
@@ -82,9 +93,10 @@ async def get_risk(request, created_at):
 
     return score, reasons, ip, user_agent, elapsed
 
-def verify_page(user_id, token, bot_username, wait_seconds):
+def verify_page(user_id, token, bot_username, wait_seconds, nonce):
     safe_bot = html.escape(bot_username)
     go_url = f"/verify/{int(user_id)}/{html.escape(token)}/{safe_bot}/go"
+    safe_nonce = html.escape(nonce)
     return web.Response(
         text=f"""
 <!doctype html>
@@ -104,7 +116,10 @@ button:disabled{{background:#475569;color:#cbd5e1}}
 <div class="card">
 <h2>Token Verification</h2>
 <p class="small">Please wait <span id="left">{int(wait_seconds)}</span> seconds, then continue to Telegram.</p>
-<button id="btn" disabled>Continue</button>
+<form id="gf" action="{go_url}" method="POST">
+<input type="hidden" name="n" value="{safe_nonce}">
+<button id="btn" type="submit" disabled>Continue</button>
+</form>
 </div>
 <script>
 let left = {int(wait_seconds)};
@@ -118,7 +133,6 @@ const timer = setInterval(() => {{
     btn.disabled = false;
   }}
 }}, 1000);
-btn.onclick = () => window.location.href = "{go_url}";
 </script>
 </body>
 </html>
@@ -138,16 +152,37 @@ async def verify_route_handler(request):
         created_at = status.get("created_at") or time.time()
         elapsed = time.time() - float(created_at)
         wait_seconds = max(ANTI_BYPASS_MIN_WAIT - int(elapsed), 0)
-        return verify_page(user_id, token, bot_username, wait_seconds)
+
+        # Generate a one-time nonce for this page load
+        _clean_nonces()
+        nonce = secrets.token_urlsafe(24)
+        _nonces[(user_id, token)] = (nonce, time.time())
+
+        return verify_page(user_id, token, bot_username, wait_seconds, nonce)
     except Exception:
         return web.Response(text="Verification failed.", status=500)
 
-@routes.get("/verify/{user_id}/{token}/{bot_username}/go", allow_head=True)
+@routes.post("/verify/{user_id}/{token}/{bot_username}/go", allow_head=True)
 async def verify_go_route_handler(request):
     try:
         user_id = int(request.match_info["user_id"])
         token = request.match_info["token"]
         bot_username = request.match_info["bot_username"]
+
+        # Validate nonce — must come from the actual verify page form
+        try:
+            post_data = await request.post()
+            submitted_nonce = post_data.get("n", "")
+        except Exception:
+            submitted_nonce = ""
+
+        stored = _nonces.pop((user_id, token), None)
+        if not stored or stored[0] != submitted_nonce:
+            return web.Response(
+                text="Verification failed: invalid session. Please open the link again in your browser.",
+                status=403
+            )
+
         status = await db.get_verify_status(user_id)
         if status.get("verify_token") != token:
             return web.Response(text="Invalid or expired token.", status=403)
