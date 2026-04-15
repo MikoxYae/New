@@ -207,6 +207,9 @@ async def verify_go_route_handler(request):
         if not marked:
             return web.Response(text="Invalid or expired token.", status=403)
 
+        shortlink = status.get("link") or ""
+        if shortlink:
+            raise web.HTTPFound(shortlink)
         raise web.HTTPFound(f"https://telegram.dog/{bot_username}?start=verify_{token}")
     except web.HTTPException:
         raise
