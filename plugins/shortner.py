@@ -227,7 +227,7 @@ async def shortner_cb(client: Bot, query: CallbackQuery):
 
 @Bot.on_message(filters.private & filters.text & filters.create(
     lambda _, __, m: m.from_user and m.from_user.id in _shortner_pending
-))
+), group=-1)
 async def shortner_text_handler(client: Bot, message: Message):
     uid    = message.from_user.id
     action = _shortner_pending.pop(uid, None)
