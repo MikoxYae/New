@@ -74,7 +74,7 @@ async def start_command(client: Client, message: Message):
                     caption=f"<b>✅ 𝗧𝗼𝗸𝗲𝗻 𝘃𝗲𝗿𝗶𝗳𝗶𝗲𝗱! Vᴀʟɪᴅ ғᴏʀ {get_exp_time(_cfg.VERIFY_EXPIRE)}</b>"
                 )
 
-            if not verify_status['is_verified'] and not is_premium:
+            if not verify_status['is_verified'] and not is_premium and id != OWNER_ID:
                 token = ''.join(random.choices(rohit.ascii_letters + rohit.digits, k=10))
                 direct_tg_link = f'https://telegram.dog/{client.username}?start=verify_{token}'
                 shortlink = await get_shortlink(_cfg.SHORTLINK_URL, _cfg.SHORTLINK_API, direct_tg_link)
