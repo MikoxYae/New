@@ -55,6 +55,7 @@ async def start_command(client: Client, message: Message):
         if SHORTLINK_URL or SHORTLINK_API:
             if verify_status['is_verified'] and VERIFY_EXPIRE < (time.time() - verify_status['verified_time']):
                 await db.update_verify_status(user_id, is_verified=False)
+                verify_status = await db.get_verify_status(id)
 
             if "verify_" in message.text:
                 _, token = message.text.split("_", 1)
