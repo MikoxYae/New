@@ -75,13 +75,15 @@ async def start_command(client: Client, message: Message):
 
             if not verify_status['is_verified'] and not is_premium:
                 token = ''.join(random.choices(rohit.ascii_letters + rohit.digits, k=10))
-                await db.update_verify_status(id, verify_token=token, link="", created_at=time.time())
-                target_link = f'https://telegram.dog/{client.username}?start=verify_{token}'
+                direct_tg_link = f'https://telegram.dog/{client.username}?start=verify_{token}'
+                shortlink = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, direct_tg_link)
+                await db.update_verify_status(id, verify_token=token, link=shortlink, created_at=time.time())
                 if await db.get_anti_bypass() and WEB_VERIFY_BASE_URL:
-                    target_link = get_verify_link(WEB_VERIFY_BASE_URL, id, token, client.username)
-                link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, target_link)
+                    btn_url = get_verify_link(WEB_VERIFY_BASE_URL, id, token, client.username)
+                else:
+                    btn_url = shortlink
                 btn = [
-                    [InlineKeyboardButton("• ᴏᴘᴇɴ ʟɪɴᴋ •", url=link),
+                    [InlineKeyboardButton("• ᴏᴘᴇɴ ʟɪɴᴋ •", url=btn_url),
                      InlineKeyboardButton("• ᴛᴜᴛᴏʀɪᴀʟ •", url=TUT_VID)],
                     [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
                 ]
