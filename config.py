@@ -14,7 +14,7 @@ OWNER_ID = int(os.environ.get("OWNER_ID", "8229041976")) # Owner id
 #------------------------------------------------------------------------------------------------------------------------------------------------
 DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Payal:Aloksingh@payal.jv2kwch.mongodb.net/?appName=Payal")
 DB_NAME = os.environ.get("DATABASE_NAME", "Angle")
-PORT = os.environ.get("PORT", "9081")
+PORT = os.environ.get("PORT", "2281")
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "200"))
 #------------------------------------------------------------------------------------------------------------------------------------------------
 BAN_SUPPORT = os.environ.get("BAN_SUPPORT", None)
