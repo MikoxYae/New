@@ -1,136 +1,238 @@
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 
-<h2 align="center">
-    ──「ᴍɪᴋᴏ ᴀᴅᴠᴀɴᴄᴇ ᴛᴏᴋᴇɴ ғɪʟᴇ sʜᴀʀɪɴɢ ʙᴏᴛ」──
-</h2>
+  <h2 align="center">
+      ──「ᴍɪᴋᴏ ᴀᴅᴠᴀɴᴄᴇ ᴛᴏᴋᴇɴ ғɪʟᴇ sʜᴀʀɪɴɢ ʙᴏᴛ」──
+  </h2>
 
-<p align="center">
-  <img src="https://i.imgur.com/PXphMya.jpeg">
-</p>
-</p>
+  <p align="center">
+    <img src="https://i.imgur.com/PXphMya.jpeg">
+  </p>
 
-<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
+  <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 
-<details><summary><b>📌 ғᴇᴀᴛᴜʀᴇs :</b></summary>
+  <details><summary><b>📌 ғᴇᴀᴛᴜʀᴇs :</b></summary>
 
-<b>🚀 Key Features:</b>
+  <b>🚀 Core Features:</b>
 
-• <b>Batch & Custom Batch Links:</b> Create links for one or multiple posts easily using <code>/batch</code> & <code>/custom_batch</code>  
-• <b>Link Generator:</b> Instantly generate direct links with <code>/genlink</code>  
-• <b>Broadcast Tools:</b> Send messages or media to all users using <code>/broadcast</code>, <code>/dbroadcast</code>, or <code>/pbroadcast</code>  
-• <b>Auto File Deletion:</b> Control auto-delete with <code>/dlt_time</code> & <code>/check_dlt_time</code>  
-• <b>User Management:</b> Ban/unban users and view banlist via <code>/ban</code>, <code>/unban</code>, and <code>/banlist</code>  
-• <b>Multi Force Subscription:</b> Add, delete, and manage multiple Force Sub channels with <code>/addchnl</code>, <code>/delchnl</code>, <code>/listchnl</code>  
-• <b>Admin Control:</b> Add or remove admins with <code>/add_admin</code>, <code>/deladmin</code>, and view list via <code>/admins</code>  
-• <b>Premium System:</b> Manage premium users using <code>/addpremium</code>, <code>/remove_premium</code>, <code>/premium_users</code>, <code>/myplan</code>  
-• <b>Bot Analytics:</b> Get stats and uptime via <code>/stats</code>, user info with <code>/users</code>, and database count via <code>/count</code>  
-• <b>Deployment Ready:</b> Easily deploy on <b>Heroku</b> or <b>Koyeb</b> in minutes  
-• <b>Token Verification:</b> Enable or disable optional secure access  
+  • <b>Batch & Custom Batch Links:</b> Create links for one or multiple posts easily using `/batch` & `/custom_batch`
+  • <b>Link Generator:</b> Instantly generate direct links with `/genlink`
+  • <b>Broadcast Tools:</b> Send messages or media to all users using `/broadcast`, `/dbroadcast`, or `/pbroadcast`
+  • <b>Auto File Deletion:</b> Control auto-delete timer with configurable duration
+  • <b>User Management:</b> Ban/unban users and view banlist via `/ban`, `/unban`, `/banlist`
+  • <b>Multi Force Subscription:</b> Add, delete, and manage multiple Force Sub channels
+  • <b>Admin Control:</b> Add or remove admins with `/add_admin`, `/deladmin`, view list via `/admins`
+  • <b>Token Verification:</b> Secure access via shortlink token with anti-bypass protection
 
-<b>✨ More features & enhancements coming soon...</b>
-</details>
+  <b>💎 Premium Tier System:</b>
 
+  | Tier | Token Bypass | Protect Content Bypass | Force Sub Bypass |
+  |------|:---:|:---:|:---:|
+  | 🥇 Gold | ✅ | ✅ | ❌ |
+  | 💎 Platinum | ✅ | ✅ | ✅ |
 
-<details><summary><b> - ᴠᴀʀɪᴀʙʟᴇs :</b></summary>
+  • Auto expiry notification — 24h reminder + 1h final reminder
+  • Auto removal when premium expires — no manual cleanup needed
+  • `/myplan` — users can check their tier and time remaining
+
+  <b>🛡️ Flood Protection:</b>
+
+  • Per-user rate limiting — blocks users who spam messages too fast
+  • Configurable limits via `FLOOD_LIMIT`, `FLOOD_WINDOW`, `FLOOD_BLOCK_DURATION` env vars
+  • Auto warning + auto-delete of warning after block expires
+
+  <b>📊 Activity Analytics:</b>
+
+  • Peak hours tracker — see which hours your bot is most active
+  • Weekly report — daily breakdown of activity over last 7 days
+  • All data stored in MongoDB, auto-cleanup after 30 days
+
+  <b>🔧 Bot Settings Panel:</b>
+
+  • Maintenance mode — block all non-admin users instantly
+  • Toggle protect content, anti-bypass, shortner settings from `/settings`
+  • Shortner URL/API/expire time configurable from panel
+
+  <b>✨ More features & enhancements coming soon...</b>
+  </details>
+
+  <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
+
+  <details><summary><b>⚙️ ᴠᴀʀɪᴀʙʟᴇs :</b></summary>
+
+  ## Required Variables
+
+  | Variable | Description |
+  |----------|-------------|
+  | `TG_BOT_TOKEN` | Your bot token from @BotFather |
+  | `APP_ID` | Your API ID from my.telegram.org |
+  | `API_HASH` | Your API Hash from my.telegram.org |
+  | `OWNER_ID` | Your Telegram user ID |
+  | `CHANNEL_ID` | Your DB channel ID (e.g. `-100xxxxxxxx`) |
+  | `DATABASE_URL` | Your MongoDB connection URL |
+  | `DATABASE_NAME` | MongoDB database name |
+
+  ## Optional Variables
+
+  | Variable | Default | Description |
+  |----------|---------|-------------|
+  | `START_MESSAGE` | Built-in | Bot start message |
+  | `PROTECT_CONTENT` | `True` | Prevent files from being forwarded |
+  | `CUSTOM_CAPTION` | None | Custom caption for files |
+  | `DISABLE_CHANNEL_BUTTON` | `False` | Hide reply markup on DB channel posts |
+  | `BAN_SUPPORT` | None | Support link shown to banned users |
+
+  ## Image Variables
+
+  | Variable | Description |
+  |----------|-------------|
+  | `START_PIC` | Image shown on /start |
+  | `FORCE_PIC` | Image shown on force subscribe screen |
+  | `PREMIUM_PIC` | Image shown on token/premium screen |
+
+  ## Token / Shortner Variables
+
+  | Variable | Default | Description |
+  |----------|---------|-------------|
+  | `SHORTLINK_URL` | — | Shortner domain (e.g. `linkshortify.com`) |
+  | `SHORTLINK_API` | — | Shortner API key |
+  | `VERIFY_EXPIRE` | `60` | Token validity in seconds |
+  | `TUT_VID` | — | Tutorial video link shown on token screen |
+  | `ANTI_BYPASS_ENABLED` | `True` | Enable anti-bypass protection |
+  | `ANTI_BYPASS_MIN_WAIT` | `8` | Minimum wait time for verification (seconds) |
+  | `ANTI_BYPASS_BLOCK_SCORE` | `70` | Risk score threshold for blocking |
+  | `WEB_VERIFY_BASE_URL` | — | Public URL for web verification page |
+
+  ## Flood Protection Variables
+
+  | Variable | Default | Description |
+  |----------|---------|-------------|
+  | `FLOOD_LIMIT` | `5` | Max messages allowed in the time window |
+  | `FLOOD_WINDOW` | `5` | Sliding window duration (seconds) |
+  | `FLOOD_BLOCK_DURATION` | `30` | How long user is blocked after flooding (seconds) |
+
+  ## Stats / Analytics Variables
+
+  | Variable | Default | Description |
+  |----------|---------|-------------|
+  | `STATS_ENABLED` | `True` | Enable activity logging for peak hours tracker |
+
+  </details>
+
+  <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
+
+  ## 𝐶𝑜𝑚𝑚𝑎𝑛𝑑𝑠
+
+  ### 👤 User Commands
+  ```
+  start      - Start the bot or get files
+  myplan     - Check your premium tier and time remaining
+  ```
+
+  ### 🔗 Link Management (Admin)
+  ```
+  batch         - Create link for multiple posts
+  genlink       - Create link for a single post
+  custom_batch  - Create custom batch from channel/group
+  ```
+
+  ### 📢 Broadcast (Admin)
+  ```
+  broadcast   - Broadcast text message to all users
+  dbroadcast  - Broadcast document/video to all users
+  pbroadcast  - Broadcast photo to all users
+  ```
+
+  ### 👑 Premium Management (Admin)
+  ```
+  addpremium     - Add premium user: /addpremium user_id time unit tier
+                   Tiers: gold | platinum
+                   Example: /addpremium 123456 1 d platinum
+  remove_premium - Remove premium from a user
+  premium_users  - List all active premium users with tier info
+  myplan         - Check premium status (any user)
+  ```
+
+  ### 🛡️ User Management (Admin)
+  ```
+  ban     - Ban a user from the bot
+  unban   - Unban a user
+  banlist - List all banned users
+  ```
+
+  ### 📡 Force Subscribe (Admin)
+  ```
+  addchnl   - Add a force subscribe channel
+  delchnl   - Remove a force subscribe channel
+  listchnl  - View all force subscribe channels
+  fsub_mode - Toggle force subscribe mode
+  ```
+
+  ### 👮 Admin Management (Admin)
+  ```
+  add_admin - Add a new admin
+  deladmin  - Remove an admin
+  admins    - List all admins
+  ```
+
+  ### 📊 Analytics (Admin)
+  ```
+  peakhours    - Today's hourly activity graph (IST)
+  weeklyreport - Last 7 days hourly + daily breakdown
+  cleanstats   - Remove activity logs older than 30 days
+  ```
+
+  ### ⚙️ Settings & Stats (Admin)
+  ```
+  settings  - Open bot settings panel
+  stats     - Check bot uptime
+  users     - View total user count
+  count     - Count shortner clicks
+  dlt_time  - Set auto-delete timer for files
+  ```
+
+  <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
+
+  <details>
+  <summary><h3>─ <b>ᴅᴇᴘʟᴏʏᴍᴇɴᴛ ᴍᴇᴛʜᴏᴅs</b> ─</h3></summary>
+
+  <h3 align="center">─「 ᴅᴇᴩʟᴏʏ ᴏɴ ʜᴇʀᴏᴋᴜ 」─</h3>
+  <p align="center"><a href="https://heroku.com/deploy?template=https://github.com/MikoxYae/New">
+    <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy On Heroku">
+  </a></p>
+
+  <h3 align="center">─「 ᴅᴇᴩʟᴏʏ ᴏɴ ᴋᴏʏᴇʙ 」─</h3>
+  <p align="center"><a href="https://app.koyeb.com/deploy?type=git&repository=github.com/MikoxYae/New&branch=main&name=yaemiko">
+    <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy On Koyeb">
+  </a></p>
+
+  <h3 align="center">─「 ᴅᴇᴩʟᴏʏ ᴏɴ ʀᴀɪʟᴡᴀʏ 」─</h3>
+  <p align="center"><a href="https://railway.app/deploy?template=https://github.com/MikoxYae/New">
+    <img height="45px" src="https://railway.app/button.svg">
+  </a></p>
+
+  <h3 align="center">─「 ᴅᴇᴩʟᴏʏ ᴏɴ ʀᴇɴᴅᴇʀ 」─</h3>
+  <p align="center"><a href="https://render.com/deploy?repo=https://github.com/MikoxYae/New">
+    <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render">
+  </a></p>
+
+  <h3 align="center">─「 ᴅᴇᴩʟᴏʏ ᴏɴ ᴠᴘs 」─</h3>
+  <pre>
+  git clone https://github.com/MikoxYae/New
+  cd New
+  pip3 install -r requirements.txt
+  # For 24/7 uptime
+  tmux new -s miko
+  python3 main.py
+  # Detach: Ctrl+B then D
+  # Stop: tmux kill-session -t miko
+  </pre>
+
+  </details>
+
+  <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
+
+  <h3>「 ᴄʀᴇᴅɪᴛs 」</h3>
+
+  - <b>[ᴅᴇᴠᴇʟᴏᴘᴇʀ](https://t.me/Yae_X_Miko)</b>
+  - <b>[ɢɪᴛʜᴜʙ](https://github.com/MikoxYae)</b>
   
-## ᴠᴀʀɪᴀʙʟᴇs
-* `API_HASH` Your API Hash from my.telegram.org
-* `APP_ID` Your API ID from my.telegram.org
-* `TG_BOT_TOKEN` Your bot token from @BotFather
-* `OWNER_ID` Must enter Your Telegram Id
-* `CHANNEL_ID` Your Channel ID eg:- -100xxxxxxxx
-* `DATABASE_URL` Your mongo db url
-* `DATABASE_NAME` Your mongo db session name
-* `ADMINS` Optional: A space separated list of user_ids of Admins, they can only create links
-* `START_MESSAGE` Optional: start message of bot.
-* `PROTECT_CONTENT` Optional: True if you need to prevent files from forwarding
-
-### Token Variables
-
-* `SHORTLINK_URL` = Your shortner Url ( ex. "inshorturl.com")
-* `SHORTLINK_API` = Your shortner API (ex. "PUIAQBIFrydvLhIzAOeGV8yZppu")
-</details>
-
-## 𝐶𝑜𝑚𝑚𝑎𝑛𝑑𝑠
-
-```
-start - Start The Bot Or Get Posts  
-batch - Create Link For More Than One Posts  
-genlink - Create Link For One Post  
-custom_batch - Create Custom Batch From Channel/Group  
-users - View Bot Statistics  
-broadcast - Broadcast Any Messages To Bot Users  
-dbroadcast - Broadcast Any Messages With Auto Delete  
-stats - Check Your Bot Uptime  
-dlt_time - Set Auto Delete Time For Files  
-check_dlt_time - Check Current Delete Time Setting  
-ban - Ban A User From Using The Bot  
-unban - Unban A Previously Banned User  
-banlist - Get List Of Banned Users  
-addchnl - Add A Channel For Force Subscription  
-delchnl - Remove A Force Subscribe Channel  
-listchnl - View All Added Force Subscribe Channels  
-fsub_mode - Toggle Force Subscribe On Or Off  
-pbroadcast - Pin A Broadcast To All User's Chat  
-add_admin - Add A New Admin  
-deladmin - Remove An Admin  
-admins - List All Current Admins  
-addpremium - Grant Premium Access To A User  
-premium_users - List All Premium Users
-remove_premium - revoke premium from a user
-myplan - Check Your Premium Status  
-count - Count Shortner Clicks  
-```
-<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
-<details>
-<summary><h3>
-- <b> ᴅᴇᴘʟᴏʏᴍᴇɴᴛ ᴍᴇᴛʜᴏᴅs </b>
-</h3></summary>
-<h3 align="center">
-    ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ʜᴇʀᴏᴋᴜ 」─
-</h3>
-
-<p align="center"><a href="https://heroku.com/deploy?template=https://github.com/MikoxYae/New">
-  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy On Heroku">
-</a></p>
-<h3 align="center">
-    ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ᴋᴏʏᴇʙ 」─
-</h3>
-<p align="center"><a href="https://app.koyeb.com/deploy?type=git&repository=github.com/MikoxYae/New&branch=main&name=yaemiko">
-  <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy On Koyeb">
-</a></p>
-<h3 align="center">
-    ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ʀᴀɪʟᴡᴀʏ 」─
-</h3>
-<p align="center"><a href="https://railway.app/deploy?template=https://github.com/MikoxYae/New">
-     <img height="45px" src="https://railway.app/button.svg">
-</a></p>
-<h3 align="center">
-    ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ʀᴇɴᴅᴇʀ 」─
-</h3>
-<p align="center"><a href="https://render.com/deploy?repo=https://github.com/MikoxYae/New">
-<img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render">
-</a></p>
-<h3 align="center">
-    ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ᴠᴘs 」─
-</h3>
-<p>
-<pre>
-git clone your repo link
-cd repo name
-tmux new -s session name # For running 24/7 
-# Install Packages
-pip3 install -r requirements.txt
-python3 main.py
-tmux kill-session -t session name # Note For Stop Running Bot
-</pre>
-</p>
-</details>
-<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
-
-
-<h3>「 ᴄʀᴇᴅɪᴛs 」
-</h3>
-
-- <b>[ᴅᴇᴠʟᴏᴘᴇʀ](https://t.me/Yae_X_Miko).</b>
-- <b>[ɢɪᴛ ʜᴜʙ](https://github.com/MikoxYae).</b> 
