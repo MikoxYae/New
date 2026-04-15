@@ -33,7 +33,7 @@ async def start_command(client: Client, message: Message):
         except:
             pass
 
-    if not await is_subscribed(client, user_id):
+    if not is_premium and not await is_subscribed(client, user_id):
         return await not_joined(client, message)
 
     banned_users = await db.get_ban_users()
@@ -129,21 +129,23 @@ async def start_command(client: Client, message: Message):
             await temp_msg.delete()
 
         yaemiko_msgs = []
+        custom_caption = await db.get_custom_caption()
+        protect_content = False if is_premium else await db.get_protect_content()
         for msg in messages:
-            caption = (CUSTOM_CAPTION.format(previouscaption="" if not msg.caption else msg.caption.html, 
-                                             filename=msg.document.file_name) if bool(CUSTOM_CAPTION) and bool(msg.document)
+            caption = (custom_caption.format(previouscaption="" if not msg.caption else msg.caption.html,
+                                             filename=msg.document.file_name) if bool(custom_caption) and bool(msg.document)
                        else ("" if not msg.caption else msg.caption.html))
 
             reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
 
             try:
                 copied_msg = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML, 
-                                            reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
+                                            reply_markup=reply_markup, protect_content=protect_content)
                 yaemiko_msgs.append(copied_msg)
             except FloodWait as e:
                 await asyncio.sleep(e.x)
                 copied_msg = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML, 
-                                            reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
+                                            reply_markup=reply_markup, protect_content=protect_content)
                 yaemiko_msgs.append(copied_msg)
             except Exception as e:
                 print(f"Failed to send message: {e}")
