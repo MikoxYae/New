@@ -17,9 +17,10 @@ from config import *
 from helper_func import *
 from database.database import *
 from database.db_premium import *
+import config as _cfg
 
 BAN_SUPPORT = f"{BAN_SUPPORT}"
-TUT_VID = f"{TUT_VID}"
+
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
@@ -52,8 +53,8 @@ async def start_command(client: Client, message: Message):
     if len(text) > 7:
         verify_status = await db.get_verify_status(id)
 
-        if SHORTLINK_URL or SHORTLINK_API:
-            if verify_status['is_verified'] and VERIFY_EXPIRE < (time.time() - verify_status['verified_time']):
+        if _cfg.SHORTLINK_URL or _cfg.SHORTLINK_API:
+            if verify_status['is_verified'] and _cfg.VERIFY_EXPIRE < (time.time() - verify_status['verified_time']):
                 await db.update_verify_status(user_id, is_verified=False)
                 verify_status = await db.get_verify_status(id)
 
@@ -70,13 +71,13 @@ async def start_command(client: Client, message: Message):
                 await db.set_verify_count(id, current + 1)
                 return await message.reply_photo(
                     photo=PREMIUM_PIC,
-                    caption=f"<b>✅ 𝗧𝗼𝗸𝗲𝗻 𝘃𝗲𝗿𝗶𝗳𝗶𝗲𝗱! Vᴀʟɪᴅ ғᴏʀ {get_exp_time(VERIFY_EXPIRE)}</b>"
+                    caption=f"<b>✅ 𝗧𝗼𝗸𝗲𝗻 𝘃𝗲𝗿𝗶𝗳𝗶𝗲𝗱! Vᴀʟɪᴅ ғᴏʀ {get_exp_time(_cfg.VERIFY_EXPIRE)}</b>"
                 )
 
             if not verify_status['is_verified'] and not is_premium:
                 token = ''.join(random.choices(rohit.ascii_letters + rohit.digits, k=10))
                 direct_tg_link = f'https://telegram.dog/{client.username}?start=verify_{token}'
-                shortlink = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, direct_tg_link)
+                shortlink = await get_shortlink(_cfg.SHORTLINK_URL, _cfg.SHORTLINK_API, direct_tg_link)
                 await db.update_verify_status(id, verify_token=token, link=shortlink, created_at=time.time())
                 if await db.get_anti_bypass() and WEB_VERIFY_BASE_URL:
                     btn_url = get_verify_link(WEB_VERIFY_BASE_URL, id, token, client.username)
@@ -84,16 +85,16 @@ async def start_command(client: Client, message: Message):
                     btn_url = shortlink
                 btn = [
                     [InlineKeyboardButton("• ᴏᴘᴇɴ ʟɪɴᴋ •", url=btn_url),
-                     InlineKeyboardButton("• ᴛᴜᴛᴏʀɪᴀʟ •", url=TUT_VID)],
+                     InlineKeyboardButton("• ᴛᴜᴛᴏʀɪᴀʟ •", url=_cfg.TUT_VID)],
                     [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
                 ]
                 return await message.reply_photo(
                     photo=PREMIUM_PIC,
                     caption=(
                         f"<b>𝗬𝗼𝘂𝗿 𝘁𝗼𝗸𝗲𝗻 𝗵𝗮𝘀 𝗲𝘅𝗽𝗶𝗿𝗲𝗱. 𝗣𝗹𝗲𝗮𝘀𝗲 𝗿𝗲𝗳𝗿𝗲𝘀𝗵 𝘆𝗼𝘂𝗿 𝘁𝗼𝗸𝗲𝗻 𝘁𝗼 𝗰𝗼𝗻𝘁𝗶𝗻𝘂𝗲..</b>\n\n"
-                        f"<b>Tᴏᴋᴇɴ Tɪᴍᴇᴏᴜᴛ:</b> {get_exp_time(VERIFY_EXPIRE)}\n\n"
+                        f"<b>Tᴏᴋᴇɴ Tɪᴍᴇᴏᴜᴛ:</b> {get_exp_time(_cfg.VERIFY_EXPIRE)}\n\n"
                         f"<b>ᴡʜᴀᴛ ɪs ᴛʜᴇ ᴛᴏᴋᴇɴ??</b>\n\n"
-                        f"<b>ᴛʜɪs ɪs ᴀɴ ᴀᴅs ᴛᴏᴋᴇɴ. ᴘᴀssɪɴɢ ᴏɴᴇ ᴀᴅ ᴀʟʟᴏᴡs ʏᴏᴜ ᴛᴏ ᴜsᴇ ᴛʜᴇ ʙᴏᴛ ғᴏʀ {get_exp_time(VERIFY_EXPIRE)} ᴀғᴛᴇʀ ᴛʜᴇ ᴛᴏᴋᴇɴ ɢᴇᴛs ᴇxᴘɪʀᴇᴅ ᴀɢᴀɪɴ ᴛʜᴇ ᴀᴅ ᴛᴏᴋᴇɴ ɪs ʀᴇǫᴜɪʀᴇᴅ.</b>\n\n"
+                        f"<b>ᴛʜɪs ɪs ᴀɴ ᴀᴅs ᴛᴏᴋᴇɴ. ᴘᴀssɪɴɢ ᴏɴᴇ ᴀᴅ ᴀʟʟᴏᴡs ʏᴏᴜ ᴛᴏ ᴜsᴇ ᴛʜᴇ ʙᴏᴛ ғᴏʀ {get_exp_time(_cfg.VERIFY_EXPIRE)} ᴀғᴛᴇʀ ᴛʜᴇ ᴛᴏᴋᴇɴ ɢᴇᴛs ᴇxᴘɪʀᴇᴅ ᴀɢᴀɪɴ ᴛʜᴇ ᴀᴅ ᴛᴏᴋᴇɴ ɪs ʀᴇǫᴜɪʀᴇᴅ.</b>\n\n"
                         f"<blockquote><b>ᴛᴏ ᴀᴠᴏɪᴅᴇ ᴛᴏᴋᴇɴ ᴛᴀᴋᴇ ᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ.</b></blockquote>"
                     ),
                     reply_markup=InlineKeyboardMarkup(btn)
