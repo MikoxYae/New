@@ -2,6 +2,21 @@ from aiohttp import web
 from plugins import web_server
 import asyncio
 import pyromod.listen
+
+# ── Pyromod KeyError patch ─────────────────────────────────────────────────────
+# pyromod bug: self.listeners is a plain dict and the MESSAGE key is never seeded,
+# causing KeyError on every incoming message.  Patch the installed source once.
+import os as _os
+_pyromod_client_path = "/usr/local/lib/python3.10/dist-packages/pyromod/listen/client.py"
+if _os.path.exists(_pyromod_client_path):
+    with open(_pyromod_client_path, "r") as _f:
+        _src = _f.read()
+    _BAD  = "for listener in self.listeners[listener_type]:"
+    _GOOD = "for listener in self.listeners.get(listener_type, []):"
+    if _BAD in _src:
+        with open(_pyromod_client_path, "w") as _f:
+            _f.write(_src.replace(_BAD, _GOOD))
+# ───────────────────────────────────────────────────────────────────────────────
 from pyrogram import Client
 from pyrogram.enums import ParseMode
 import sys
