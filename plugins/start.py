@@ -52,9 +52,7 @@ async def start_command(client: Client, message: Message):
         admins = await db.get_admins()
         if user_id not in admins and user_id != OWNER_ID:
             return await message.reply_text(
-                "<b>🔧 Bot is currently under maintenance.</b>
-
-"
+                "<b>🔧 Bot is currently under maintenance.</b>\n\n"
                 "<i>Please try again later.</i>"
             )
 
