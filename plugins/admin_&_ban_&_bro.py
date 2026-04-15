@@ -4,7 +4,7 @@ import random
 import sys
 import time
 from datetime import datetime, timedelta
-from pyrogram import Client, filters, __version__
+from pyrogram import Client, filters, __version__, StopPropagation
 from pyrogram.enums import ParseMode, ChatAction, ChatMemberStatus, ChatType
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatMemberUpdated, ChatPermissions, ChatInviteLink, ChatPrivileges
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant, InviteHashEmpty, ChatAdminRequired, PeerIdInvalid, UserIsBlocked, InputUserDeactivated
@@ -545,7 +545,7 @@ async def settings_cb(client: Bot, query: CallbackQuery):
 
 @Bot.on_message(filters.private & filters.text &
                 filters.create(lambda _, __, m: m.from_user and m.from_user.id in _pending),
-                group=5)
+                group=-1)
 async def handle_settings_input(client: Bot, message: Message):
     uid   = message.from_user.id
     state = _pending.pop(uid, None)
@@ -572,7 +572,7 @@ async def handle_settings_input(client: Bot, message: Message):
                 InlineKeyboardButton("🔙 Back", callback_data="stg_admin" if "admin" in state["action"] else "stg_ban")
             ]])
         )
-        return
+        raise StopPropagation
 
     await message.delete()
 
@@ -611,3 +611,5 @@ async def handle_settings_input(client: Bot, message: Message):
                  InlineKeyboardButton("🔙 Back", callback_data="stg_ban")]
             ])
         )
+
+    raise StopPropagation
