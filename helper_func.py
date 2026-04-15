@@ -29,16 +29,19 @@ async def is_subscribed(client, user_id):
 
     for cid in channel_ids:
         if not await is_sub(client, user_id, cid):
-            mode = await db.get_channel_mode(cid)
-            if mode == "on":
-                await asyncio.sleep(2)
-                if await is_sub(client, user_id, cid):
-                    continue
             return False
 
     return True
 
 async def is_sub(client, user_id, channel_id):
+    mode = await db.get_channel_mode(channel_id)
+
+    # Request Mode ON: sirf join request send karna kaafi hai access ke liye
+    if mode == "on":
+        if await db.req_user_exist(channel_id, user_id):
+            return True
+
+    # Normal check: actual membership verify karo
     try:
         member = await client.get_chat_member(channel_id, user_id)
         status = member.status
@@ -49,10 +52,6 @@ async def is_sub(client, user_id, channel_id):
         }
 
     except UserNotParticipant:
-        mode = await db.get_channel_mode(channel_id)
-        if mode == "on":
-            exists = await db.req_user_exist(channel_id, user_id)
-            return exists
         return False
 
     except Exception as e:
