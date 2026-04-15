@@ -1,238 +1,237 @@
 import asyncio
-  from pyrogram import Client, filters
-  from pyrogram.types import Message
-  from bot import Bot
-  from helper_func import admin
-  from database.db_premium import *
-  from pytz import timezone
-  from datetime import datetime, timedelta
+from pyrogram import Client, filters
+from pyrogram.types import Message
+from bot import Bot
+from helper_func import admin
+from database.db_premium import *
+from pytz import timezone
+from datetime import datetime, timedelta
 
-  monitoring_started = False
+monitoring_started = False
 
-  @Bot.on_message(filters.command('myplan') & filters.private)
-  async def check_plan(client: Client, message: Message):
-      user_id = message.from_user.id
-      status_message = await check_user_plan(user_id)
-      await message.reply(status_message)
-
-
-  @Bot.on_message(filters.command('addpremium') & filters.private & admin)
-  async def add_premium_user_command(client, msg):
-      if len(msg.command) not in (4, 5):
-          await msg.reply_text(
-              "<b>Usage:</b> /addpremium user_id time_value time_unit tier\n\n"
-              "<b>Tiers:</b>\n"
-              "🥇 gold — Token bypass + Protect Content bypass\n"
-              "💎 platinum — Token bypass + Protect Content bypass + Force Sub bypass\n\n"
-              "<b>Time Units:</b> s | m | h | d | y\n\n"
-              "<b>Examples:</b>\n"
-              "/addpremium 123456789 1 d gold\n"
-              "/addpremium 123456789 1 d platinum\n"
-              "(Default tier is gold if not specified)"
-          )
-          return
-
-      try:
-          user_id = int(msg.command[1])
-          time_value = int(msg.command[2])
-          time_unit = msg.command[3].lower()
-          tier = msg.command[4].lower() if len(msg.command) == 5 else "gold"
-
-          if tier not in ("gold", "platinum"):
-              return await msg.reply_text("Invalid tier. Use: gold or platinum")
-
-          expiration_time = await add_premium(user_id, time_value, time_unit, tier)
-          tier_emoji = "🥇" if tier == "gold" else "💎"
-          perks = (
-              "Token bypass\nProtect Content bypass"
-              if tier == "gold"
-              else "Token bypass\nProtect Content bypass\nForce Subscribe bypass"
-          )
-
-          await msg.reply_text(
-              f"User {user_id} added as {tier_emoji} {tier.capitalize()} Premium for {time_value}{time_unit}.\n"
-              f"Expiration: {expiration_time}"
-          )
-
-          await client.send_message(
-              chat_id=user_id,
-              text=(
-                  f"{tier_emoji} <b>{tier.capitalize()} Premium Activated!</b>\n\n"
-                  f"Duration: <b>{time_value}{time_unit}</b>\n"
-                  f"Expires on: <b>{expiration_time}</b>\n\n"
-                  f"<b>Your perks:</b>\n{perks}"
-              ),
-          )
-
-          asyncio.create_task(monitor_premium_expiry(client, user_id))
-
-      except ValueError:
-          await msg.reply_text("Invalid input. Ensure user ID and time value are numbers.")
-      except Exception as e:
-          await msg.reply_text(f"An error occurred: {str(e)}")
+@Bot.on_message(filters.command('myplan') & filters.private)
+async def check_plan(client: Client, message: Message):
+    user_id = message.from_user.id
+    status_message = await check_user_plan(user_id)
+    await message.reply(status_message)
 
 
-  @Bot.on_message(filters.command('remove_premium') & filters.private & admin)
-  async def pre_remove_user(client: Client, msg: Message):
-      if len(msg.command) != 2:
-          await msg.reply_text("Usage: /remove_premium user_id")
-          return
-      try:
-          user_id = int(msg.command[1])
-          await remove_premium(user_id)
-          await msg.reply_text(f"User {user_id} has been removed from premium.")
-      except ValueError:
-          await msg.reply_text("user_id must be an integer.")
+@Bot.on_message(filters.command('addpremium') & filters.private & admin)
+async def add_premium_user_command(client, msg):
+    if len(msg.command) not in (4, 5):
+        await msg.reply_text(
+            "<b>Usage:</b> /addpremium user_id time_value time_unit tier\n\n"
+            "<b>Tiers:</b>\n"
+            "🥇 gold — Token bypass + Protect Content bypass\n"
+            "💎 platinum — Token bypass + Protect Content bypass + Force Sub bypass\n\n"
+            "<b>Time Units:</b> s | m | h | d | y\n\n"
+            "<b>Examples:</b>\n"
+            "/addpremium 123456789 1 d gold\n"
+            "/addpremium 123456789 1 d platinum\n"
+            "(Default tier is gold if not specified)"
+        )
+        return
+
+    try:
+        user_id = int(msg.command[1])
+        time_value = int(msg.command[2])
+        time_unit = msg.command[3].lower()
+        tier = msg.command[4].lower() if len(msg.command) == 5 else "gold"
+
+        if tier not in ("gold", "platinum"):
+            return await msg.reply_text("Invalid tier. Use: gold or platinum")
+
+        expiration_time = await add_premium(user_id, time_value, time_unit, tier)
+        tier_emoji = "🥇" if tier == "gold" else "💎"
+        perks = (
+            "Token bypass\nProtect Content bypass"
+            if tier == "gold"
+            else "Token bypass\nProtect Content bypass\nForce Subscribe bypass"
+        )
+
+        await msg.reply_text(
+            f"User {user_id} added as {tier_emoji} {tier.capitalize()} Premium for {time_value}{time_unit}.\n"
+            f"Expiration: {expiration_time}"
+        )
+
+        await client.send_message(
+            chat_id=user_id,
+            text=(
+                f"{tier_emoji} <b>{tier.capitalize()} Premium Activated!</b>\n\n"
+                f"Duration: <b>{time_value}{time_unit}</b>\n"
+                f"Expires on: <b>{expiration_time}</b>\n\n"
+                f"<b>Your perks:</b>\n{perks}"
+            ),
+        )
+
+        asyncio.create_task(monitor_premium_expiry(client, user_id))
+
+    except ValueError:
+        await msg.reply_text("Invalid input. Ensure user ID and time value are numbers.")
+    except Exception as e:
+        await msg.reply_text(f"An error occurred: {str(e)}")
 
 
-  @Bot.on_message(filters.command('premium_users') & filters.private & admin)
-  async def list_premium_users_command(client, message):
-      ist = timezone("Asia/Kolkata")
-      premium_users_cursor = collection.find({})
-      premium_user_list = ["<b>Active Premium Users:</b>"]
-      current_time = datetime.now(ist)
-
-      async for user in premium_users_cursor:
-          user_id = user["user_id"]
-          expiration_timestamp = user["expiration_timestamp"]
-          tier = user.get("tier", "gold")
-          tier_emoji = "🥇" if tier == "gold" else "💎"
-
-          try:
-              expiration_time = datetime.fromisoformat(expiration_timestamp).astimezone(ist)
-              remaining_time = expiration_time - current_time
-
-              if remaining_time.total_seconds() <= 0:
-                  await remove_premium(user_id)
-                  continue
-
-              user_info = await client.get_users(user_id)
-              username = user_info.username if user_info.username else "No Username"
-              mention = user_info.mention
-              days, hours, minutes, seconds = (
-                  remaining_time.days,
-                  remaining_time.seconds // 3600,
-                  (remaining_time.seconds // 60) % 60,
-                  remaining_time.seconds % 60,
-              )
-              expiry_info = f"{days}d {hours}h {minutes}m {seconds}s left"
-
-              premium_user_list.append(
-                  f"{tier_emoji} <b>{tier.capitalize()}</b>\n"
-                  f"UserID: <code>{user_id}</code>\n"
-                  f"User: @{username} | {mention}\n"
-                  f"Expiry: {expiry_info}"
-              )
-          except Exception as e:
-              premium_user_list.append(
-                  f"UserID: <code>{user_id}</code> | Error: {str(e)}"
-              )
-
-      if len(premium_user_list) == 1:
-          await message.reply_text("No active premium users found.")
-      else:
-          await message.reply_text("\n\n".join(premium_user_list))
+@Bot.on_message(filters.command('remove_premium') & filters.private & admin)
+async def pre_remove_user(client: Client, msg: Message):
+    if len(msg.command) != 2:
+        await msg.reply_text("Usage: /remove_premium user_id")
+        return
+    try:
+        user_id = int(msg.command[1])
+        await remove_premium(user_id)
+        await msg.reply_text(f"User {user_id} has been removed from premium.")
+    except ValueError:
+        await msg.reply_text("user_id must be an integer.")
 
 
-  async def monitor_premium_expiry(client, user_id):
-      ist = timezone("Asia/Kolkata")
-      reminder_24h_sent = False
-      final_reminder_sent = False
+@Bot.on_message(filters.command('premium_users') & filters.private & admin)
+async def list_premium_users_command(client, message):
+    ist = timezone("Asia/Kolkata")
+    premium_users_cursor = collection.find({})
+    premium_user_list = ["<b>Active Premium Users:</b>"]
+    current_time = datetime.now(ist)
 
-      while True:
-          try:
-              user = await collection.find_one({"user_id": user_id})
-              if not user:
-                  break
+    async for user in premium_users_cursor:
+        user_id = user["user_id"]
+        expiration_timestamp = user["expiration_timestamp"]
+        tier = user.get("tier", "gold")
+        tier_emoji = "🥇" if tier == "gold" else "💎"
 
-              expiration_time = datetime.fromisoformat(user["expiration_timestamp"]).astimezone(ist)
-              current_time = datetime.now(ist)
-              time_remaining = expiration_time - current_time
-              tier = user.get("tier", "gold")
-              tier_emoji = "🥇" if tier == "gold" else "💎"
+        try:
+            expiration_time = datetime.fromisoformat(expiration_timestamp).astimezone(ist)
+            remaining_time = expiration_time - current_time
 
-              # Auto remove on expiry
-              if time_remaining.total_seconds() <= 0:
-                  await remove_premium(user_id)
-                  try:
-                      await client.send_message(
-                          user_id,
-                          f"{tier_emoji} <b>{tier.capitalize()} Premium Expired!</b>\n\n"
-                          "Your premium access has been automatically removed.\n\n"
-                          "Renew premium to continue enjoying your perks."
-                      )
-                  except Exception:
-                      pass
-                  break
+            if remaining_time.total_seconds() <= 0:
+                await remove_premium(user_id)
+                continue
 
-              # 24h reminder
-              if not reminder_24h_sent and time_remaining <= timedelta(days=1):
-                  formatted_time = expiration_time.strftime('%Y-%m-%d %H:%M:%S IST')
-                  try:
-                      await client.send_message(
-                          user_id,
-                          f"<b>⏰ {tier_emoji} {tier.capitalize()} Premium Expiry Reminder</b>\n\n"
-                          f"Your premium expires in less than 24 hours!\n"
-                          f"<b>Expires on:</b> {formatted_time}\n\n"
-                          "Renew now to keep your perks."
-                      )
-                      reminder_24h_sent = True
-                  except Exception as e:
-                      print(f"Failed to send 24h reminder to {user_id}: {e}")
+            user_info = await client.get_users(user_id)
+            username = user_info.username if user_info.username else "No Username"
+            mention = user_info.mention
+            days, hours, minutes, seconds = (
+                remaining_time.days,
+                remaining_time.seconds // 3600,
+                (remaining_time.seconds // 60) % 60,
+                remaining_time.seconds % 60,
+            )
+            expiry_info = f"{days}d {hours}h {minutes}m {seconds}s left"
 
-              # Final 1h reminder
-              if not final_reminder_sent and time_remaining <= timedelta(hours=1):
-                  formatted_time = expiration_time.strftime('%Y-%m-%d %H:%M:%S IST')
-                  try:
-                      await client.send_message(
-                          user_id,
-                          f"<b>🚨 {tier_emoji} Final Reminder — {tier.capitalize()} Premium</b>\n\n"
-                          f"Your premium expires in less than 1 hour!\n"
-                          f"<b>Expires at:</b> {formatted_time}\n\n"
-                          "This is your last reminder. Renew now!"
-                      )
-                      final_reminder_sent = True
-                  except Exception as e:
-                      print(f"Failed to send final reminder to {user_id}: {e}")
+            premium_user_list.append(
+                f"{tier_emoji} <b>{tier.capitalize()}</b>\n"
+                f"UserID: <code>{user_id}</code>\n"
+                f"User: @{username} | {mention}\n"
+                f"Expiry: {expiry_info}"
+            )
+        except Exception as e:
+            premium_user_list.append(
+                f"UserID: <code>{user_id}</code> | Error: {str(e)}"
+            )
 
-              await asyncio.sleep(60)
-
-          except Exception as e:
-              print(f"Error monitoring premium expiry for user {user_id}: {e}")
-              await asyncio.sleep(60)
+    if len(premium_user_list) == 1:
+        await message.reply_text("No active premium users found.")
+    else:
+        await message.reply_text("\n\n".join(premium_user_list))
 
 
-  async def auto_start_monitoring(client):
-      global monitoring_started
-      if monitoring_started:
-          return
+async def monitor_premium_expiry(client, user_id):
+    ist = timezone("Asia/Kolkata")
+    reminder_24h_sent = False
+    final_reminder_sent = False
 
-      monitoring_started = True
-      print("Starting automatic premium monitoring...")
+    while True:
+        try:
+            user = await collection.find_one({"user_id": user_id})
+            if not user:
+                break
 
-      ist = timezone("Asia/Kolkata")
-      current_time = datetime.now(ist)
+            expiration_time = datetime.fromisoformat(user["expiration_timestamp"]).astimezone(ist)
+            current_time = datetime.now(ist)
+            time_remaining = expiration_time - current_time
+            tier = user.get("tier", "gold")
+            tier_emoji = "🥇" if tier == "gold" else "💎"
 
-      try:
-          async for user in collection.find({}):
-              try:
-                  expiration_time = datetime.fromisoformat(user["expiration_timestamp"]).astimezone(ist)
-                  if expiration_time <= current_time:
-                      await remove_premium(user["user_id"])
-                      print(f"Auto-removed expired premium user: {user['user_id']}")
-                  else:
-                      asyncio.create_task(monitor_premium_expiry(client, user["user_id"]))
-                      print(f"Started monitoring premium user: {user['user_id']}")
-              except Exception as e:
-                  print(f"Error processing premium user {user.get('user_id')}: {e}")
-      except Exception as e:
-          print(f"Error accessing premium users collection: {e}")
+            # Auto remove on expiry
+            if time_remaining.total_seconds() <= 0:
+                await remove_premium(user_id)
+                try:
+                    await client.send_message(
+                        user_id,
+                        f"{tier_emoji} <b>{tier.capitalize()} Premium Expired!</b>\n\n"
+                        "Your premium access has been automatically removed.\n\n"
+                        "Renew premium to continue enjoying your perks."
+                    )
+                except Exception:
+                    pass
+                break
 
-      print("Automatic premium monitoring started.")
+            # 24h reminder
+            if not reminder_24h_sent and time_remaining <= timedelta(days=1):
+                formatted_time = expiration_time.strftime('%Y-%m-%d %H:%M:%S IST')
+                try:
+                    await client.send_message(
+                        user_id,
+                        f"<b>⏰ {tier_emoji} {tier.capitalize()} Premium Expiry Reminder</b>\n\n"
+                        f"Your premium expires in less than 24 hours!\n"
+                        f"<b>Expires on:</b> {formatted_time}\n\n"
+                        "Renew now to keep your perks."
+                    )
+                    reminder_24h_sent = True
+                except Exception as e:
+                    print(f"Failed to send 24h reminder to {user_id}: {e}")
+
+            # Final 1h reminder
+            if not final_reminder_sent and time_remaining <= timedelta(hours=1):
+                formatted_time = expiration_time.strftime('%Y-%m-%d %H:%M:%S IST')
+                try:
+                    await client.send_message(
+                        user_id,
+                        f"<b>🚨 {tier_emoji} Final Reminder — {tier.capitalize()} Premium</b>\n\n"
+                        f"Your premium expires in less than 1 hour!\n"
+                        f"<b>Expires at:</b> {formatted_time}\n\n"
+                        "This is your last reminder. Renew now!"
+                    )
+                    final_reminder_sent = True
+                except Exception as e:
+                    print(f"Failed to send final reminder to {user_id}: {e}")
+
+            await asyncio.sleep(60)
+
+        except Exception as e:
+            print(f"Error monitoring premium expiry for user {user_id}: {e}")
+            await asyncio.sleep(60)
 
 
-  @Bot.on_message(filters.command('start_premium_monitoring') & filters.private & admin)
-  async def start_monitoring_existing_users(client: Client, message: Message):
-      await auto_start_monitoring(client)
-      await message.reply("Started monitoring all existing premium users for expiry reminders.")
-  
+async def auto_start_monitoring(client):
+    global monitoring_started
+    if monitoring_started:
+        return
+
+    monitoring_started = True
+    print("Starting automatic premium monitoring...")
+
+    ist = timezone("Asia/Kolkata")
+    current_time = datetime.now(ist)
+
+    try:
+        async for user in collection.find({}):
+            try:
+                expiration_time = datetime.fromisoformat(user["expiration_timestamp"]).astimezone(ist)
+                if expiration_time <= current_time:
+                    await remove_premium(user["user_id"])
+                    print(f"Auto-removed expired premium user: {user['user_id']}")
+                else:
+                    asyncio.create_task(monitor_premium_expiry(client, user["user_id"]))
+                    print(f"Started monitoring premium user: {user['user_id']}")
+            except Exception as e:
+                print(f"Error processing premium user {user.get('user_id')}: {e}")
+    except Exception as e:
+        print(f"Error accessing premium users collection: {e}")
+
+    print("Automatic premium monitoring started.")
+
+
+@Bot.on_message(filters.command('start_premium_monitoring') & filters.private & admin)
+async def start_monitoring_existing_users(client: Client, message: Message):
+    await auto_start_monitoring(client)
+    await message.reply("Started monitoring all existing premium users for expiry reminders.")
