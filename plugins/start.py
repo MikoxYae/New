@@ -26,7 +26,7 @@ BAN_SUPPORT = f"{BAN_SUPPORT}"
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
     id = message.from_user.id
-    is_premium = await is_premium_user(id)
+    tier = await get_premium_tier(id)
 
     if not await db.present_user(user_id):
         try:
@@ -34,7 +34,7 @@ async def start_command(client: Client, message: Message):
         except:
             pass
 
-    if not await is_subscribed(client, user_id):
+    if not await is_subscribed(client, user_id) and tier != "platinum":
         return await not_joined(client, message)
 
     banned_users = await db.get_ban_users()
@@ -83,7 +83,7 @@ async def start_command(client: Client, message: Message):
                     caption=f"<b>✅ 𝗧𝗼𝗸𝗲𝗻 𝘃𝗲𝗿𝗶𝗳𝗶𝗲𝗱! Vᴀʟɪᴅ ғᴏʀ {get_exp_time(_cfg.VERIFY_EXPIRE)}</b>"
                 )
 
-            if not verify_status['is_verified'] and not is_premium and id != OWNER_ID:
+            if not verify_status['is_verified'] and tier is None and id != OWNER_ID:
                 token = ''.join(random.choices(rohit.ascii_letters + rohit.digits, k=10))
                 direct_tg_link = f'https://telegram.dog/{client.username}?start=verify_{token}'
                 shortlink = await get_shortlink(_cfg.SHORTLINK_URL, _cfg.SHORTLINK_API, direct_tg_link)
@@ -146,7 +146,7 @@ async def start_command(client: Client, message: Message):
 
         yaemiko_msgs = []
         custom_caption = await db.get_custom_caption()
-        protect_content = False if is_premium else await db.get_protect_content()
+        protect_content = False if tier in ("gold", "platinum") else await db.get_protect_content()
         for msg in messages:
             caption = (custom_caption.format(previouscaption="" if not msg.caption else msg.caption.html,
                                              filename=msg.document.file_name) if bool(custom_caption) and bool(msg.document)
