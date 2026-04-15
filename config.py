@@ -23,8 +23,8 @@ START_PIC = os.environ.get("START_PIC", "https://graph.org/file/c3298a2f4d623e7f
 FORCE_PIC = os.environ.get("FORCE_PIC", "https://graph.org/file/c3298a2f4d623e7f204c1-882cbd3ff41094cb41.jpg")
 PREMIUM_PIC = os.environ.get("PREMIUM_PIC", "https://graph.org/file/c3298a2f4d623e7f204c1-882cbd3ff41094cb41.jpg")
 #------------------------------------------------------------------------------------------------------------------------------------------------
-SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "snapurlz.com")
-SHORTLINK_API = os.environ.get("SHORTLINK_API", "46ae25586d58db2a443d4560a2e31aa5f9f06980")
+SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "linkshortify.com")
+SHORTLINK_API = os.environ.get("SHORTLINK_API", "d568956721f5beb08837393f7e8efbccffeb1902")
 VERIFY_EXPIRE = int(os.environ.get('VERIFY_EXPIRE', "43200"))
 TUT_VID = os.environ.get("TUT_VID","https://t.me/How_To_Take_Tokens/12")
 #------------------------------------------------------------------------------------------------------------------------------------------------
