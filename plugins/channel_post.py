@@ -7,8 +7,9 @@ from asyncio import TimeoutError
 from bot import Bot
 from config import *
 from helper_func import encode, admin, get_message_id
+from database.db_stats import log_activity
 
-@Bot.on_message(filters.private & admin & ~filters.command(['start', 'commands', 'broadcast', 'batch', 'custom_batch', 'genlink', 'dbroadcast', 'pbroadcast', 'addpremium', 'premium_users', 'remove_premium', 'myplan', 'settings']))
+@Bot.on_message(filters.private & admin & ~filters.command(['start', 'commands', 'broadcast', 'batch', 'custom_batch', 'genlink', 'dbroadcast', 'pbroadcast', 'addpremium', 'premium_users', 'remove_premium', 'myplan', 'settings', 'peakhours', 'weeklyreport', 'cleanstats', 'start_premium_monitoring']))
 async def channel_post(client: Client, message: Message):
     reply_text = await message.reply_text("Please Wait...!", quote = True)
     try:
@@ -29,6 +30,11 @@ async def channel_post(client: Client, message: Message):
     custom_message = f"{link}\n\n<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ:  <a href=\"https://t.me/+S95mGGbWHFRmNjM1\"> 𝗛ᴇᴀᴠᴇɴ 𝗕ᴀsᴇ</a> \n\nɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
 
     await reply_text.edit(custom_message, disable_web_page_preview = True)
+
+    try:
+        await log_activity(message.from_user.id)
+    except Exception:
+        pass
 
     if not DISABLE_CHANNEL_BUTTON:
         try:
