@@ -1,13 +1,16 @@
 import asyncio
 import psutil
+from datetime import datetime
 from pyrogram import filters, StopPropagation
 from pyrogram.types import (
     CallbackQuery, Message,
     InlineKeyboardMarkup, InlineKeyboardButton
 )
 from pyrogram.enums import ChatMemberStatus, ChatType
+from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from bot import Bot
 from config import OWNER_ID
+from helper_func import get_readable_time
 from database.database import db
 
 
@@ -31,6 +34,10 @@ def _main_markup():
         [
             InlineKeyboardButton("👥 Users",      callback_data="stg_users"),
             InlineKeyboardButton("📊 Stats",      callback_data="stg_stats")
+        ],
+        [
+            InlineKeyboardButton("🔢 Count",      callback_data="stg_count"),
+            InlineKeyboardButton("🧹 DelReq",     callback_data="stg_delreq")
         ],
         [
             InlineKeyboardButton("📢 Force Sub",  callback_data="stg_fsub"),
@@ -209,9 +216,12 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         ram  = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
         cpu  = psutil.cpu_percent(interval=0.5)
+        now = datetime.now(client.uptime.tzinfo) if getattr(client.uptime, "tzinfo", None) else datetime.now()
+        uptime = get_readable_time(int((now - client.uptime).total_seconds()))
 
         text = (
-            f"<b>📊 System Stats</b>\n\n"
+            f"<b>📊 Bot & System Stats</b>\n\n"
+            f"<b>⏰ Uptime:</b> <code>{uptime}</code>\n\n"
             f"<b>🧠 RAM</b>\n"
             f"├ Total: <code>{round(ram.total  / 1024**3, 2)} GB</code>\n"
             f"├ Used:  <code>{round(ram.used   / 1024**3, 2)} GB ({ram.percent}%)</code>\n"
@@ -223,6 +233,92 @@ async def settings_cb(client: Bot, query: CallbackQuery):
             f"<b>⚙️ CPU:</b> <code>{cpu}%</code>"
         )
         await _edit(query, text, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_back")]]))
+
+    elif data == "stg_count":
+        _pending.pop(uid, None)
+        total = await db.get_total_verify_count()
+        await _edit(query,
+            f"<b>🔢 Verification Count</b>\n\n<b>Total verified tokens today:</b> <code>{total}</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_back")]])
+        )
+
+    elif data == "stg_delreq":
+        _pending.pop(uid, None)
+        channels = await db.show_channels()
+        if not channels:
+            await _edit(query,
+                "<b>❌ No force-sub channels found.</b>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_back")]])
+            )
+            return
+        buttons = []
+        for ch_id in channels:
+            try:
+                chat = await client.get_chat(ch_id)
+                name = chat.title
+            except Exception:
+                name = str(ch_id)
+            buttons.append([InlineKeyboardButton(f"🧹 {name}", callback_data=f"stg_delreq_clean_{ch_id}")])
+        buttons.append([InlineKeyboardButton("🔙 Back", callback_data="stg_back")])
+        await _edit(query,
+            "<b>🧹 Delete Request Cleanup</b>\n\nSelect a channel to remove leftover request users:",
+            InlineKeyboardMarkup(buttons)
+        )
+
+    elif data.startswith("stg_delreq_clean_"):
+        _pending.pop(uid, None)
+        channel_id = int(data.split("stg_delreq_clean_")[1])
+        channel_data = await db.rqst_fsub_Channel_data.find_one({'_id': channel_id})
+        if not channel_data:
+            await _edit(query,
+                f"<b>ℹ️ No request channel found for:</b> <code>{channel_id}</code>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_delreq")]])
+            )
+            return
+
+        user_ids = channel_data.get("user_ids", [])
+        if not user_ids:
+            await _edit(query,
+                f"<b>✅ No users to process for:</b> <code>{channel_id}</code>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_delreq")]])
+            )
+            return
+
+        removed = 0
+        skipped = 0
+        left_users = 0
+
+        for user_id in user_ids:
+            try:
+                member = await client.get_chat_member(channel_id, user_id)
+                if member.status in (
+                    ChatMemberStatus.MEMBER,
+                    ChatMemberStatus.ADMINISTRATOR,
+                    ChatMemberStatus.OWNER
+                ):
+                    skipped += 1
+                    continue
+                await db.del_req_user(channel_id, user_id)
+                left_users += 1
+            except UserNotParticipant:
+                await db.del_req_user(channel_id, user_id)
+                left_users += 1
+            except Exception as e:
+                print(f"[!] Error checking user {user_id}: {e}")
+                skipped += 1
+
+        for user_id in user_ids:
+            if not await db.req_user_exist(channel_id, user_id):
+                await db.del_req_user(channel_id, user_id)
+                removed += 1
+
+        await _edit(query,
+            f"<b>✅ Cleanup done for channel</b> <code>{channel_id}</code>\n\n"
+            f"👤 Removed (left channel): <code>{left_users}</code>\n"
+            f"🗑️ Removed (leftover): <code>{removed}</code>\n"
+            f"✅ Still members: <code>{skipped}</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_delreq")]])
+        )
 
     # ══════════════════════════════════════════════════════════
     #  FORCE SUB PANEL
