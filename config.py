@@ -58,20 +58,20 @@ CMD_TXT = """<blockquote><b>» ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs:</b></blockqu
 <b>›› /myplan :</b> ᴄʜᴇᴄᴋ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ sᴛᴀᴛᴜs
 <b>›› /commands :</b> sʜᴏᴡ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ʟɪsᴛ
 <b>›› /settings :</b> ᴏᴘᴇɴ sᴇᴛᴛɪɴɢs ᴘᴀɴᴇʟ
-  <b>›› /peakhours :</b> ᴛᴏᴅᴀʏ's ᴘᴇᴀᴋ ᴀᴄᴛɪᴠɪᴛʏ ʜᴏᴜʀs
-  <b>›› /weeklyreport :</b> ʟᴀsᴛ 7 ᴅᴀʏs ᴀᴄᴛɪᴠɪᴛʏ ʀᴇᴘᴏʀᴛ
-  <b>›› /cleanstats :</b> ᴄʟᴇᴀɴ ᴏʟᴅ ᴀᴄᴛɪᴠɪᴛʏ ʟᴏɢs"""
+<b>›› /peakhours :</b> ᴛᴏᴅᴀʏ's ᴘᴇᴀᴋ ᴀᴄᴛɪᴠɪᴛʏ ʜᴏᴜʀs
+<b>›› /weeklyreport :</b> ʟᴀsᴛ 7 ᴅᴀʏs ᴀᴄᴛɪᴠɪᴛʏ ʀᴇᴘᴏʀᴛ
+<b>›› /cleanstats :</b> ᴄʟᴇᴀɴ ᴏʟᴅ ᴀᴄᴛɪᴠɪᴛʏ ʟᴏɢs"""
 #------------------------------------------------------------------------------------------------------------------------------------------------
 CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", None)
-  PROTECT_CONTENT = True if os.environ.get('PROTECT_CONTENT', "True") == "True" else False
-  DISABLE_CHANNEL_BUTTON = os.environ.get("DISABLE_CHANNEL_BUTTON", None) == 'True'
-  #------------------------------------------------------------------------------------------------------------------------------------------------
-  # FLOOD PROTECTION
-  FLOOD_LIMIT         = int(os.environ.get("FLOOD_LIMIT", "5"))        # max msgs in window
-  FLOOD_WINDOW        = int(os.environ.get("FLOOD_WINDOW", "5"))        # seconds (sliding window)
-  FLOOD_BLOCK_DURATION= int(os.environ.get("FLOOD_BLOCK_DURATION", "30")) # seconds user is blocked
-  # STATS / PEAK HOURS TRACKER
-  STATS_ENABLED       = True if os.environ.get("STATS_ENABLED", "True") == "True" else False
+PROTECT_CONTENT = True if os.environ.get('PROTECT_CONTENT', "True") == "True" else False
+DISABLE_CHANNEL_BUTTON = os.environ.get("DISABLE_CHANNEL_BUTTON", None) == 'True'
+#------------------------------------------------------------------------------------------------------------------------------------------------
+# FLOOD PROTECTION
+FLOOD_LIMIT         = int(os.environ.get("FLOOD_LIMIT", "5"))        # max msgs in window
+FLOOD_WINDOW        = int(os.environ.get("FLOOD_WINDOW", "5"))        # seconds (sliding window)
+FLOOD_BLOCK_DURATION= int(os.environ.get("FLOOD_BLOCK_DURATION", "30")) # seconds user is blocked
+# STATS / PEAK HOURS TRACKER
+STATS_ENABLED       = True if os.environ.get("STATS_ENABLED", "True") == "True" else False
 #------------------------------------------------------------------------------------------------------------------------------------------------
 BOT_STATS_TEXT = "<b>BOT UPTIME</b>\n{uptime}"
 USER_REPLY_TEXT = "ʙᴀᴋᴋᴀ ! ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴍʏ ꜱᴇɴᴘᴀɪ!!"
