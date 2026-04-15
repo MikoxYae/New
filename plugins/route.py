@@ -162,7 +162,7 @@ async def verify_route_handler(request):
     except Exception:
         return web.Response(text="Verification failed.", status=500)
 
-@routes.post("/verify/{user_id}/{token}/{bot_username}/go", allow_head=True)
+@routes.post("/verify/{user_id}/{token}/{bot_username}/go")
 async def verify_go_route_handler(request):
     try:
         user_id = int(request.match_info["user_id"])
