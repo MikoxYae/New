@@ -33,7 +33,7 @@ async def start_command(client: Client, message: Message):
         except:
             pass
 
-    if not is_premium and not await is_subscribed(client, user_id):
+    if not await is_subscribed(client, user_id):
         return await not_joined(client, message)
 
     banned_users = await db.get_ban_users()
