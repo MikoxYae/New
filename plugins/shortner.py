@@ -12,6 +12,7 @@ import config as _cfg
 
 _shortner_draft: dict = {}   # user_id -> {url, api, expire, tut_vid}
 _shortner_pending: dict = {} # user_id -> action string
+_shortner_msg: dict = {}     # user_id -> original settings Message to edit
 
 
 def _is_owner(user_id: int) -> bool:
@@ -91,6 +92,7 @@ async def shortner_cb(client: Bot, query: CallbackQuery):
     # ── Prompt for URL ────────────────────────────────────────
     elif data == "srt_url":
         _shortner_pending[uid] = "srt_url"
+        _shortner_msg[uid] = query.message
         try:
             await query.message.edit_caption(
                 caption=(
@@ -113,6 +115,7 @@ async def shortner_cb(client: Bot, query: CallbackQuery):
     # ── Prompt for API ────────────────────────────────────────
     elif data == "srt_api":
         _shortner_pending[uid] = "srt_api"
+        _shortner_msg[uid] = query.message
         try:
             await query.message.edit_caption(
                 caption="<b>🔑 Enter Shortner API Key:</b>",
@@ -131,6 +134,7 @@ async def shortner_cb(client: Bot, query: CallbackQuery):
     # ── Prompt for Tutorial Video ──────────────────────────────
     elif data == "srt_tut":
         _shortner_pending[uid] = "srt_tut"
+        _shortner_msg[uid] = query.message
         try:
             await query.message.edit_caption(
                 caption=(
@@ -153,6 +157,7 @@ async def shortner_cb(client: Bot, query: CallbackQuery):
     # ── Prompt for Token Expire ───────────────────────────────
     elif data == "srt_expire":
         _shortner_pending[uid] = "srt_expire"
+        _shortner_msg[uid] = query.message
         try:
             await query.message.edit_caption(
                 caption=(
@@ -274,8 +279,32 @@ async def shortner_text_handler(client: Bot, message: Message):
         raise StopPropagation
 
     draft = _shortner_draft[uid]
-    await message.reply(
-        f"{note}\n\n{_build_panel_text(draft)}",
-        reply_markup=_shortner_markup()
-    )
+
+    # Delete the user's typed message to keep chat clean
+    try:
+        await message.delete()
+    except Exception:
+        pass
+
+    # Edit the original settings message instead of sending a new one
+    orig_msg = _shortner_msg.get(uid)
+    if orig_msg:
+        try:
+            await orig_msg.edit_caption(
+                caption=f"{note}\n\n{_build_panel_text(draft)}",
+                reply_markup=_shortner_markup()
+            )
+        except Exception:
+            try:
+                await orig_msg.edit_text(
+                    f"{note}\n\n{_build_panel_text(draft)}",
+                    reply_markup=_shortner_markup()
+                )
+            except Exception:
+                pass
+    else:
+        await message.reply(
+            f"{note}\n\n{_build_panel_text(draft)}",
+            reply_markup=_shortner_markup()
+        )
     raise StopPropagation
