@@ -690,12 +690,8 @@ async def handle_settings_input(client: Bot, message: Message):
         toggle_label = "🟢 Turn OFF" if is_on else "🔴 Turn ON"
         toggle_data  = "stg_maintenance_off" if is_on else "stg_maintenance_on"
         await _edit(query,
-            f"<b>🔧 Maintenance Mode</b>
-
-"
-            f"<b>Status:</b> {status_text}
-
-"
+            f"<b>🔧 Maintenance Mode</b>\n\n"
+            f"<b>Status:</b> {status_text}\n\n"
             f"<i>When ON — only admins can use the bot.
 "
             f"Regular users will see a maintenance message.</i>",
@@ -709,9 +705,7 @@ async def handle_settings_input(client: Bot, message: Message):
         _pending.pop(uid, None)
         await db.set_maintenance(True)
         await _edit(query,
-            "<b>🔧 Maintenance Mode: 🔴 ON</b>
-
-"
+            "<b>🔧 Maintenance Mode: 🔴 ON</b>\n\n"
             "<i>Bot is now in maintenance. Only admins can use it.</i>",
             InlineKeyboardMarkup([
                 [InlineKeyboardButton("🟢 Turn OFF", callback_data="stg_maintenance_off")],
@@ -723,9 +717,7 @@ async def handle_settings_input(client: Bot, message: Message):
         _pending.pop(uid, None)
         await db.set_maintenance(False)
         await _edit(query,
-            "<b>🔧 Maintenance Mode: 🟢 OFF</b>
-
-"
+            "<b>🔧 Maintenance Mode: 🟢 OFF</b>\n\n"
             "<i>Bot is back to normal. All users can access it.</i>",
             InlineKeyboardMarkup([
                 [InlineKeyboardButton("🔴 Turn ON", callback_data="stg_maintenance_on")],
