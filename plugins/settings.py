@@ -15,6 +15,10 @@ async def settings_command(client: Client, message: Message):
             [
                 InlineKeyboardButton("👑 Admin", callback_data="stg_admin"),
                 InlineKeyboardButton("🚫 Ban Users", callback_data="stg_ban")
+            ],
+            [
+                InlineKeyboardButton("👥 Users", callback_data="stg_users"),
+                InlineKeyboardButton("📊 Stats", callback_data="stg_stats")
             ]
         ])
     )
