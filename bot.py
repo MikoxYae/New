@@ -3,40 +3,64 @@ from plugins import web_server
 import asyncio
 import pyromod.listen
 
-# ── Pyromod 1.5 KeyError fix ───────────────────────────────────────────────────
-# pyromod 1.5 never seeds self.listeners with enum keys so every incoming message
-# crashes with KeyError.  Patch BOTH source files once at startup.
-import os as _os, re as _re
+# ── Pyromod fix: monkey-patch resolve_future_or_callback ───────────────────────
+# The installed pyromod version has a bug where resolve_future_or_callback's
+# else-branch calls self.callback, which IS self.resolve_future_or_callback
+# → infinite recursion on every message that has no active listener.
+# We replace the entire method with a correct version.
+def _apply_pyromod_fix():
+    try:
+        from pyromod.listen.message_handler import MessageHandler as _MH
+        from pyromod.listen import ListenerTypes as _LT
 
-def _patch_pyromod():
-    # Patch 1 – client.py: use .get() so a missing key returns []
-    _p1 = "/usr/local/lib/python3.10/dist-packages/pyromod/listen/client.py"
-    if _os.path.exists(_p1):
-        _src = open(_p1).read()
-        _fixed = _re.sub(
-            r'for listener in self\.listeners\[listener_type\]:',
-            'for listener in self.listeners.get(listener_type, []):',
-            _src
-        )
-        if _fixed != _src:
-            open(_p1, "w").write(_fixed)
+        async def _fixed_resolve_future_or_callback(self, client, update, *args):
+            listener = None
+            try:
+                listener = client.get_listener_matching_with_data(
+                    update, _LT.MESSAGE
+                )
+            except Exception:
+                pass
 
-    # Patch 2 – message_handler.py: wrap the whole check in try/except KeyError
-    _p2 = "/usr/local/lib/python3.10/dist-packages/pyromod/listen/message_handler.py"
-    if _os.path.exists(_p2):
-        _src = open(_p2).read()
-        # Wrap check_if_has_matching_listener body
-        _BAD  = "        listener = client.get_listener_matching_with_data(data, ListenerTypes.MESSAGE)"
-        _GOOD = (
-            "        try:\n"
-            "            listener = client.get_listener_matching_with_data(data, ListenerTypes.MESSAGE)\n"
-            "        except (KeyError, Exception):\n"
-            "            return"
-        )
-        if _BAD in _src and _GOOD.replace("\n", "\n") not in _src:
-            open(_p2, "w").write(_src.replace(_BAD, _GOOD))
+            if listener:
+                # Pyromod listener is waiting – resolve it
+                try:
+                    if hasattr(client, 'remove_listener'):
+                        client.remove_listener(listener)
+                except Exception:
+                    pass
+                try:
+                    fut = getattr(listener, 'future', None)
+                    cb  = getattr(listener, 'callback', None)
+                    if fut and not fut.done():
+                        fut.set_result(update)
+                    elif cb:
+                        await cb(client, update)
+                except Exception:
+                    pass
+            else:
+                # No pyromod listener – call the real user-registered callback
+                user_cb = getattr(self, 'user_callback', None)
+                if user_cb is None:
+                    # Fallback: try _callback or the handler's original function
+                    user_cb = getattr(self, '_callback', None)
+                if user_cb and user_cb is not getattr(self, 'resolve_future_or_callback', None):
+                    try:
+                        await user_cb(client, update, *args)
+                    except Exception:
+                        pass
 
-_patch_pyromod()
+        _MH.resolve_future_or_callback = _fixed_resolve_future_or_callback
+
+        # Also seed self.listeners so get_listener_matching_with_data never
+        # raises KeyError for a missing enum key
+        _orig_start = _MH.__init__ if hasattr(_MH, '__init__') else None
+
+    except Exception as _e:
+        import logging
+        logging.getLogger(__name__).warning(f"pyromod patch failed: {_e}")
+
+_apply_pyromod_fix()
 # ───────────────────────────────────────────────────────────────────────────────
 from pyrogram import Client
 from pyrogram.enums import ParseMode
@@ -87,12 +111,12 @@ class Bot(Client):
 
     async def start(self):
         await super().start()
-        # Seed pyromod listeners dict so no KeyError on first message
+        # Seed listeners dict for any remaining KeyError on missing enum keys
         try:
             from pyromod.listen import ListenerTypes as _LT
-            for _lt in _LT:
-                if _lt not in self.listeners:
-                    self.listeners[_lt] = []
+            if hasattr(self, 'listeners') and isinstance(self.listeners, dict):
+                for _lt in _LT:
+                    self.listeners.setdefault(_lt, [])
         except Exception:
             pass
         scheduler.start()
