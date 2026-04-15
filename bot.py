@@ -87,6 +87,24 @@ class Bot(Client):
             self.LOGGER(__name__).info("\nBot Stopped.")
             sys.exit()
 
+        # Load shortner settings from DB and override config
+        try:
+            import config as _cfg
+            shortner = await db.get_shortner_settings()
+            if shortner.get("url"):
+                _cfg.SHORTLINK_URL = shortner["url"]
+            if shortner.get("api"):
+                _cfg.SHORTLINK_API = shortner["api"]
+            if shortner.get("expire"):
+                try:
+                    _cfg.VERIFY_EXPIRE = int(shortner["expire"])
+                except Exception:
+                    pass
+            if shortner.get("tut_vid"):
+                _cfg.TUT_VID = shortner["tut_vid"]
+        except Exception as _se:
+            self.LOGGER(__name__).warning(f"Could not load shortner settings from DB: {_se}")
+
         self.set_parse_mode(ParseMode.HTML)
         self.LOGGER(__name__).info(f"Bot Running..!\n\nYae Miko")
         self.LOGGER(__name__).info(f"""       
