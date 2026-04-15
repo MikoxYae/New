@@ -5,7 +5,7 @@ import motor, asyncio
 import motor.motor_asyncio
 import time
 import pymongo, os
-from config import DB_URI, DB_NAME
+from config import DB_URI, DB_NAME, PROTECT_CONTENT, CUSTOM_CAPTION
 import logging
 from datetime import datetime, timedelta
 
@@ -45,6 +45,7 @@ class Rohit:
         self.banned_user_data = self.database['banned_user']
         self.autho_user_data = self.database['autho_user']
         self.del_timer_data = self.database['del_timer']
+        self.bot_settings_data = self.database['bot_settings']
         self.fsub_data = self.database['fsub']   
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
@@ -126,6 +127,34 @@ class Rohit:
         if data:
             return data.get('value', 600)
         return 0
+
+
+    # BOT SETTINGS
+    async def set_protect_content(self, value: bool):
+        await self.bot_settings_data.update_one(
+            {'_id': 'protect_content'},
+            {'$set': {'value': bool(value)}},
+            upsert=True
+        )
+
+    async def get_protect_content(self):
+        data = await self.bot_settings_data.find_one({'_id': 'protect_content'})
+        if data is None:
+            return PROTECT_CONTENT
+        return bool(data.get('value', PROTECT_CONTENT))
+
+    async def set_custom_caption(self, value):
+        await self.bot_settings_data.update_one(
+            {'_id': 'custom_caption'},
+            {'$set': {'value': value}},
+            upsert=True
+        )
+
+    async def get_custom_caption(self):
+        data = await self.bot_settings_data.find_one({'_id': 'custom_caption'})
+        if data is None:
+            return CUSTOM_CAPTION
+        return data.get('value')
 
 
     # CHANNEL MANAGEMENT
