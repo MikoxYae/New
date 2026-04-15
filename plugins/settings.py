@@ -13,20 +13,31 @@ async def settings_command(client: Client, message: Message):
         caption="<b>⚙️ Settings Panel</b>\n\nSelect a category to manage:",
         reply_markup=InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("👑 Admin",       callback_data="stg_admin"),
-                InlineKeyboardButton("🚫 Ban Users",   callback_data="stg_ban")
+                InlineKeyboardButton("👑 Admin",        callback_data="stg_admin"),
+                InlineKeyboardButton("🚫 Ban Users",    callback_data="stg_ban")
             ],
             [
-                InlineKeyboardButton("👥 Users",       callback_data="stg_users"),
-                InlineKeyboardButton("📊 Stats",       callback_data="stg_stats")
+                InlineKeyboardButton("👥 Users",        callback_data="stg_users"),
+                InlineKeyboardButton("📊 Stats",        callback_data="stg_stats")
             ],
             [
-                InlineKeyboardButton("📢 Force Sub",   callback_data="stg_fsub"),
+                InlineKeyboardButton("🔢 Count",        callback_data="stg_count"),
+                InlineKeyboardButton("🧹 DelReq",       callback_data="stg_delreq")
+            ],
+            [
+                InlineKeyboardButton("📢 Force Sub",    callback_data="stg_fsub"),
                 InlineKeyboardButton("🔄 Request Mode", callback_data="stg_reqmode")
             ],
             [
                 InlineKeyboardButton("⏱ Auto Delete",  callback_data="stg_autodel"),
                 InlineKeyboardButton("🔗 Shortner",     callback_data="stg_shortner")
+            ],
+            [
+                InlineKeyboardButton("🔐 Protect",      callback_data="stg_protect"),
+                InlineKeyboardButton("📝 Caption",      callback_data="stg_caption")
+            ],
+            [
+                InlineKeyboardButton("🛡 Anti Bypass",  callback_data="stg_antibypass")
             ]
         ])
     )
