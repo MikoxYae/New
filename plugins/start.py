@@ -49,7 +49,7 @@ async def start_command(client: Client, message: Message):
 
     # Maintenance mode check — block non-admins
     if await db.get_maintenance():
-        admins = await db.get_admins()
+        admins = await db.get_all_admins()
         if user_id not in admins and user_id != OWNER_ID:
             return await message.reply_text(
                 "<b>🔧 Bot is currently under maintenance.</b>\n\n"
