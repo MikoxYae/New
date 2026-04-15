@@ -38,6 +38,9 @@ async def settings_command(client: Client, message: Message):
             ],
             [
                 InlineKeyboardButton("🛡 Anti Bypass",  callback_data="stg_antibypass")
+            ],
+            [
+                InlineKeyboardButton("🔧 Maintenance",  callback_data="stg_maintenance")
             ]
         ])
     )
