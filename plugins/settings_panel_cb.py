@@ -52,6 +52,9 @@ def _main_markup():
         ],
         [
             InlineKeyboardButton("🛡 Anti Bypass", callback_data="stg_antibypass")
+        ],
+        [
+            InlineKeyboardButton("🔗 Shortner", callback_data="stg_shortner")
         ]
     ])
 
@@ -559,6 +562,42 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         await _edit(query,
             "<b>✅ Anti Bypass set to:</b> <code>OFF</code>",
             InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_antibypass")]])
+        )
+
+    # ══════════════════════════════════════════════════════════
+    #  SHORTNER PANEL  (Owner Only)
+    # ══════════════════════════════════════════════════════════
+
+    elif data == "stg_shortner":
+        _pending.pop(uid, None)
+        if uid != OWNER_ID:
+            await query.answer("⛔ Only Owner can manage Shortner settings!", show_alert=True)
+            return
+        import config as _cfg
+        settings = await db.get_shortner_settings()
+        url    = settings.get("url",     _cfg.SHORTLINK_URL  or "not set")
+        api    = settings.get("api",     _cfg.SHORTLINK_API  or "not set")
+        expire = str(settings.get("expire", _cfg.VERIFY_EXPIRE or 60))
+        tut    = settings.get("tut_vid", _cfg.TUT_VID         or "not set")
+        await _edit(query,
+            "<b>🔗 Shortner Settings</b>\n\n"
+            f"<b>🌐 URL:</b> <code>{url}</code>\n"
+            f"<b>🔑 API:</b> <code>{api}</code>\n"
+            f"<b>⏱ Token Expire:</b> <code>{expire}</code> seconds\n"
+            f"<b>🎬 Tutorial Video:</b> <code>{tut}</code>\n\n"
+            "<i>Edit a field then press <b>Save Change</b> to apply.</i>",
+            InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("🌐 Add Shortner", callback_data="srt_url"),
+                    InlineKeyboardButton("🔑 Api",           callback_data="srt_api")
+                ],
+                [
+                    InlineKeyboardButton("🎬 Tutorial Video", callback_data="srt_tut"),
+                    InlineKeyboardButton("⏱ Token Expire",   callback_data="srt_expire")
+                ],
+                [InlineKeyboardButton("💾 Save Change",      callback_data="srt_save")],
+                [InlineKeyboardButton("🔙 Back",             callback_data="stg_back")]
+            ])
         )
 
     # ══════════════════════════════════════════════════════════
