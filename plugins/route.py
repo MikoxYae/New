@@ -107,30 +107,36 @@ def verify_page(user_id, token, bot_username, wait_seconds, nonce):
 <style>
 body{{font-family:Arial,sans-serif;background:#0f172a;color:#e5e7eb;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}}
 .card{{max-width:420px;background:#111827;border:1px solid #334155;border-radius:18px;padding:26px;text-align:center;box-shadow:0 20px 60px #0008}}
-button{{width:100%;padding:14px;border:0;border-radius:12px;background:#22c55e;color:#04130a;font-weight:700;font-size:16px}}
-button:disabled{{background:#475569;color:#cbd5e1}}
+.ring{{width:80px;height:80px;margin:0 auto 18px;border-radius:50%;border:6px solid #334155;border-top-color:#22c55e;animation:spin 1s linear infinite}}
+@keyframes spin{{to{{transform:rotate(360deg)}}}}
+.num{{font-size:2.2rem;font-weight:700;color:#22c55e;margin:8px 0}}
 .small{{color:#94a3b8;font-size:14px;line-height:1.5}}
+.msg{{color:#22c55e;font-size:15px;font-weight:600;display:none}}
 </style>
 </head>
 <body>
 <div class="card">
-<h2>Token Verification</h2>
-<p class="small">Please wait <span id="left">{int(wait_seconds)}</span> seconds, then continue to Telegram.</p>
-<form id="gf" action="{go_url}" method="POST">
+<div class="ring"></div>
+<div class="num" id="left">{int(wait_seconds)}</div>
+<p class="small">Please wait while we verify your session&hellip;</p>
+<p class="msg" id="msg">Redirecting to Telegram&hellip;</p>
+<form id="gf" action="{go_url}" method="POST" style="display:none">
 <input type="hidden" name="n" value="{safe_nonce}">
-<button id="btn" type="submit" disabled>Continue</button>
 </form>
 </div>
 <script>
 let left = {int(wait_seconds)};
-const btn = document.getElementById("btn");
 const label = document.getElementById("left");
+const msg = document.getElementById("msg");
 const timer = setInterval(() => {{
   left -= 1;
-  label.textContent = Math.max(left, 0);
   if (left <= 0) {{
     clearInterval(timer);
-    btn.disabled = false;
+    label.style.display = "none";
+    msg.style.display = "block";
+    document.getElementById("gf").submit();
+  }} else {{
+    label.textContent = left;
   }}
 }}, 1000);
 </script>
