@@ -25,7 +25,8 @@ async def settings_command(client: Client, message: Message):
                 InlineKeyboardButton("🔄 Request Mode", callback_data="stg_reqmode")
             ],
             [
-                InlineKeyboardButton("⏱ Auto Delete",  callback_data="stg_autodel")
+                InlineKeyboardButton("⏱ Auto Delete",  callback_data="stg_autodel"),
+                InlineKeyboardButton("🔗 Shortner",     callback_data="stg_shortner")
             ]
         ])
     )
