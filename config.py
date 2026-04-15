@@ -25,7 +25,7 @@ PREMIUM_PIC = os.environ.get("PREMIUM_PIC", "https://graph.org/file/c3298a2f4d62
 #------------------------------------------------------------------------------------------------------------------------------------------------
 SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "linkshortify.com")
 SHORTLINK_API = os.environ.get("SHORTLINK_API", "d568956721f5beb08837393f7e8efbccffeb1902")
-VERIFY_EXPIRE = int(os.environ.get('VERIFY_EXPIRE', "43200"))
+VERIFY_EXPIRE = int(os.environ.get('VERIFY_EXPIRE', "60"))
 TUT_VID = os.environ.get("TUT_VID","https://t.me/How_To_Take_Tokens/12")
 ANTI_BYPASS_ENABLED = True if os.environ.get("ANTI_BYPASS_ENABLED", "True") == "True" else False
 ANTI_BYPASS_MIN_WAIT = int(os.environ.get("ANTI_BYPASS_MIN_WAIT", "8"))
