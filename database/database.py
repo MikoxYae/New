@@ -135,7 +135,7 @@ class Rohit:
 
     async def add_channel(self, channel_id: int):
         if not await self.channel_exist(channel_id):
-            await self.fsub_data.insert_one({'_id': channel_id})
+            await self.fsub_data.insert_one({'_id': channel_id, 'mode': 'off', 'request_link': ''})
             return
 
     async def rem_channel(self, channel_id: int):
@@ -159,6 +159,17 @@ class Rohit:
         await self.fsub_data.update_one(
             {'_id': channel_id},
             {'$set': {'mode': mode}},
+            upsert=True
+        )
+
+    async def get_request_link(self, channel_id: int):
+        data = await self.fsub_data.find_one({'_id': channel_id})
+        return data.get("request_link", "") if data else ""
+
+    async def set_request_link(self, channel_id: int, link: str):
+        await self.fsub_data.update_one(
+            {'_id': channel_id},
+            {'$set': {'request_link': link}},
             upsert=True
         )
 
