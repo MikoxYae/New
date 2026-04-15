@@ -50,6 +50,7 @@ class Rohit:
         self.fsub_data = self.database['fsub']   
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
+        self.shortner_settings_data = self.database['shortner_settings']
         
 
 
@@ -356,6 +357,30 @@ class Rohit:
         ]
         result = await self.sex_data.aggregate(pipeline).to_list(length=1)
         return result[0]["total"] if result else 0
+
+
+    # SHORTNER SETTINGS
+    async def get_shortner_settings(self):
+        doc = await self.shortner_settings_data.find_one({'_id': 'shortner'})
+        if doc:
+            return doc
+        return {}
+
+    async def save_shortner_settings(self, draft: dict):
+        try:
+            expire = int(draft.get('expire', 60))
+        except (ValueError, TypeError):
+            expire = 60
+        await self.shortner_settings_data.update_one(
+            {'_id': 'shortner'},
+            {'$set': {
+                'url':     draft.get('url', ''),
+                'api':     draft.get('api', ''),
+                'expire':  expire,
+                'tut_vid': draft.get('tut_vid', ''),
+            }},
+            upsert=True
+        )
 
 
 db = Rohit(DB_URI, DB_NAME)
