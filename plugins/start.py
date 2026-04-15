@@ -230,17 +230,19 @@ async def not_joined(client: Client, message: Message):
 
                     name = data.title
 
-                    if mode == "on" and not data.username:
+                    if mode == "on":
+                        # Join request link — sirf request send karna kaafi hai
                         try:
-                            link = data.invite_link or await client.export_chat_invite_link(chat_id)
-                        except:
                             invite = await client.create_chat_invite_link(
                                 chat_id=chat_id,
                                 creates_join_request=True
                             )
                             link = invite.invite_link
+                        except Exception:
+                            link = data.invite_link or await client.export_chat_invite_link(chat_id)
 
                     else:
+                        # Direct join link
                         if data.username:
                             link = f"https://t.me/{data.username}"
                         else:
