@@ -85,11 +85,13 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     elif data == "premium":
         await query.message.delete()
         premium_text = (
-            f"ʜᴇʟʟᴏ {query.from_user.first_name} {query.from_user.last_name}\n\n"
-            f"ʜᴇʀᴇ ʏᴏᴜ ᴄᴀɴ ʙᴜʏ ᴏᴜʀ ɴᴏʀᴍᴀʟ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀꜱʜɪᴘ ᴏꜰ sᴇʟᴇᴄᴛᴇᴅ ʙᴏᴛ. ᴄʟɪᴄᴋ ᴏɴ ɴᴏʀᴍᴀʟ ᴘʀᴇᴍɪᴜᴍ ᴛᴏ sᴛᴀʀᴛ ʙᴜʏɪɴɢ.\n\n"
-            f"<b>𝗪𝗵𝗮𝘁 𝗬𝗼𝘂 𝗚𝗲𝘁 𝗜𝗻 𝗡𝗼𝗿𝗺𝗮𝗹 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗠𝗲𝗺𝗯𝗲𝗿𝘀𝗵𝗶𝗽.</b>\n\n"
-            f"• ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴛᴏ ᴛᴀᴋᴇ ᴛᴏᴋᴇɴ.\n"
-            f"• ʏᴏᴜʀ ғᴏʀᴡᴀʀᴅ ᴏᴘᴛɪᴏɴ ᴡɪʟʟ ʙᴇ ɴᴏᴛ ᴇɴᴀʙʟᴇᴅ [ᴍᴇᴀɴs ʏᴏᴜ ᴄᴀɴ'ᴛ sᴀᴠᴇ ғɪʟᴇs ɪɴ ʏᴏᴜʀ ɢᴀʟʟᴇʀʏ ᴏʀ ɪɴ ᴏᴛʜᴇʀ ᴄʜᴀɴɴᴇʟ ɢʀᴏᴜᴘs]."
+            f"<b>Hello {query.from_user.first_name}!</b>\n\n"
+            f"Get our <b>Normal Premium</b> membership and unlock exclusive benefits.\n\n"
+            f"<b>🎁 𝗪𝗵𝗮𝘁 𝗬𝗼𝘂 𝗚𝗲𝘁 𝗜𝗻 𝗡𝗼𝗿𝗺𝗮𝗹 𝗣𝗿𝗲𝗺𝗶𝘂𝗺:</b>\n\n"
+            f"✅ <b>Token Bypass</b> — No shortner token required. Unlimited access without any ads.\n"
+            f"✅ <b>Free Link Limit Bypass</b> — Unlimited file links per day. No daily restrictions.\n"
+            f"✅ <b>Protected Content Bypass</b> — Save & forward files freely. No restrictions on any content.\n\n"
+            f"Click <b>Normal Premium</b> below to select a plan."
         )
         
         await client.send_photo(
@@ -112,10 +114,12 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     elif data == "normal_premium":
         await query.message.delete()
         normal_premium_text = (
-            f"<b>𝗪𝗵𝗮𝘁 𝗬𝗼𝘂 𝗚𝗲𝘁 𝗜𝗻 𝗡𝗼𝗿𝗺𝗮𝗹 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗠𝗲𝗺𝗯𝗲𝗿𝘀𝗵𝗶𝗽.</b>\n\n"
-            f"• ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴛᴏ ᴛᴀᴋᴇ ᴛᴏᴋᴇɴ.\n"
-            f"• ʏᴏᴜʀ ғᴏʀᴡᴀʀᴅ ᴏᴘᴛɪᴏɴ ᴡɪʟʟ ʙᴇ ɴᴏᴛ ᴇɴᴀʙʟᴇᴅ [ᴍᴇᴀɴs ʏᴏᴜ ᴄᴀɴ'ᴛ sᴀᴠᴇ ғɪʟᴇs ɪɴ ʏᴏᴜʀ ɢᴀʟʟᴇʀʏ ᴏʀ ɪɴ ᴏᴛʜᴇʀ ᴄʜᴀɴɴᴇʟ ɢʀᴏᴜᴘs].\n"
-            f"• ᴘʟᴇᴀsᴇ sᴇʟᴇᴄᴛ ᴘʟᴀɴ ɢɪᴠᴇɴ ʙᴇʟᴏᴡ"
+            f"<b>🥇 Normal Premium Membership</b>\n\n"
+            f"<b>Benefits you will receive:</b>\n\n"
+            f"✅ <b>Token Bypass</b> — No shortner token required. Unlimited access without any ads.\n"
+            f"✅ <b>Free Link Limit Bypass</b> — Unlimited file links per day. No daily restrictions.\n"
+            f"✅ <b>Protected Content Bypass</b> — Save & forward files freely. No restrictions on any content.\n\n"
+            f"<b>Please select a plan below to proceed with payment:</b>"
         )
         
         await client.send_photo(
