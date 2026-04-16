@@ -114,11 +114,11 @@ async def start_command(client: Client, message: Message):
                         return await message.reply_photo(
                             photo=PREMIUM_PIC,
                             caption=(
-                                f"<b>🔒 ᴀᴘᴋᴇ {free_limit} ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋs ᴋʜᴀᴛᴀᴍ ʜᴏ ɢᴀʏᴇ!</b>\n\n"
-                                f"<b>𝗬𝗼𝘂𝗿 𝘁𝗼𝗸𝗲𝗻 𝗵𝗮𝘀 𝗲𝘅𝗽𝗶𝗿𝗲𝗱. 𝗣𝗹𝗲𝗮𝘀𝗲 𝗿𝗲𝗳𝗿𝗲𝘀𝗵 𝘆𝗼𝘂𝗿 𝘁𝗼𝗸𝗲𝗻 𝘁𝗼 𝗰𝗼𝗻𝘁𝗶𝗻𝘂𝗲..</b>\n\n"
-                                f"<b>Tᴏᴋᴇɴ Tɪᴍᴇᴏᴜᴛ:</b> {get_exp_time(_cfg.VERIFY_EXPIRE)}\n\n"
-                                f"<b>ᴛʜɪs ɪs ᴀɴ ᴀᴅs ᴛᴏᴋᴇɴ. ᴘᴀssɪɴɢ ᴏɴᴇ ᴀᴅ ᴀʟʟᴏᴡs ʏᴏᴜ ᴛᴏ ᴜsᴇ ᴛʜᴇ ʙᴏᴛ ᴜɴᴛɪʟ ɴᴇxᴛ ᴅᴀʏ.</b>\n\n"
-                                f"<blockquote><b>ᴛᴏ ᴀᴠᴏɪᴅᴇ ᴛᴏᴋᴇɴ ᴛᴀᴋᴇ ᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ.</b></blockquote>"
+                                f"<b>🔒 Your {free_limit} free daily links have been used!</b>\n\n"
+                                f"<b>Please refresh your token to continue using the bot.</b>\n\n"
+                                f"<b>Token Timeout:</b> {get_exp_time(_cfg.VERIFY_EXPIRE)}\n\n"
+                                f"<b>This is an ads token. Passing one ad allows you to use the bot until the next day.</b>\n\n"
+                                f"<blockquote><b>To skip the token, get our Premium for unlimited access.</b></blockquote>"
                             ),
                             reply_markup=InlineKeyboardMarkup(btn)
                         )
@@ -127,9 +127,9 @@ async def start_command(client: Client, message: Message):
                     return await message.reply_photo(
                         photo=PREMIUM_PIC,
                         caption=(
-                            f"<b>🔒 ᴀᴘᴋᴇ {free_limit} ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋs ᴋʜᴀᴛᴀᴍ ʜᴏ ɢᴀʏᴇ!</b>\n\n"
-                            f"<b>ᴀᴊ ᴋᴇ ʟɪʏᴇ ʟɪᴍɪᴛ ᴘᴜʀɪ ʜᴏ ɢᴀʏɪ. ᴋᴀʟ ᴅᴏʙᴀʀᴀ {free_limit} ғʀᴇᴇ ʟɪɴᴋs ᴍɪʟᴇɴɢᴇ.</b>\n\n"
-                            f"<b>ᴜɴʟɪᴍɪᴛᴇᴅ ᴀᴄᴄᴇss ᴋᴇ ʟɪʏᴇ ᴘʀᴇᴍɪᴜᴍ ʟᴇ!</b>"
+                            f"<b>🔒 Your {free_limit} free daily links have been used!</b>\n\n"
+                            f"<b>Daily limit reached. Come back tomorrow for {free_limit} more free links.</b>\n\n"
+                            f"<b>Get Premium for unlimited access with no daily restrictions!</b>"
                         ),
                         reply_markup=InlineKeyboardMarkup([
                             [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
