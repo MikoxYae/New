@@ -44,17 +44,18 @@ def _main_markup():
             InlineKeyboardButton("🔄 Request Mode", callback_data="stg_reqmode")
         ],
         [
-            InlineKeyboardButton("⏱ Auto Delete", callback_data="stg_autodel")
+            InlineKeyboardButton("⏱ Auto Delete", callback_data="stg_autodel"),
+            InlineKeyboardButton("🔗 Shortner",    callback_data="stg_shortner")
         ],
         [
-            InlineKeyboardButton("🔐 Protect", callback_data="stg_protect"),
-            InlineKeyboardButton("📝 Caption", callback_data="stg_caption")
+            InlineKeyboardButton("🆓 Free Link",   callback_data="stg_freelink"),
+            InlineKeyboardButton("🔐 Protect",     callback_data="stg_protect")
         ],
         [
+            InlineKeyboardButton("📝 Caption",     callback_data="stg_caption"),
             InlineKeyboardButton("🛡 Anti Bypass", callback_data="stg_antibypass")
         ],
         [
-            InlineKeyboardButton("🔗 Shortner",    callback_data="stg_shortner"),
             InlineKeyboardButton("🔧 Maintenance", callback_data="stg_maintenance")
         ]
     ])
@@ -580,14 +581,22 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         api    = settings.get("api",     _cfg.SHORTLINK_API  or "not set")
         expire = str(settings.get("expire", _cfg.VERIFY_EXPIRE or 60))
         tut    = settings.get("tut_vid", _cfg.TUT_VID         or "not set")
+        is_enabled = await db.get_shortner_enabled()
+        status_icon = "🟢 ON" if is_enabled else "🔴 OFF"
+        toggle_cb   = "stg_shortner_off" if is_enabled else "stg_shortner_on"
+        toggle_lbl  = "Turn OFF" if is_enabled else "Turn ON"
         await _edit(query,
             "<b>🔗 Shortner Settings</b>\n\n"
+            f"<b>Status:</b> {status_icon}\n\n"
             f"<b>🌐 URL:</b> <code>{url}</code>\n"
             f"<b>🔑 API:</b> <code>{api}</code>\n"
             f"<b>⏱ Token Expire:</b> <code>{expire}</code> seconds\n"
             f"<b>🎬 Tutorial Video:</b> <code>{tut}</code>\n\n"
             "<i>Edit a field then press <b>Save Change</b> to apply.</i>",
             InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton(f"{'🔴' if is_enabled else '🟢'} {toggle_lbl}", callback_data=toggle_cb)
+                ],
                 [
                     InlineKeyboardButton("🌐 Add Shortner", callback_data="srt_url"),
                     InlineKeyboardButton("🔑 Api",           callback_data="srt_api")
@@ -599,6 +608,127 @@ async def settings_cb(client: Bot, query: CallbackQuery):
                 [InlineKeyboardButton("💾 Save Change",      callback_data="srt_save")],
                 [InlineKeyboardButton("🔙 Back",             callback_data="stg_back")]
             ])
+        )
+
+    elif data == "stg_shortner_on":
+        _pending.pop(uid, None)
+        if uid != OWNER_ID:
+            await query.answer("⛔ Only Owner!", show_alert=True)
+            return
+        await db.set_shortner_enabled(True)
+        await query.answer("✅ Shortner turned ON", show_alert=True)
+        # Refresh the shortner panel
+        import config as _cfg
+        settings = await db.get_shortner_settings()
+        url    = settings.get("url",  _cfg.SHORTLINK_URL  or "not set")
+        api    = settings.get("api",  _cfg.SHORTLINK_API  or "not set")
+        expire = str(settings.get("expire", _cfg.VERIFY_EXPIRE or 60))
+        tut    = settings.get("tut_vid", _cfg.TUT_VID or "not set")
+        await _edit(query,
+            "<b>🔗 Shortner Settings</b>\n\n"
+            "<b>Status:</b> 🟢 ON\n\n"
+            f"<b>🌐 URL:</b> <code>{url}</code>\n"
+            f"<b>🔑 API:</b> <code>{api}</code>\n"
+            f"<b>⏱ Token Expire:</b> <code>{expire}</code> seconds\n"
+            f"<b>🎬 Tutorial Video:</b> <code>{tut}</code>",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔴 Turn OFF", callback_data="stg_shortner_off")],
+                [InlineKeyboardButton("🌐 Add Shortner", callback_data="srt_url"), InlineKeyboardButton("🔑 Api", callback_data="srt_api")],
+                [InlineKeyboardButton("🎬 Tutorial Video", callback_data="srt_tut"), InlineKeyboardButton("⏱ Token Expire", callback_data="srt_expire")],
+                [InlineKeyboardButton("💾 Save Change", callback_data="srt_save")],
+                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+            ])
+        )
+
+    elif data == "stg_shortner_off":
+        _pending.pop(uid, None)
+        if uid != OWNER_ID:
+            await query.answer("⛔ Only Owner!", show_alert=True)
+            return
+        await db.set_shortner_enabled(False)
+        await query.answer("✅ Shortner turned OFF — Free Link system active", show_alert=True)
+        import config as _cfg
+        settings = await db.get_shortner_settings()
+        url    = settings.get("url",  _cfg.SHORTLINK_URL  or "not set")
+        api    = settings.get("api",  _cfg.SHORTLINK_API  or "not set")
+        expire = str(settings.get("expire", _cfg.VERIFY_EXPIRE or 60))
+        tut    = settings.get("tut_vid", _cfg.TUT_VID or "not set")
+        await _edit(query,
+            "<b>🔗 Shortner Settings</b>\n\n"
+            "<b>Status:</b> 🔴 OFF\n\n"
+            f"<b>🌐 URL:</b> <code>{url}</code>\n"
+            f"<b>🔑 API:</b> <code>{api}</code>\n"
+            f"<b>⏱ Token Expire:</b> <code>{expire}</code> seconds\n"
+            f"<b>🎬 Tutorial Video:</b> <code>{tut}</code>",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("🟢 Turn ON", callback_data="stg_shortner_on")],
+                [InlineKeyboardButton("🌐 Add Shortner", callback_data="srt_url"), InlineKeyboardButton("🔑 Api", callback_data="srt_api")],
+                [InlineKeyboardButton("🎬 Tutorial Video", callback_data="srt_tut"), InlineKeyboardButton("⏱ Token Expire", callback_data="srt_expire")],
+                [InlineKeyboardButton("💾 Save Change", callback_data="srt_save")],
+                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+            ])
+        )
+
+    # ══════════════════════════════════════════════════════════
+    #  FREE LINK PANEL
+    # ══════════════════════════════════════════════════════════
+
+    elif data == "stg_freelink":
+        _pending.pop(uid, None)
+        limit = await db.get_free_link_limit()
+        shortner_on = await db.get_shortner_enabled()
+        mode_txt = "Shortner ON (token required after free links)" if shortner_on else "Shortner OFF (premium required after free links)"
+        await _edit(query,
+            f"<b>🆓 Free Link Settings</b>\n\n"
+            f"<b>Daily Free Links:</b> <code>{limit}</code> per user\n"
+            f"<b>Mode:</b> {mode_txt}\n\n"
+            "<i>Select the daily free link limit below:</i>",
+            InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("5"  if limit != 5  else "✅ 5",  callback_data="stg_fl_5"),
+                    InlineKeyboardButton("10" if limit != 10 else "✅ 10", callback_data="stg_fl_10"),
+                    InlineKeyboardButton("15" if limit != 15 else "✅ 15", callback_data="stg_fl_15"),
+                    InlineKeyboardButton("20" if limit != 20 else "✅ 20", callback_data="stg_fl_20"),
+                ],
+                [InlineKeyboardButton("✏️ Custom", callback_data="stg_fl_custom")],
+                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+            ])
+        )
+
+    elif data.startswith("stg_fl_") and data != "stg_fl_custom":
+        _pending.pop(uid, None)
+        try:
+            new_limit = int(data.replace("stg_fl_", ""))
+        except ValueError:
+            await query.answer("Invalid!", show_alert=True)
+            return
+        await db.set_free_link_limit(new_limit)
+        await query.answer(f"✅ Free Link limit set to {new_limit}/day", show_alert=True)
+        shortner_on = await db.get_shortner_enabled()
+        mode_txt = "Shortner ON (token required after free links)" if shortner_on else "Shortner OFF (premium required after free links)"
+        await _edit(query,
+            f"<b>🆓 Free Link Settings</b>\n\n"
+            f"<b>Daily Free Links:</b> <code>{new_limit}</code> per user\n"
+            f"<b>Mode:</b> {mode_txt}\n\n"
+            "<i>Select the daily free link limit below:</i>",
+            InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("5"  if new_limit != 5  else "✅ 5",  callback_data="stg_fl_5"),
+                    InlineKeyboardButton("10" if new_limit != 10 else "✅ 10", callback_data="stg_fl_10"),
+                    InlineKeyboardButton("15" if new_limit != 15 else "✅ 15", callback_data="stg_fl_15"),
+                    InlineKeyboardButton("20" if new_limit != 20 else "✅ 20", callback_data="stg_fl_20"),
+                ],
+                [InlineKeyboardButton("✏️ Custom", callback_data="stg_fl_custom")],
+                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+            ])
+        )
+
+    elif data == "stg_fl_custom":
+        _pending[uid] = {"action": "freelink_custom", "msg_id": query.message.id, "chat_id": query.message.chat.id}
+        await _edit(query,
+            "<b>✏️ Custom Free Link Limit</b>\n\n"
+            "📤 Send a <b>number</b> (e.g. <code>25</code>) as the daily free link limit:",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="stg_freelink")]])
         )
 
     # ══════════════════════════════════════════════════════════
@@ -863,5 +993,26 @@ async def handle_settings_input(client: Bot, message: Message):
             ])
         )
 
+    # ── FREE LINK CUSTOM SET ─────────────────────────────────
+    elif action == "freelink_custom":
+        try:
+            new_limit = int(raw)
+            if new_limit < 1:
+                raise ValueError
+        except ValueError:
+            await patch("<b>❌ Invalid. Send a positive number (e.g. <code>25</code>).</b>",
+                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_freelink")]]))
+            raise StopPropagation
+
+        await db.set_free_link_limit(new_limit)
+        shortner_on = await db.get_shortner_enabled()
+        mode_txt = "Shortner ON (token after free links)" if shortner_on else "Shortner OFF (premium after free links)"
+        await patch(
+            f"<b>✅ Free Link limit set to <code>{new_limit}</code>/day.</b>\n\n"
+            f"<b>Mode:</b> {mode_txt}",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 Back", callback_data="stg_freelink")]
+            ])
+        )
 
     raise StopPropagation
