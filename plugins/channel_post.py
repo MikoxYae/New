@@ -22,8 +22,11 @@ def not_in_batch_filter(_, __, message: Message) -> bool:
 not_in_batch = filters.create(not_in_batch_filter)
 
 
-@Bot.on_message(filters.private & admin & not_in_batch & ~filters.command(['start', 'commands', 'broadcast', 'batch', 'custom_batch', 'genlink', 'dbroadcast', 'pbroadcast', 'addpremium', 'premium_users', 'remove_premium', 'myplan', 'settings', 'peakhours', 'weeklyreport', 'cleanstats', 'start_premium_monitoring']))
+@Bot.on_message(filters.private & admin & ~filters.command(['start', 'commands', 'broadcast', 'batch', 'custom_batch', 'genlink', 'dbroadcast', 'pbroadcast', 'addpremium', 'premium_users', 'remove_premium', 'myplan', 'settings', 'peakhours', 'weeklyreport', 'cleanstats', 'start_premium_monitoring']))
 async def channel_post(client: Client, message: Message):
+    # Explicit guard: skip entirely if admin is in a custom_batch session
+    if message.from_user and message.from_user.id in _in_custom_batch:
+        return
     reply_text = await message.reply_text("Please Wait...!", quote = True)
     try:
         post_message = await message.copy(chat_id = client.db_channel.id, disable_notification=True)
