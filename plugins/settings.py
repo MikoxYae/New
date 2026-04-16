@@ -33,10 +33,11 @@ async def settings_command(client: Client, message: Message):
                 InlineKeyboardButton("🔗 Shortner",     callback_data="stg_shortner")
             ],
             [
-                InlineKeyboardButton("🔐 Protect",      callback_data="stg_protect"),
-                InlineKeyboardButton("📝 Caption",      callback_data="stg_caption")
+                InlineKeyboardButton("🆓 Free Link",    callback_data="stg_freelink"),
+                InlineKeyboardButton("🔐 Protect",      callback_data="stg_protect")
             ],
             [
+                InlineKeyboardButton("📝 Caption",      callback_data="stg_caption"),
                 InlineKeyboardButton("🛡 Anti Bypass",  callback_data="stg_antibypass")
             ],
             [
