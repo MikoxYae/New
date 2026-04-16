@@ -372,6 +372,53 @@ class Rohit:
             upsert=True
         )
 
+    # SHORTNER ENABLED / DISABLED TOGGLE
+    async def get_shortner_enabled(self):
+        doc = await self.bot_settings_data.find_one({'_id': 'shortner_enabled'})
+        return bool(doc.get('value', True)) if doc else True
+
+    async def set_shortner_enabled(self, value: bool):
+        await self.bot_settings_data.update_one(
+            {'_id': 'shortner_enabled'},
+            {'$set': {'value': bool(value)}},
+            upsert=True
+        )
+
+    # FREE LINK DAILY LIMIT
+    async def get_free_link_limit(self):
+        doc = await self.bot_settings_data.find_one({'_id': 'free_link_limit'})
+        return int(doc.get('value', 5)) if doc else 5
+
+    async def set_free_link_limit(self, value: int):
+        await self.bot_settings_data.update_one(
+            {'_id': 'free_link_limit'},
+            {'$set': {'value': int(value)}},
+            upsert=True
+        )
+
+    # USER DAILY LINK COUNT
+    async def get_user_daily_links(self, user_id: int):
+        today = datetime.now().strftime('%Y-%m-%d')
+        doc = await self.user_data.find_one({'_id': user_id})
+        if not doc:
+            return 0
+        daily = doc.get('daily_links', {})
+        if daily.get('date') != today:
+            return 0
+        return int(daily.get('count', 0))
+
+    async def increment_user_daily_links(self, user_id: int):
+        today = datetime.now().strftime('%Y-%m-%d')
+        doc = await self.user_data.find_one({'_id': user_id})
+        if not doc:
+            return
+        daily = doc.get('daily_links', {})
+        if daily.get('date') != today:
+            new_daily = {'date': today, 'count': 1}
+        else:
+            new_daily = {'date': today, 'count': int(daily.get('count', 0)) + 1}
+        await self.user_data.update_one({'_id': user_id}, {'$set': {'daily_links': new_daily}})
+
     # SHORTNER SETTINGS
     async def get_shortner_settings(self):
         doc = await self.shortner_settings_data.find_one({'_id': 'shortner'})
