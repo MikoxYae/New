@@ -9,7 +9,20 @@ from config import *
 from helper_func import encode, admin, get_message_id
 from database.db_stats import log_activity
 
-@Bot.on_message(filters.private & admin & ~filters.command(['start', 'commands', 'broadcast', 'batch', 'custom_batch', 'genlink', 'dbroadcast', 'pbroadcast', 'addpremium', 'premium_users', 'remove_premium', 'myplan', 'settings', 'peakhours', 'weeklyreport', 'cleanstats', 'start_premium_monitoring']))
+# Track admins currently in a custom_batch session so channel_post doesn't intercept them
+_in_custom_batch: set = set()
+
+
+def not_in_batch_filter(_, __, message: Message) -> bool:
+    if message.from_user is None:
+        return True
+    return message.from_user.id not in _in_custom_batch
+
+
+not_in_batch = filters.create(not_in_batch_filter)
+
+
+@Bot.on_message(filters.private & admin & not_in_batch & ~filters.command(['start', 'commands', 'broadcast', 'batch', 'custom_batch', 'genlink', 'dbroadcast', 'pbroadcast', 'addpremium', 'premium_users', 'remove_premium', 'myplan', 'settings', 'peakhours', 'weeklyreport', 'cleanstats', 'start_premium_monitoring']))
 async def channel_post(client: Client, message: Message):
     reply_text = await message.reply_text("Please Wait...!", quote = True)
     try:
@@ -105,30 +118,35 @@ async def link_generator(client: Client, message: Message):
 
 @Bot.on_message(filters.private & admin & filters.command("custom_batch"))
 async def custom_batch(client: Client, message: Message):
+    uid = message.from_user.id
     collected = []
     STOP_KEYBOARD = ReplyKeyboardMarkup([["STOP"]], resize_keyboard=True)
 
+    _in_custom_batch.add(uid)
     await message.reply("Send all messages you want to include in batch.\n\nPress STOP when you're done.", reply_markup=STOP_KEYBOARD)
 
-    while True:
-        try:
-            user_msg = await client.ask(
-                chat_id=message.chat.id,
-                text="Waiting for files/messages...\nPress STOP to finish.",
-                timeout=60
-            )
-        except asyncio.TimeoutError:
-            break
+    try:
+        while True:
+            try:
+                user_msg = await client.ask(
+                    chat_id=message.chat.id,
+                    text="Waiting for files/messages...\nPress STOP to finish.",
+                    timeout=60
+                )
+            except asyncio.TimeoutError:
+                break
 
-        if user_msg.text and user_msg.text.strip().upper() == "STOP":
-            break
+            if user_msg.text and user_msg.text.strip().upper() == "STOP":
+                break
 
-        try:
-            sent = await user_msg.copy(client.db_channel.id, disable_notification=True)
-            collected.append(sent.id)
-        except Exception as e:
-            await message.reply(f"❌ Failed to store a message:\n<code>{e}</code>")
-            continue
+            try:
+                sent = await user_msg.copy(client.db_channel.id, disable_notification=True)
+                collected.append(sent.id)
+            except Exception as e:
+                await message.reply(f"❌ Failed to store a message:\n<code>{e}</code>")
+                continue
+    finally:
+        _in_custom_batch.discard(uid)
 
     await message.reply("✅ Batch collection complete.", reply_markup=ReplyKeyboardRemove())
 
