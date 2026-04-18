@@ -1,16 +1,16 @@
 import time
+import asyncio
 from pyrogram import filters
 from pyrogram.types import Message
 from bot import Bot
 from config import FLOOD_LIMIT, FLOOD_WINDOW, FLOOD_BLOCK_DURATION
 
-# Per-user flood state: { user_id: { count, first_ts, warned, blocked_until } }
 _flood: dict = {}
 
 
 def _check(user_id: int):
     now = time.time()
-    d   = _flood.get(user_id)
+    d = _flood.get(user_id)
     if not d:
         _flood[user_id] = {'count': 1, 'first_ts': now, 'warned': False, 'blocked_until': 0.0}
         return False, False
@@ -21,8 +21,8 @@ def _check(user_id: int):
         return False, False
     d['count'] += 1
     if d['count'] > FLOOD_LIMIT:
-        is_new          = not d['warned']
-        d['warned']     = True
+        is_new = not d['warned']
+        d['warned'] = True
         d['blocked_until'] = now + FLOOD_BLOCK_DURATION
         return True, is_new
     return False, False
@@ -37,11 +37,10 @@ async def flood_guard(client: Bot, message: Message):
     if blocked:
         if is_new:
             try:
-                import asyncio
                 warn = await message.reply(
-                    f'<b>⚠️ Slow down!</b>\n\n'
-                    f'You are sending messages too fast.\n'
-                    f'Please wait <b>{FLOOD_BLOCK_DURATION} seconds</b> before trying again.'
+                    f'<b>⚠️ sʟᴏᴡ ᴅᴏᴡɴ!</b>\n\n'
+                    f'<b>ʏᴏᴜ ᴀʀᴇ sᴇɴᴅɪɴɢ ᴍᴇssᴀɢᴇs ᴛᴏᴏ ғᴀsᴛ.</b>\n'
+                    f'<b>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ <b>{FLOOD_BLOCK_DURATION} sᴇᴄᴏɴᴅs</b> ʙᴇғᴏʀᴇ ᴛʀʏɪɴɢ ᴀɢᴀɪɴ.</b>'
                 )
                 await asyncio.sleep(FLOOD_BLOCK_DURATION)
                 try:
