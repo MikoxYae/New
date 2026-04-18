@@ -15,22 +15,15 @@ from helper_func import *
 from database.database import *
 from pytz import timezone
 
-#=====================================================================================##
+REPLY_ERROR = "<b>ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴀs ᴀ ʀᴇᴘʟʏ ᴛᴏ ᴀɴʏ ᴛᴇʟᴇɢʀᴀᴍ ᴍᴇssᴀɢᴇ ᴡɪᴛʜᴏᴜᴛ ᴀɴʏ sᴘᴀᴄᴇs.</b>"
+WAIT_MSG = "<b>ᴡᴏʀᴋɪɴɢ....</b>"
 
-REPLY_ERROR = "<code>Use this command as a reply to any telegram message without any spaces.</code>"
-
-WAIT_MSG = "<b>Working....</b>"
-
-#=====================================================================================##
 
 @Bot.on_message(filters.command('commands') & filters.private & admin)
-async def bcmd(bot: Bot, message: Message):        
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data = "close")]])
-    await message.reply(text=CMD_TXT, reply_markup = reply_markup, quote= True)
+async def bcmd(bot: Bot, message: Message):
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close")]])
+    await message.reply(text=CMD_TXT, reply_markup=reply_markup, quote=True)
 
-#=====================================================================================##
-
-# BROADCAST COMMANDS
 
 @Bot.on_message(filters.private & filters.command('pbroadcast') & admin)
 async def send_pin_text(client: Bot, message: Message):
@@ -43,10 +36,9 @@ async def send_pin_text(client: Bot, message: Message):
         deleted = 0
         unsuccessful = 0
 
-        pls_wait = await message.reply("<i>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴘʀᴏᴄᴇꜱꜱɪɴɢ....</i>")
+        pls_wait = await message.reply("<b><i>ʙʀᴏᴀᴅᴄᴀsᴛ ᴘʀᴏᴄᴇssɪɴɢ....</i></b>")
         for chat_id in query:
             try:
-                # Send and pin the message
                 sent_msg = await broadcast_msg.copy(chat_id)
                 await client.pin_chat_message(chat_id=chat_id, message_id=sent_msg.id, both_sides=True)
                 successful += 1
@@ -66,22 +58,20 @@ async def send_pin_text(client: Bot, message: Message):
                 unsuccessful += 1
             total += 1
 
-        status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</u></b>
-
-Total Users: <code>{total}</code>
-Successful: <code>{successful}</code>
-Blocked Users: <code>{blocked}</code>
-Deleted Accounts: <code>{deleted}</code>
-Unsuccessful: <code>{unsuccessful}</code>"""
-
+        status = (
+            f"<b><u>ʙʀᴏᴀᴅᴄᴀsᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</u></b>\n\n"
+            f"<b>ᴛᴏᴛᴀʟ ᴜsᴇʀs:</b> <code>{total}</code>\n"
+            f"<b>sᴜᴄᴄᴇssғᴜʟ:</b> <code>{successful}</code>\n"
+            f"<b>ʙʟᴏᴄᴋᴇᴅ ᴜsᴇʀs:</b> <code>{blocked}</code>\n"
+            f"<b>ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛs:</b> <code>{deleted}</code>\n"
+            f"<b>ᴜɴsᴜᴄᴄᴇssғᴜʟ:</b> <code>{unsuccessful}</code>"
+        )
         return await pls_wait.edit(status)
-
     else:
-        msg = await message.reply("Reply to a message to broadcast and pin it.")
+        msg = await message.reply("<b>ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴛᴏ ʙʀᴏᴀᴅᴄᴀsᴛ ᴀɴᴅ ᴘɪɴ ɪᴛ.</b>")
         await asyncio.sleep(8)
         await msg.delete()
 
-#=====================================================================================##
 
 @Bot.on_message(filters.private & filters.command('broadcast') & admin)
 async def send_text(client: Bot, message: Message):
@@ -94,7 +84,7 @@ async def send_text(client: Bot, message: Message):
         deleted = 0
         unsuccessful = 0
 
-        pls_wait = await message.reply("<i>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴘʀᴏᴄᴇꜱꜱɪɴɢ....</i>")
+        pls_wait = await message.reply("<b><i>ʙʀᴏᴀᴅᴄᴀsᴛ ᴘʀᴏᴄᴇssɪɴɢ....</i></b>")
         for chat_id in query:
             try:
                 await broadcast_msg.copy(chat_id)
@@ -111,33 +101,33 @@ async def send_text(client: Bot, message: Message):
                 deleted += 1
             except:
                 unsuccessful += 1
-                pass
             total += 1
 
-        status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ...</u>
-
-Total Users: <code>{total}</code>
-Successful: <code>{successful}</code>
-Blocked Users: <code>{blocked}</code>
-Deleted Accounts: <code>{deleted}</code>
-Unsuccessful: <code>{unsuccessful}</code></b>"""
-
+        status = (
+            f"<b><u>ʙʀᴏᴀᴅᴄᴀsᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</u></b>\n\n"
+            f"<b>ᴛᴏᴛᴀʟ ᴜsᴇʀs:</b> <code>{total}</code>\n"
+            f"<b>sᴜᴄᴄᴇssғᴜʟ:</b> <code>{successful}</code>\n"
+            f"<b>ʙʟᴏᴄᴋᴇᴅ ᴜsᴇʀs:</b> <code>{blocked}</code>\n"
+            f"<b>ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛs:</b> <code>{deleted}</code>\n"
+            f"<b>ᴜɴsᴜᴄᴄᴇssғᴜʟ:</b> <code>{unsuccessful}</code>"
+        )
         return await pls_wait.edit(status)
-
     else:
         msg = await message.reply(REPLY_ERROR)
         await asyncio.sleep(8)
         await msg.delete()
 
-#=====================================================================================##
 
 @Bot.on_message(filters.private & filters.command('dbroadcast') & admin)
 async def delete_broadcast(client: Bot, message: Message):
     if message.reply_to_message:
         try:
-            duration = int(message.command[1])  # Get the duration in seconds
+            duration = int(message.command[1])
         except (IndexError, ValueError):
-            await message.reply("<b>Pʟᴇᴀsᴇ ᴜsᴇ ᴀ ᴠᴀʟɪᴅ ᴅᴜʀᴀᴛɪᴏɴ ɪɴ sᴇᴄᴏɴᴅs.</b> Usᴀɢᴇ: /dbroadcast {duration}")
+            await message.reply(
+                f"<b>ᴘʟᴇᴀsᴇ ᴜsᴇ ᴀ ᴠᴀʟɪᴅ ᴅᴜʀᴀᴛɪᴏɴ ɪɴ sᴇᴄᴏɴᴅs.</b>\n"
+                f"<b>ᴜsᴀɢᴇ:</b> /dbroadcast {{duration}}"
+            )
             return
 
         query = await db.full_userbase()
@@ -148,12 +138,12 @@ async def delete_broadcast(client: Bot, message: Message):
         deleted = 0
         unsuccessful = 0
 
-        pls_wait = await message.reply("<i>Broadcast with auto-delete processing....</i>")
+        pls_wait = await message.reply("<b><i>ʙʀᴏᴀᴅᴄᴀsᴛ ᴡɪᴛʜ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ᴘʀᴏᴄᴇssɪɴɢ....</i></b>")
         for chat_id in query:
             try:
                 sent_msg = await broadcast_msg.copy(chat_id)
-                await asyncio.sleep(duration)  # Wait for the specified duration
-                await sent_msg.delete()  # Delete the message after the duration
+                await asyncio.sleep(duration)
+                await sent_msg.delete()
                 successful += 1
             except FloodWait as e:
                 await asyncio.sleep(e.x)
@@ -169,20 +159,18 @@ async def delete_broadcast(client: Bot, message: Message):
                 deleted += 1
             except:
                 unsuccessful += 1
-                pass
             total += 1
 
-        status = f"""<b><u>Bʀᴏᴀᴅᴄᴀsᴛɪɴɢ ᴡɪᴛʜ Aᴜᴛᴏ-Dᴇʟᴇᴛᴇ...</u>
-
-Total Users: <code>{total}</code>
-Successful: <code>{successful}</code>
-Blocked Users: <code>{blocked}</code>
-Deleted Accounts: <code>{deleted}</code>
-Unsuccessful: <code>{unsuccessful}</code></b>"""
-
+        status = (
+            f"<b><u>ʙʀᴏᴀᴅᴄᴀsᴛ ᴡɪᴛʜ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</u></b>\n\n"
+            f"<b>ᴛᴏᴛᴀʟ ᴜsᴇʀs:</b> <code>{total}</code>\n"
+            f"<b>sᴜᴄᴄᴇssғᴜʟ:</b> <code>{successful}</code>\n"
+            f"<b>ʙʟᴏᴄᴋᴇᴅ ᴜsᴇʀs:</b> <code>{blocked}</code>\n"
+            f"<b>ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛs:</b> <code>{deleted}</code>\n"
+            f"<b>ᴜɴsᴜᴄᴄᴇssғᴜʟ:</b> <code>{unsuccessful}</code>"
+        )
         return await pls_wait.edit(status)
-
     else:
-        msg = await message.reply("Pʟᴇᴀsᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴛᴏ ʙʀᴏᴀᴅᴄᴀsᴛ ɪᴛ ᴡɪᴛʜ Aᴜᴛᴏ-Dᴇʟᴇᴛᴇ.")
+        msg = await message.reply("<b>ᴘʟᴇᴀsᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴛᴏ ʙʀᴏᴀᴅᴄᴀsᴛ ɪᴛ ᴡɪᴛʜ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ.</b>")
         await asyncio.sleep(8)
         await msg.delete()
