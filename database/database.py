@@ -309,6 +309,21 @@ class Rohit:
         await self.db_update_verify_status(user_id, current)
         return True
 
+    async def mark_web_verified(self, user_id, token, ip="", user_agent="", risk_score=0, risk_reasons=None):
+        """Mark that user passed human verification on web page.
+        Does NOT set is_verified — that only happens after shortener is completed."""
+        current = await self.db_verify_status(user_id)
+        if current.get('verify_token') != token:
+            return False
+        current['web_passed'] = True
+        current['web_ip'] = ip
+        current['web_user_agent'] = user_agent[:300] if user_agent else ""
+        current['web_risk_score'] = risk_score
+        current['web_risk_reasons'] = risk_reasons or []
+        await self.db_update_verify_status(user_id, current)
+        return True
+
+
     async def log_verify_attempt(self, user_id, token, ip="", user_agent="", passed=False, risk_score=0, risk_reasons=None):
         now = time.time()
         await self.verify_attempts_data.insert_one({
