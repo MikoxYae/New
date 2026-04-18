@@ -43,7 +43,7 @@ async def channel_post(client: Client, message: Message):
     link = f"https://t.me/{client.username}?start={base64_string}"
 
     # Updated message format with custom text
-    custom_message = f"{link}\n\n<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ:  <a href=\"https://t.me/+S95mGGbWHFRmNjM1\"> 𝗛ᴇᴀᴠᴇɴ 𝗕ᴀsᴇ</a> \n\nɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
+    custom_message = f"{link}\n\n<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ:  <a href=\"https://t.me/Base_Angle\"> ᴀɴɢʟᴇ ʙᴀsᴇ</a> \n\nɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
 
     await reply_text.edit(custom_message, disable_web_page_preview = True)
 
@@ -91,7 +91,7 @@ async def batch(client: Client, message: Message):
     link = f"https://t.me/{client.username}?start={base64_string}"
     
     # Updated message format with custom text
-    custom_message = f"{link}\n\n<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ:  <a href=\"https://t.me/+S95mGGbWHFRmNjM1\"> 𝗛ᴇᴀᴠᴇɴ 𝗕ᴀsᴇ</a> \n\nɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
+    custom_message = f"{link}\n\n<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ:  <a href=\"https://t.me/Base_Angle\"> ᴀɴɢʟᴇ ʙᴀsᴇ</a> \n\nɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
     
     await second_message.reply_text(custom_message, quote=True)
 
@@ -114,7 +114,7 @@ async def link_generator(client: Client, message: Message):
     link = f"https://t.me/{client.username}?start={base64_string}"
     
     # Updated message format with custom text
-    custom_message = f"{link}\n\n<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ:  <a href=\"https://t.me/+S95mGGbWHFRmNjM1\"> 𝗛ᴇᴀᴠᴇɴ 𝗕ᴀsᴇ</a> \n\nɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
+    custom_message = f"{link}\n\n<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ:  <a href=\"https://t.me/Base_Angle\"> ᴀɴɢʟᴇ ʙᴀsᴇ</a> \n\nɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
     
     await channel_message.reply_text(custom_message, quote=True)
 
@@ -164,6 +164,6 @@ async def custom_batch(client: Client, message: Message):
     link = f"https://t.me/{client.username}?start={base64_string}"
 
     # Updated message format with custom text
-    custom_message = f"<b>Here is your custom batch link:</b>\n\n{link}\n\n<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ:  <a href=\"https://t.me/+S95mGGbWHFRmNjM1\"> 𝗛ᴇᴀᴠᴇɴ 𝗕ᴀsᴇ</a> \n\nɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
+    custom_message = f"<b>Here is your custom batch link:</b>\n\n{link}\n\n<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ:  <a href=\"https://t.me/Base_Angle\"> ᴀɴɢʟᴇ ʙᴀsᴇ</a> \n\nɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
 
     await message.reply(custom_message)
