@@ -40,7 +40,7 @@ def generate_upi_qr(amount, plan_type, duration):
 async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
 
-    # ── Help ──────────────────────────────────────────────────────────────────
+    # ── ʜᴇʟᴘ ─────────────────────────────────────────────────────────────────
     if data == "help":
         await query.message.edit_text(
             text=HELP_TXT.format(
@@ -57,7 +57,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # ── About ─────────────────────────────────────────────────────────────────
+    # ── ᴀʙᴏᴜᴛ ────────────────────────────────────────────────────────────────
     elif data == "about":
         await query.message.edit_text(
             text=ABOUT_TXT.format(
@@ -74,7 +74,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # ── Start ─────────────────────────────────────────────────────────────────
+    # ── sᴛᴀʀᴛ ────────────────────────────────────────────────────────────────
     elif data == "start":
         await query.message.edit_text(
             text=START_MSG.format(
@@ -91,20 +91,20 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-    # ── Premium tier selection ────────────────────────────────────────────────
+    # ── ᴘʀᴇᴍɪᴜᴍ ᴛɪᴇʀ sᴇʟᴇᴄᴛɪᴏɴ ─────────────────────────────────────────────
     elif data == "premium":
         await query.message.delete()
         text = (
-            f"<b>Hello {query.from_user.first_name}!</b>\n\n"
-            f"Choose a premium tier that suits you:\n\n"
-            f"🥇 <b>Gold Premium</b>\n"
-            f"  ✅ Token Bypass — No shortner required\n"
-            f"  ✅ Free Link Limit Bypass — Unlimited daily links\n"
-            f"  ✅ Protected Content Bypass — Save & forward freely\n\n"
-            f"💎 <b>Platinum Premium</b>\n"
-            f"  ✅ Everything in Gold, plus:\n"
-            f"  ✅ Force Subscribe Bypass — Access without joining channels\n\n"
-            f"Select a tier below to see plans and pricing."
+            f"<b>ʜᴇʟʟᴏ {query.from_user.first_name}!</b>\n\n"
+            f"<b>ᴄʜᴏᴏsᴇ ᴀ ᴘʀᴇᴍɪᴜᴍ ᴛɪᴇʀ ᴛʜᴀᴛ sᴜɪᴛs ʏᴏᴜ:</b>\n\n"
+            f"🥇 <b>ɢᴏʟᴅ ᴘʀᴇᴍɪᴜᴍ</b>\n"
+            f"  ✅ <b>ᴛᴏᴋᴇɴ ʙʏᴘᴀss</b> — ɴᴏ sʜᴏʀᴛɴᴇʀ ʀᴇǫᴜɪʀᴇᴅ\n"
+            f"  ✅ <b>ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ ʙʏᴘᴀss</b> — ᴜɴʟɪᴍɪᴛᴇᴅ ᴅᴀɪʟʏ ʟɪɴᴋs\n"
+            f"  ✅ <b>ᴘʀᴏᴛᴇᴄᴛᴇᴅ ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss</b> — sᴀᴠᴇ & ғᴏʀᴡᴀʀᴅ ғʀᴇᴇʟʏ\n\n"
+            f"💎 <b>ᴘʟᴀᴛɪɴᴜᴍ ᴘʀᴇᴍɪᴜᴍ</b>\n"
+            f"  ✅ <b>ᴇᴠᴇʀʏᴛʜɪɴɢ ɪɴ ɢᴏʟᴅ, ᴘʟᴜs:</b>\n"
+            f"  ✅ <b>ғᴏʀᴄᴇ sᴜʙsᴄʀɪʙᴇ ʙʏᴘᴀss</b> — ᴀᴄᴄᴇss ᴡɪᴛʜᴏᴜᴛ ᴊᴏɪɴɪɴɢ ᴄʜᴀɴɴᴇʟs\n\n"
+            f"<b>sᴇʟᴇᴄᴛ ᴀ ᴛɪᴇʀ ʙᴇʟᴏᴡ ᴛᴏ sᴇᴇ ᴘʟᴀɴs ᴀɴᴅ ᴘʀɪᴄɪɴɢ.</b>"
         )
         await client.send_photo(
             chat_id=query.message.chat.id,
@@ -112,26 +112,26 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             caption=text,
             reply_markup=InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("🥇 Gold", callback_data="gold_premium"),
-                    InlineKeyboardButton("💎 Platinum", callback_data="platinum_premium")
+                    InlineKeyboardButton("🥇 ɢᴏʟᴅ", callback_data="gold_premium"),
+                    InlineKeyboardButton("💎 ᴘʟᴀᴛɪɴᴜᴍ", callback_data="platinum_premium")
                 ],
                 [
-                    InlineKeyboardButton("🔙 Back", callback_data="start"),
-                    InlineKeyboardButton("🔒 Close", callback_data="close")
+                    InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start"),
+                    InlineKeyboardButton("🔒 ᴄʟᴏsᴇ", callback_data="close")
                 ]
             ])
         )
 
-    # ── Gold plan selection ───────────────────────────────────────────────────
+    # ── ɢᴏʟᴅ ᴘʟᴀɴ sᴇʟᴇᴄᴛɪᴏɴ ─────────────────────────────────────────────────
     elif data == "gold_premium":
         await query.message.delete()
         text = (
-            f"<b>🥇 Gold Premium</b>\n\n"
-            f"<b>Benefits:</b>\n"
-            f"  ✅ Token Bypass — No shortner token required\n"
-            f"  ✅ Free Link Limit Bypass — Unlimited daily links\n"
-            f"  ✅ Protected Content Bypass — Save & forward freely\n\n"
-            f"<b>Select a plan to proceed with payment:</b>"
+            f"<b>🥇 ɢᴏʟᴅ ᴘʀᴇᴍɪᴜᴍ</b>\n\n"
+            f"<b>ʙᴇɴᴇғɪᴛs:</b>\n"
+            f"  ✅ <b>ᴛᴏᴋᴇɴ ʙʏᴘᴀss</b> — ɴᴏ sʜᴏʀᴛɴᴇʀ ᴛᴏᴋᴇɴ ʀᴇǫᴜɪʀᴇᴅ\n"
+            f"  ✅ <b>ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ ʙʏᴘᴀss</b> — ᴜɴʟɪᴍɪᴛᴇᴅ ᴅᴀɪʟʏ ʟɪɴᴋs\n"
+            f"  ✅ <b>ᴘʀᴏᴛᴇᴄᴛᴇᴅ ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss</b> — sᴀᴠᴇ & ғᴏʀᴡᴀʀᴅ ғʀᴇᴇʟʏ\n\n"
+            f"<b>sᴇʟᴇᴄᴛ ᴀ ᴘʟᴀɴ ᴛᴏ ᴘʀᴏᴄᴇᴇᴅ ᴡɪᴛʜ ᴘᴀʏᴍᴇɴᴛ:</b>"
         )
         await client.send_photo(
             chat_id=query.message.chat.id,
@@ -140,32 +140,32 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton(
-                        f"14 Days — ₹{GOLD_PREMIUM_PRICES['14days']}",
+                        f"14 ᴅᴀʏs — ₹{GOLD_PREMIUM_PRICES['14days']}",
                         callback_data="gold_14days"
                     ),
                     InlineKeyboardButton(
-                        f"1 Month — ₹{GOLD_PREMIUM_PRICES['1month']}",
+                        f"1 ᴍᴏɴᴛʜ — ₹{GOLD_PREMIUM_PRICES['1month']}",
                         callback_data="gold_1month"
                     )
                 ],
                 [
-                    InlineKeyboardButton("🔙 Back", callback_data="premium"),
-                    InlineKeyboardButton("🔒 Close", callback_data="close")
+                    InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium"),
+                    InlineKeyboardButton("🔒 ᴄʟᴏsᴇ", callback_data="close")
                 ]
             ])
         )
 
-    # ── Platinum plan selection ───────────────────────────────────────────────
+    # ── ᴘʟᴀᴛɪɴᴜᴍ ᴘʟᴀɴ sᴇʟᴇᴄᴛɪᴏɴ ──────────────────────────────────────────────
     elif data == "platinum_premium":
         await query.message.delete()
         text = (
-            f"<b>💎 Platinum Premium</b>\n\n"
-            f"<b>Benefits:</b>\n"
-            f"  ✅ Token Bypass — No shortner token required\n"
-            f"  ✅ Free Link Limit Bypass — Unlimited daily links\n"
-            f"  ✅ Protected Content Bypass — Save & forward freely\n"
-            f"  ✅ Force Subscribe Bypass — Access without joining channels\n\n"
-            f"<b>Select a plan to proceed with payment:</b>"
+            f"<b>💎 ᴘʟᴀᴛɪɴᴜᴍ ᴘʀᴇᴍɪᴜᴍ</b>\n\n"
+            f"<b>ʙᴇɴᴇғɪᴛs:</b>\n"
+            f"  ✅ <b>ᴛᴏᴋᴇɴ ʙʏᴘᴀss</b> — ɴᴏ sʜᴏʀᴛɴᴇʀ ᴛᴏᴋᴇɴ ʀᴇǫᴜɪʀᴇᴅ\n"
+            f"  ✅ <b>ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ ʙʏᴘᴀss</b> — ᴜɴʟɪᴍɪᴛᴇᴅ ᴅᴀɪʟʏ ʟɪɴᴋs\n"
+            f"  ✅ <b>ᴘʀᴏᴛᴇᴄᴛᴇᴅ ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss</b> — sᴀᴠᴇ & ғᴏʀᴡᴀʀᴅ ғʀᴇᴇʟʏ\n"
+            f"  ✅ <b>ғᴏʀᴄᴇ sᴜʙsᴄʀɪʙᴇ ʙʏᴘᴀss</b> — ᴀᴄᴄᴇss ᴡɪᴛʜᴏᴜᴛ ᴊᴏɪɴɪɴɢ ᴄʜᴀɴɴᴇʟs\n\n"
+            f"<b>sᴇʟᴇᴄᴛ ᴀ ᴘʟᴀɴ ᴛᴏ ᴘʀᴏᴄᴇᴇᴅ ᴡɪᴛʜ ᴘᴀʏᴍᴇɴᴛ:</b>"
         )
         await client.send_photo(
             chat_id=query.message.chat.id,
@@ -174,46 +174,46 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton(
-                        f"14 Days — ₹{PLATINUM_PREMIUM_PRICES['14days']}",
+                        f"14 ᴅᴀʏs — ₹{PLATINUM_PREMIUM_PRICES['14days']}",
                         callback_data="plat_14days"
                     ),
                     InlineKeyboardButton(
-                        f"1 Month — ₹{PLATINUM_PREMIUM_PRICES['1month']}",
+                        f"1 ᴍᴏɴᴛʜ — ₹{PLATINUM_PREMIUM_PRICES['1month']}",
                         callback_data="plat_1month"
                     )
                 ],
                 [
-                    InlineKeyboardButton("🔙 Back", callback_data="premium"),
-                    InlineKeyboardButton("🔒 Close", callback_data="close")
+                    InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="premium"),
+                    InlineKeyboardButton("🔒 ᴄʟᴏsᴇ", callback_data="close")
                 ]
             ])
         )
 
-    # ── Gold payment QR ───────────────────────────────────────────────────────
+    # ── ɢᴏʟᴅ ᴘᴀʏᴍᴇɴᴛ ǫʀ ──────────────────────────────────────────────────────
     elif data.startswith("gold_"):
         plan_duration = data.replace("gold_", "")
         amount = GOLD_PREMIUM_PRICES.get(plan_duration, 0)
 
         user_payment_info[query.from_user.id] = {
             "tier": "gold",
-            "plan_type": "Gold Premium",
+            "plan_type": "ɢᴏʟᴅ ᴘʀᴇᴍɪᴜᴍ",
             "duration": plan_duration,
             "amount": amount
         }
 
         qr_code = generate_upi_qr(amount, "Gold_Premium", plan_duration)
-        duration_label = plan_duration.replace("days", " Days").replace("month", " Month").title()
+        duration_label = "14 ᴅᴀʏs" if plan_duration == "14days" else "1 ᴍᴏɴᴛʜ"
 
         payment_text = (
-            f"<b>💳 Gold Premium Payment</b>\n\n"
-            f"<b>Plan:</b> {duration_label}\n"
-            f"<b>Amount:</b> ₹{amount}\n\n"
-            f"<b>📱 Instructions:</b>\n"
-            f"1. Scan the QR code with any UPI app.\n"
-            f"2. Pay the exact amount: <b>₹{amount}</b>\n"
-            f"3. Click <b>I Have Paid</b> and send your payment screenshot.\n"
-            f"4. Your Gold Premium will be activated once the owner verifies.\n\n"
-            f"⚠️ <b>Note:</b> Payments made after 11:00 PM may be activated the next morning."
+            f"<b>💳 ɢᴏʟᴅ ᴘʀᴇᴍɪᴜᴍ ᴘᴀʏᴍᴇɴᴛ</b>\n\n"
+            f"<b>ᴘʟᴀɴ:</b> {duration_label}\n"
+            f"<b>ᴀᴍᴏᴜɴᴛ:</b> ₹{amount}\n\n"
+            f"<b>📱 ɪɴsᴛʀᴜᴄᴛɪᴏɴs:</b>\n"
+            f"1. sᴄᴀɴ ᴛʜᴇ ǫʀ ᴄᴏᴅᴇ ᴡɪᴛʜ ᴀɴʏ ᴜᴘɪ ᴀᴘᴘ.\n"
+            f"2. ᴘᴀʏ ᴛʜᴇ ᴇxᴀᴄᴛ ᴀᴍᴏᴜɴᴛ: <b>₹{amount}</b>\n"
+            f"3. ᴄʟɪᴄᴋ <b>ɪ ʜᴀᴠᴇ ᴘᴀɪᴅ</b> ᴀɴᴅ sᴇɴᴅ ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ.\n"
+            f"4. ʏᴏᴜʀ 🥇 ɢᴏʟᴅ ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʟ ʙᴇ ᴀᴄᴛɪᴠᴀᴛᴇᴅ ᴏɴᴄᴇ ᴛʜᴇ ᴏᴡɴᴇʀ ᴠᴇʀɪғɪᴇs.\n\n"
+            f"⚠️ <b>ɴᴏᴛᴇ:</b> ᴘᴀʏᴍᴇɴᴛs ᴍᴀᴅᴇ ᴀғᴛᴇʀ 11:00 ᴘᴍ ᴍᴀʏ ʙᴇ ᴀᴄᴛɪᴠᴀᴛᴇᴅ ᴛʜᴇ ɴᴇxᴛ ᴍᴏʀɴɪɴɢ."
         )
 
         await query.message.delete()
@@ -223,37 +223,37 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             caption=payment_text,
             reply_markup=InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("✅ I Have Paid", callback_data="payment_done"),
-                    InlineKeyboardButton("🔙 Back", callback_data="gold_premium")
+                    InlineKeyboardButton("✅ ɪ ʜᴀᴠᴇ ᴘᴀɪᴅ", callback_data="payment_done"),
+                    InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="gold_premium")
                 ]
             ])
         )
 
-    # ── Platinum payment QR ───────────────────────────────────────────────────
+    # ── ᴘʟᴀᴛɪɴᴜᴍ ᴘᴀʏᴍᴇɴᴛ ǫʀ ───────────────────────────────────────────────────
     elif data.startswith("plat_"):
         plan_duration = data.replace("plat_", "")
         amount = PLATINUM_PREMIUM_PRICES.get(plan_duration, 0)
 
         user_payment_info[query.from_user.id] = {
             "tier": "platinum",
-            "plan_type": "Platinum Premium",
+            "plan_type": "ᴘʟᴀᴛɪɴᴜᴍ ᴘʀᴇᴍɪᴜᴍ",
             "duration": plan_duration,
             "amount": amount
         }
 
         qr_code = generate_upi_qr(amount, "Platinum_Premium", plan_duration)
-        duration_label = plan_duration.replace("days", " Days").replace("month", " Month").title()
+        duration_label = "14 ᴅᴀʏs" if plan_duration == "14days" else "1 ᴍᴏɴᴛʜ"
 
         payment_text = (
-            f"<b>💳 Platinum Premium Payment</b>\n\n"
-            f"<b>Plan:</b> {duration_label}\n"
-            f"<b>Amount:</b> ₹{amount}\n\n"
-            f"<b>📱 Instructions:</b>\n"
-            f"1. Scan the QR code with any UPI app.\n"
-            f"2. Pay the exact amount: <b>₹{amount}</b>\n"
-            f"3. Click <b>I Have Paid</b> and send your payment screenshot.\n"
-            f"4. Your Platinum Premium will be activated once the owner verifies.\n\n"
-            f"⚠️ <b>Note:</b> Payments made after 11:00 PM may be activated the next morning."
+            f"<b>💳 ᴘʟᴀᴛɪɴᴜᴍ ᴘʀᴇᴍɪᴜᴍ ᴘᴀʏᴍᴇɴᴛ</b>\n\n"
+            f"<b>ᴘʟᴀɴ:</b> {duration_label}\n"
+            f"<b>ᴀᴍᴏᴜɴᴛ:</b> ₹{amount}\n\n"
+            f"<b>📱 ɪɴsᴛʀᴜᴄᴛɪᴏɴs:</b>\n"
+            f"1. sᴄᴀɴ ᴛʜᴇ ǫʀ ᴄᴏᴅᴇ ᴡɪᴛʜ ᴀɴʏ ᴜᴘɪ ᴀᴘᴘ.\n"
+            f"2. ᴘᴀʏ ᴛʜᴇ ᴇxᴀᴄᴛ ᴀᴍᴏᴜɴᴛ: <b>₹{amount}</b>\n"
+            f"3. ᴄʟɪᴄᴋ <b>ɪ ʜᴀᴠᴇ ᴘᴀɪᴅ</b> ᴀɴᴅ sᴇɴᴅ ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ.\n"
+            f"4. ʏᴏᴜʀ 💎 ᴘʟᴀᴛɪɴᴜᴍ ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʟ ʙᴇ ᴀᴄᴛɪᴠᴀᴛᴇᴅ ᴏɴᴄᴇ ᴛʜᴇ ᴏᴡɴᴇʀ ᴠᴇʀɪғɪᴇs.\n\n"
+            f"⚠️ <b>ɴᴏᴛᴇ:</b> ᴘᴀʏᴍᴇɴᴛs ᴍᴀᴅᴇ ᴀғᴛᴇʀ 11:00 ᴘᴍ ᴍᴀʏ ʙᴇ ᴀᴄᴛɪᴠᴀᴛᴇᴅ ᴛʜᴇ ɴᴇxᴛ ᴍᴏʀɴɪɴɢ."
         )
 
         await query.message.delete()
@@ -263,31 +263,32 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             caption=payment_text,
             reply_markup=InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("✅ I Have Paid", callback_data="payment_done"),
-                    InlineKeyboardButton("🔙 Back", callback_data="platinum_premium")
+                    InlineKeyboardButton("✅ ɪ ʜᴀᴠᴇ ᴘᴀɪᴅ", callback_data="payment_done"),
+                    InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="platinum_premium")
                 ]
             ])
         )
 
-    # ── Payment done confirmation ─────────────────────────────────────────────
+    # ── ᴘᴀʏᴍᴇɴᴛ ᴅᴏɴᴇ ᴄᴏɴғɪʀᴍᴀᴛɪᴏɴ ──────────────────────────────────────────────
     elif data == "payment_done":
         first_name = query.from_user.first_name
         last_name = query.from_user.last_name or ""
         await client.send_message(
             chat_id=query.message.chat.id,
             text=(
-                f"Hello {first_name} {last_name}, please send your payment screenshot "
-                f"for verification. Your premium will be activated once the owner verifies it!"
+                f"<b>ʜᴇʟʟᴏ {first_name} {last_name}!</b>\n\n"
+                f"<b>ᴘʟᴇᴀsᴇ sᴇɴᴅ ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ ғᴏʀ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ.</b>\n"
+                f"<b>ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʟ ʙᴇ ᴀᴄᴛɪᴠᴀᴛᴇᴅ ᴏɴᴄᴇ ᴛʜᴇ ᴏᴡɴᴇʀ ᴠᴇʀɪғɪᴇs ɪᴛ!</b>"
             ),
             reply_markup=InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("👤 Owner", url="https://t.me/Iam_addictive"),
-                    InlineKeyboardButton("📢 Channel", url="https://t.me/+sSi9iWidSjg1Y2Ex")
+                    InlineKeyboardButton("👤 ᴏᴡɴᴇʀ", url="https://t.me/Iam_addictive"),
+                    InlineKeyboardButton("📢 ᴄʜᴀɴɴᴇʟ", url="https://t.me/+sSi9iWidSjg1Y2Ex")
                 ]
             ])
         )
 
-    # ── Close ─────────────────────────────────────────────────────────────────
+    # ── ᴄʟᴏsᴇ ────────────────────────────────────────────────────────────────
     elif data == "close":
         await query.message.delete()
         try:
@@ -295,7 +296,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         except Exception:
             pass
 
-    # ── Force-sub channel mode toggle ─────────────────────────────────────────
+    # ── ғᴏʀᴄᴇ-sᴜʙ ᴄʜᴀɴɴᴇʟ ᴍᴏᴅᴇ ᴛᴏɢɢʟᴇ ───────────────────────────────────────
     elif data.startswith("rfs_ch_"):
         cid = int(data.split("_")[2])
         try:
@@ -305,17 +306,17 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             new_mode = "ᴏғғ" if mode == "on" else "on"
             buttons = [
                 [InlineKeyboardButton(
-                    f"ʀᴇǫ ᴍᴏᴅᴇ {'OFF' if mode == 'on' else 'ON'}",
+                    f"ʀᴇǫ ᴍᴏᴅᴇ {'ᴏғғ' if mode == 'on' else 'ᴏɴ'}",
                     callback_data=f"rfs_toggle_{cid}_{new_mode}"
                 )],
                 [InlineKeyboardButton("‹ ʙᴀᴄᴋ", callback_data="fsub_back")]
             ]
             await query.message.edit_text(
-                f"Channel: {chat.title}\nCurrent Force-Sub Mode: {status}",
+                f"<b>ᴄʜᴀɴɴᴇʟ:</b> {chat.title}\n<b>ᴄᴜʀʀᴇɴᴛ ғᴏʀᴄᴇ-sᴜʙ ᴍᴏᴅᴇ:</b> {status}",
                 reply_markup=InlineKeyboardMarkup(buttons)
             )
         except Exception:
-            await query.answer("Failed to fetch channel info", show_alert=True)
+            await query.answer("ғᴀɪʟᴇᴅ ᴛᴏ ғᴇᴛᴄʜ ᴄʜᴀɴɴᴇʟ ɪɴғᴏ", show_alert=True)
 
     elif data.startswith("rfs_toggle_"):
         parts = data.split("_")
@@ -323,19 +324,19 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         action = parts[3]
         mode = "on" if action == "on" else "off"
         await db.set_channel_mode(cid, mode)
-        await query.answer(f"Force-Sub set to {'ON' if mode == 'on' else 'OFF'}")
+        await query.answer(f"ғᴏʀᴄᴇ-sᴜʙ sᴇᴛ ᴛᴏ {'ᴏɴ' if mode == 'on' else 'ᴏғғ'}")
         chat = await client.get_chat(cid)
-        status = "🟢 ON" if mode == "on" else "🔴 OFF"
+        status = "🟢 ᴏɴ" if mode == "on" else "🔴 ᴏғғ"
         new_mode = "off" if mode == "on" else "on"
         buttons = [
             [InlineKeyboardButton(
-                f"ʀᴇǫ ᴍᴏᴅᴇ {'OFF' if mode == 'on' else 'ON'}",
+                f"ʀᴇǫ ᴍᴏᴅᴇ {'ᴏғғ' if mode == 'on' else 'ᴏɴ'}",
                 callback_data=f"rfs_toggle_{cid}_{new_mode}"
             )],
             [InlineKeyboardButton("‹ ʙᴀᴄᴋ", callback_data="fsub_back")]
         ]
         await query.message.edit_text(
-            f"Channel: {chat.title}\nCurrent Force-Sub Mode: {status}",
+            f"<b>ᴄʜᴀɴɴᴇʟ:</b> {chat.title}\n<b>ᴄᴜʀʀᴇɴᴛ ғᴏʀᴄᴇ-sᴜʙ ᴍᴏᴅᴇ:</b> {status}",
             reply_markup=InlineKeyboardMarkup(buttons)
         )
 
@@ -353,7 +354,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             except Exception:
                 continue
         await query.message.edit_text(
-            "sᴇʟᴇᴄᴛ ᴀ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴛᴏɢɢʟᴇ ɪᴛs ғᴏʀᴄᴇ-sᴜʙ ᴍᴏᴅᴇ:",
+            "<b>sᴇʟᴇᴄᴛ ᴀ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴛᴏɢɢʟᴇ ɪᴛs ғᴏʀᴄᴇ-sᴜʙ ᴍᴏᴅᴇ:</b>",
             reply_markup=InlineKeyboardMarkup(buttons)
         )
 
@@ -368,9 +369,8 @@ async def forward_payment_screenshot(client: Bot, message: Message):
     info = user_payment_info[user_id]
     tier = info.get("tier", "gold")
     tier_emoji = "🥇" if tier == "gold" else "💎"
-    duration_label = info["duration"].replace("days", " Days").replace("month", " Month").title()
+    duration_label = "14 ᴅᴀʏs" if info["duration"] == "14days" else "1 ᴍᴏɴᴛʜ"
 
-    # Build the exact /addpremium command for the owner
     if info["duration"] == "14days":
         cmd = f"/addpremium {user_id} 14 d {tier}"
     elif info["duration"] == "1month":
@@ -379,14 +379,14 @@ async def forward_payment_screenshot(client: Bot, message: Message):
         cmd = f"/addpremium {user_id} 14 d {tier}"
 
     caption = (
-        f"<b>💳 New Payment Screenshot</b>\n\n"
-        f"<b>User:</b> {message.from_user.mention}\n"
-        f"<b>User ID:</b> <code>{user_id}</code>\n"
-        f"<b>Username:</b> @{message.from_user.username or 'None'}\n"
-        f"<b>Tier:</b> {tier_emoji} {tier.capitalize()} Premium\n"
-        f"<b>Plan:</b> {duration_label}\n"
-        f"<b>Amount:</b> ₹{info['amount']}\n\n"
-        f"<b>Activate command:</b>\n"
+        f"<b>💳 ɴᴇᴡ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ</b>\n\n"
+        f"<b>ᴜsᴇʀ:</b> {message.from_user.mention}\n"
+        f"<b>ᴜsᴇʀ ɪᴅ:</b> <code>{user_id}</code>\n"
+        f"<b>ᴜsᴇʀɴᴀᴍᴇ:</b> @{message.from_user.username or 'None'}\n"
+        f"<b>ᴛɪᴇʀ:</b> {tier_emoji} {tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ\n"
+        f"<b>ᴘʟᴀɴ:</b> {duration_label}\n"
+        f"<b>ᴀᴍᴏᴜɴᴛ:</b> ₹{info['amount']}\n\n"
+        f"<b>ᴀᴄᴛɪᴠᴀᴛᴇ ᴄᴏᴍᴍᴀɴᴅ:</b>\n"
         f"<code>{cmd}</code>"
     )
 
@@ -397,12 +397,12 @@ async def forward_payment_screenshot(client: Bot, message: Message):
     )
 
     await message.reply_text(
-        f"{tier_emoji} <b>Your payment screenshot has been sent to the owner for verification.</b>\n\n"
-        f"<b>Your {tier.capitalize()} Premium will be activated soon!</b>",
+        f"{tier_emoji} <b>ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ ʜᴀs ʙᴇᴇɴ sᴇɴᴛ ᴛᴏ ᴛʜᴇ ᴏᴡɴᴇʀ ғᴏʀ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ.</b>\n\n"
+        f"<b>ʏᴏᴜʀ {tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ ᴡɪʟʟ ʙᴇ ᴀᴄᴛɪᴠᴀᴛᴇᴅ sᴏᴏɴ!</b>",
         reply_markup=InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("👤 Owner", url="https://t.me/Yae_N_Miko"),
-                InlineKeyboardButton("📢 Channel", url="https://t.me/+vDWmV0TcGJE3ZmIx")
+                InlineKeyboardButton("👤 ᴏᴡɴᴇʀ", url="https://t.me/Yae_N_Miko"),
+                InlineKeyboardButton("📢 ᴄʜᴀɴɴᴇʟ", url="https://t.me/+vDWmV0TcGJE3ZmIx")
             ]
         ])
     )
