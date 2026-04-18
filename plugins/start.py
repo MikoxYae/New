@@ -77,6 +77,12 @@ async def start_command(client: Client, message: Message):
                         photo=PREMIUM_PIC,
                         caption="<b>⚠️ 𝖨𝗇𝗏𝖺𝗅𝗂𝖽 𝗍𝗈𝗄𝖾𝗇. 𝖯𝗅𝖾𝖺𝗌𝖾 /start 𝖺𝗀𝖺𝗂𝗇.</b>"
                     )
+                # Security: web human verification must be completed before token is accepted
+                if not verify_status.get('web_passed'):
+                    return await message.reply_photo(
+                        photo=PREMIUM_PIC,
+                        caption="<b>⚠️ Please open the verification link and complete human verification first.</b>"
+                    )
                 await db.update_verify_status(id, is_verified=True, verified_time=time.time())
                 current = await db.get_verify_count(id)
                 await db.set_verify_count(id, current + 1)
