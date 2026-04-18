@@ -167,11 +167,11 @@ async def start_command(client: Client, message: Message):
                 print(f"Error decoding ID: {e}")
                 return
 
-        temp_msg = await message.reply("<b>Please wait...</b>")
+        temp_msg = await message.reply("<b>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ...</b>")
         try:
             messages = await get_messages(client, ids)
         except Exception as e:
-            await message.reply_text("Something went wrong!")
+            await message.reply_text("<b>sᴏᴍᴇᴛʜɪɴɢ ᴡᴇɴᴛ ᴡʀᴏɴɢ!</b>")
             print(f"Error getting messages: {e}")
             return
         finally:
@@ -235,8 +235,8 @@ async def start_command(client: Client, message: Message):
     [
         
         [
-            InlineKeyboardButton("𝗔𝗯𝗼𝘂𝘁", callback_data="about"),
-            InlineKeyboardButton("𝗛𝗲𝗹𝗽", callback_data="help")
+            InlineKeyboardButton("ᴀʙᴏᴜᴛ", callback_data="about"),
+            InlineKeyboardButton("ʜᴇʟᴘ", callback_data="help")
         ]
     ]
 )
@@ -258,7 +258,7 @@ async def start_command(client: Client, message: Message):
 chat_data_cache = {}
 
 async def not_joined(client: Client, message: Message):
-    temp = await message.reply("<b><i>Checking Subscription...</i></b>")
+    temp = await message.reply("<b><i>ᴄʜᴇᴄᴋɪɴɢ sᴜʙsᴄʀɪᴘᴛɪᴏɴ...</i></b>")
 
     user_id = message.from_user.id
     buttons = []
@@ -341,7 +341,7 @@ async def not_joined(client: Client, message: Message):
 
     except Exception as e:
         print(f"Error in not_joined: {e}")
-        await temp.edit(f"An error occurred: {e}")
+        await temp.edit(f"<b>ᴀɴ ᴇʀʀᴏʀ ᴏᴄᴄᴜʀʀᴇᴅ: {e}</b>")
 
     await temp.delete()
 
