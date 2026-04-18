@@ -328,16 +328,19 @@ async def verify_go_route_handler(request):
                 "Please open the link normally in a real browser.",
                 429)
 
-        # ── Mark passed + redirect ─────────────────────────────────────────────
-        marked = await db.mark_verify_passed(user_id, token, ip, user_agent, score, reasons)
+        # ── Human check passed: save flag but do NOT set is_verified yet ─────────
+        # is_verified only becomes True after user completes shortener + sends verify_ token to bot
+        marked = await db.mark_web_verified(user_id, token, ip, user_agent, score, reasons)
         if not marked:
             return _err_page("Token Expired",
                 "This token has already been used or expired. Please request a new one from the bot.",
                 403)
 
         shortlink = status.get("link") or ""
-        redirect_url = shortlink if shortlink else f"https://telegram.dog/{bot_username}?start=verify_{token}"
-        raise web.HTTPFound(redirect_url)
+        if not shortlink:
+            return _err_page("Configuration Error",
+                "Shortener is not configured. Please contact the bot owner.", 500)
+        raise web.HTTPFound(shortlink)
 
     except web.HTTPException:
         raise
