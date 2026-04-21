@@ -1,14 +1,122 @@
+"""
+Replace your existing plugins/premium_cdm.py with this file.
+
+Changes vs the original:
+  • When /addpremium runs, a styled PAYMENT RECEIPT image is generated and:
+      1. sent to the user (DM)
+      2. sent to OWNER_ID (so you keep a copy)
+  • Same receipt image is sent on auto-renewal failures? No — only on activation.
+  • Receipt also goes out from the payment-screenshot flow (cbb.py) by reusing
+    the same generate_receipt() function. (See cbb_patch.py if you want that.)
+
+Drop receipt_generator.py into the same plugins/ folder.
+"""
+
 import asyncio
+from datetime import datetime, timedelta
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from bot import Bot
-from helper_func import admin
-from database.db_premium import *
 from pytz import timezone
-from datetime import datetime, timedelta
+
+from bot import Bot
+from config import OWNER_ID
+from helper_func import admin
+from database.db_premium import (
+    add_premium, remove_premium, check_user_plan, collection,
+)
+from plugins.receipt_generator import generate_receipt, format_ist, random_receipt_id
 
 monitoring_started = False
+IST = timezone("Asia/Kolkata")
 
+
+# ──────────────────────────────────────────────────────────────────────────────
+def _premium_label(tier: str) -> str:
+    tier = (tier or "gold").lower()
+    if tier == "platinum":
+        return "Platinum Premium"
+    return "Gold Premium"
+
+
+def _plan_label(time_value: int, time_unit: str) -> str:
+    unit_map = {"s": "SEC", "m": "MIN", "h": "HOUR", "d": "DAY", "y": "YEAR"}
+    unit = unit_map.get(time_unit.lower(), time_unit.upper())
+    if time_value > 1 and not unit.endswith("S"):
+        unit += "S"
+    return f"{time_value} {unit}"
+
+
+async def _send_receipt(client, user_id: int, name: str, tier: str,
+                        time_value: int, time_unit: str, expiration_str: str):
+    """Render the receipt PNG and DM it to the user + owner."""
+    try:
+        # Parse the expiration timestamp the DB returned
+        try:
+            exp_dt = datetime.fromisoformat(expiration_str).astimezone(IST)
+            expires_pretty = format_ist(exp_dt)
+        except Exception:
+            expires_pretty = str(expiration_str)
+
+        rid = random_receipt_id()
+        issued = datetime.now(IST)
+
+        bio = generate_receipt(
+            name=name or "User",
+            user_id=user_id,
+            premium=_premium_label(tier),
+            plan=_plan_label(time_value, time_unit),
+            expires=expires_pretty,
+            issued_at=issued,
+            receipt_id=rid,
+            status="PAID",
+            brand="Angle Baby",
+        )
+        png_bytes = bio.getvalue()
+
+        user_caption = (
+            f"<b>🧾 Payment Receipt</b>\n\n"
+            f"<b>Receipt ID:</b> <code>{rid}</code>\n"
+            f"<b>Plan:</b> {_plan_label(time_value, time_unit)}\n"
+            f"<b>Premium:</b> {_premium_label(tier)}\n"
+            f"<b>Expires:</b> {expires_pretty}\n\n"
+            f"<i>Save this receipt for your records.</i>"
+        )
+        owner_caption = (
+            f"<b>🧾 Receipt Issued</b>\n\n"
+            f"<b>User:</b> <code>{user_id}</code> ({name})\n"
+            f"<b>Receipt ID:</b> <code>{rid}</code>\n"
+            f"<b>Plan:</b> {_plan_label(time_value, time_unit)}\n"
+            f"<b>Premium:</b> {_premium_label(tier)}\n"
+            f"<b>Expires:</b> {expires_pretty}"
+        )
+
+        # Send to user
+        try:
+            from io import BytesIO
+            await client.send_photo(
+                chat_id=user_id,
+                photo=BytesIO(png_bytes),
+                caption=user_caption,
+            )
+        except Exception as e:
+            print(f"[receipt] failed to DM user {user_id}: {e}")
+
+        # Send to owner
+        try:
+            from io import BytesIO
+            await client.send_photo(
+                chat_id=OWNER_ID,
+                photo=BytesIO(png_bytes),
+                caption=owner_caption,
+            )
+        except Exception as e:
+            print(f"[receipt] failed to DM owner: {e}")
+
+    except Exception as e:
+        print(f"[receipt] generation error for {user_id}: {e}")
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 @Bot.on_message(filters.command('myplan') & filters.private)
 async def check_plan(client: Client, message: Message):
     user_id = message.from_user.id
@@ -17,7 +125,7 @@ async def check_plan(client: Client, message: Message):
 
 
 @Bot.on_message(filters.command('addpremium') & filters.private & admin)
-async def add_premium_user_command(client, msg):
+async def add_premium_user_command(client: Client, msg: Message):
     if len(msg.command) not in (4, 5):
         await msg.reply_text(
             "<b>Usage:</b> /addpremium user_id time_value time_unit tier\n\n"
@@ -27,8 +135,7 @@ async def add_premium_user_command(client, msg):
             "<b>Time Units:</b> s | m | h | d | y\n\n"
             "<b>Examples:</b>\n"
             "/addpremium 123456789 1 d gold\n"
-            "/addpremium 123456789 1 d platinum\n"
-            "(Default tier is gold if not specified)"
+            "/addpremium 123456789 1 d platinum"
         )
         return
 
@@ -49,19 +156,38 @@ async def add_premium_user_command(client, msg):
             else "Token bypass\nProtect Content bypass\nForce Subscribe bypass"
         )
 
+        # Owner ack
         await msg.reply_text(
-            f"User {user_id} added as {tier_emoji} {tier.capitalize()} Premium for {time_value}{time_unit}.\n"
-            f"Expiration: {expiration_time}"
+            f"User {user_id} added as {tier_emoji} {tier.capitalize()} Premium "
+            f"for {time_value}{time_unit}.\nExpiration: {expiration_time}"
         )
 
-        await client.send_message(
-            chat_id=user_id,
-            text=(
-                f"{tier_emoji} <b>{tier.capitalize()} Premium Activated!</b>\n\n"
-                f"Duration: <b>{time_value}{time_unit}</b>\n"
-                f"Expires on: <b>{expiration_time}</b>\n\n"
-                f"<b>Your perks:</b>\n{perks}"
-            ),
+        # Activation message to user
+        try:
+            await client.send_message(
+                chat_id=user_id,
+                text=(
+                    f"{tier_emoji} <b>{tier.capitalize()} Premium Activated!</b>\n\n"
+                    f"Duration: <b>{time_value}{time_unit}</b>\n"
+                    f"Expires on: <b>{expiration_time}</b>\n\n"
+                    f"<b>Your perks:</b>\n{perks}"
+                ),
+            )
+        except Exception as e:
+            print(f"[addpremium] activation msg failed for {user_id}: {e}")
+
+        # ── NEW: send receipt to user + owner ──────────────────────────────
+        try:
+            user_info = await client.get_users(user_id)
+            full_name = (
+                f"{user_info.first_name or ''} {user_info.last_name or ''}".strip()
+                or user_info.username or str(user_id)
+            )
+        except Exception:
+            full_name = str(user_id)
+
+        await _send_receipt(
+            client, user_id, full_name, tier, time_value, time_unit, expiration_time
         )
 
         asyncio.create_task(monitor_premium_expiry(client, user_id))
@@ -87,10 +213,9 @@ async def pre_remove_user(client: Client, msg: Message):
 
 @Bot.on_message(filters.command('premium_users') & filters.private & admin)
 async def list_premium_users_command(client, message):
-    ist = timezone("Asia/Kolkata")
     premium_users_cursor = collection.find({})
     premium_user_list = ["<b>Active Premium Users:</b>"]
-    current_time = datetime.now(ist)
+    current_time = datetime.now(IST)
 
     async for user in premium_users_cursor:
         user_id = user["user_id"]
@@ -99,7 +224,7 @@ async def list_premium_users_command(client, message):
         tier_emoji = "🥇" if tier == "gold" else "💎"
 
         try:
-            expiration_time = datetime.fromisoformat(expiration_timestamp).astimezone(ist)
+            expiration_time = datetime.fromisoformat(expiration_timestamp).astimezone(IST)
             remaining_time = expiration_time - current_time
 
             if remaining_time.total_seconds() <= 0:
@@ -135,7 +260,6 @@ async def list_premium_users_command(client, message):
 
 
 async def monitor_premium_expiry(client, user_id):
-    ist = timezone("Asia/Kolkata")
     reminder_24h_sent = False
     final_reminder_sent = False
 
@@ -145,13 +269,12 @@ async def monitor_premium_expiry(client, user_id):
             if not user:
                 break
 
-            expiration_time = datetime.fromisoformat(user["expiration_timestamp"]).astimezone(ist)
-            current_time = datetime.now(ist)
+            expiration_time = datetime.fromisoformat(user["expiration_timestamp"]).astimezone(IST)
+            current_time = datetime.now(IST)
             time_remaining = expiration_time - current_time
             tier = user.get("tier", "gold")
             tier_emoji = "🥇" if tier == "gold" else "💎"
 
-            # Auto remove on expiry
             if time_remaining.total_seconds() <= 0:
                 await remove_premium(user_id)
                 try:
@@ -165,7 +288,6 @@ async def monitor_premium_expiry(client, user_id):
                     pass
                 break
 
-            # 24h reminder
             if not reminder_24h_sent and time_remaining <= timedelta(days=1):
                 formatted_time = expiration_time.strftime('%Y-%m-%d %H:%M:%S IST')
                 try:
@@ -180,7 +302,6 @@ async def monitor_premium_expiry(client, user_id):
                 except Exception as e:
                     print(f"Failed to send 24h reminder to {user_id}: {e}")
 
-            # Final 1h reminder
             if not final_reminder_sent and time_remaining <= timedelta(hours=1):
                 formatted_time = expiration_time.strftime('%Y-%m-%d %H:%M:%S IST')
                 try:
@@ -206,28 +327,21 @@ async def auto_start_monitoring(client):
     global monitoring_started
     if monitoring_started:
         return
-
     monitoring_started = True
     print("Starting automatic premium monitoring...")
-
-    ist = timezone("Asia/Kolkata")
-    current_time = datetime.now(ist)
-
+    current_time = datetime.now(IST)
     try:
         async for user in collection.find({}):
             try:
-                expiration_time = datetime.fromisoformat(user["expiration_timestamp"]).astimezone(ist)
+                expiration_time = datetime.fromisoformat(user["expiration_timestamp"]).astimezone(IST)
                 if expiration_time <= current_time:
                     await remove_premium(user["user_id"])
-                    print(f"Auto-removed expired premium user: {user['user_id']}")
                 else:
                     asyncio.create_task(monitor_premium_expiry(client, user["user_id"]))
-                    print(f"Started monitoring premium user: {user['user_id']}")
             except Exception as e:
                 print(f"Error processing premium user {user.get('user_id')}: {e}")
     except Exception as e:
         print(f"Error accessing premium users collection: {e}")
-
     print("Automatic premium monitoring started.")
 
 
