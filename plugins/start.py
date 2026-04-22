@@ -133,32 +133,32 @@ async def start_command(client: Client, message: Message):
                     if not verify_status['is_verified']:
                         token = ''.join(random.choices(rohit.ascii_letters + rohit.digits, k=10))
                         direct_tg_link = f'https://telegram.dog/{client.username}?start=verify_{token}'
-                        shortlink = await get_shortlink(_cfg.SHORTLINK_URL, _cfg.SHORTLINK_API, direct_tg_link)
+                        try:
+                            shortlink = await get_shortlink(_cfg.SHORTLINK_URL, _cfg.SHORTLINK_API, direct_tg_link)
+                        except Exception as e:
+                            print(f"[start] shortener failed: {e!r}; using direct tg link as fallback")
+                            shortlink = direct_tg_link
                         await db.update_verify_status(id, verify_token=token, link=shortlink, created_at=time.time())
                         if await db.get_anti_bypass() and WEB_VERIFY_BASE_URL:
                             btn_url = get_verify_link(WEB_VERIFY_BASE_URL, id, token, client.username)
                         else:
                             btn_url = shortlink
 
-                        # Validate URLs to avoid Telegram BUTTON_URL_INVALID (400) errors
+                        # Guarantee a valid Open-Link URL: fall back to direct telegram link, then to bot link
                         if not _is_valid_btn_url(btn_url):
-                            print(f"[start] Invalid verify btn_url={btn_url!r}; aborting token flow")
-                            return await message.reply_photo(
-                                photo=PREMIUM_PIC,
-                                caption=(
-                                    "<b>⚠️ Unable to generate your verification link right now.</b>\n\n"
-                                    "<i>Please try again in a moment, or contact support.</i>"
-                                ),
-                                reply_markup=InlineKeyboardMarkup([
-                                    [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
-                                ])
-                            )
+                            print(f"[start] btn_url invalid ({btn_url!r}); falling back to direct_tg_link")
+                            btn_url = direct_tg_link
+                        if not _is_valid_btn_url(btn_url):
+                            btn_url = f"https://t.me/{client.username}"
 
-                        first_row = [InlineKeyboardButton("• ᴏᴘᴇɴ ʟɪɴᴋ •", url=btn_url)]
-                        if _is_valid_btn_url(getattr(_cfg, "TUT_VID", None)):
-                            first_row.append(InlineKeyboardButton("• ᴛᴜᴛᴏʀɪᴀʟ •", url=_cfg.TUT_VID))
+                        # Guarantee a valid Tutorial URL
+                        tut_url = getattr(_cfg, "TUT_VID", None)
+                        if not _is_valid_btn_url(tut_url):
+                            tut_url = "https://t.me/How_To_Take_Tokens/12"
+
                         btn = [
-                            first_row,
+                            [InlineKeyboardButton("• ᴏᴘᴇɴ ʟɪɴᴋ •", url=btn_url),
+                             InlineKeyboardButton("• ᴛᴜᴛᴏʀɪᴀʟ •", url=tut_url)],
                             [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
                         ]
                         verify_caption = (
@@ -175,14 +175,18 @@ async def start_command(client: Client, message: Message):
                                 reply_markup=InlineKeyboardMarkup(btn),
                             )
                         except Exception as e:
-                            print(f"[start] reply_photo failed for verify flow: {e!r}; btn_url={btn_url!r} TUT_VID={getattr(_cfg, 'TUT_VID', None)!r}")
-                            safe_caption = verify_caption + f"\n\n<b>🔗 Verify Link:</b> {btn_url}"
-                            return await message.reply_text(
-                                safe_caption,
-                                reply_markup=InlineKeyboardMarkup([
-                                    [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
-                                ]),
-                                disable_web_page_preview=True,
+                            # Last-resort retry: keep photo, swap any still-bad URL with bot deep link
+                            print(f"[start] reply_photo failed: {e!r}; btn_url={btn_url!r} tut_url={tut_url!r} — retrying with safe URLs")
+                            safe_open = f"https://t.me/{client.username}"
+                            btn_safe = [
+                                [InlineKeyboardButton("• ᴏᴘᴇɴ ʟɪɴᴋ •", url=safe_open),
+                                 InlineKeyboardButton("• ᴛᴜᴛᴏʀɪᴀʟ •", url="https://t.me/How_To_Take_Tokens/12")],
+                                [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
+                            ]
+                            return await message.reply_photo(
+                                photo=PREMIUM_PIC,
+                                caption=verify_caption,
+                                reply_markup=InlineKeyboardMarkup(btn_safe),
                             )
                 else:
                     # Mode: Shortner OFF — require premium after free limit
