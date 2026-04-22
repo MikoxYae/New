@@ -399,6 +399,18 @@ class Rohit:
             upsert=True
         )
 
+    # FREE LINK ENABLED / DISABLED TOGGLE
+    async def get_free_link_enabled(self):
+        doc = await self.bot_settings_data.find_one({'_id': 'free_link_enabled'})
+        return bool(doc.get('value', True)) if doc else True
+
+    async def set_free_link_enabled(self, value: bool):
+        await self.bot_settings_data.update_one(
+            {'_id': 'free_link_enabled'},
+            {'$set': {'value': bool(value)}},
+            upsert=True
+        )
+
     # FREE LINK DAILY LIMIT
     async def get_free_link_limit(self):
         doc = await self.bot_settings_data.find_one({'_id': 'free_link_limit'})

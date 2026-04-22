@@ -677,13 +677,24 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         _pending.pop(uid, None)
         limit = await db.get_free_link_limit()
         shortner_on = await db.get_shortner_enabled()
-        mode_txt = "Shortner ON (token required after free links)" if shortner_on else "Shortner OFF (premium required after free links)"
+        free_on = await db.get_free_link_enabled()
+        if not free_on and not shortner_on:
+            mode_txt = "Free Link OFF + Shortner OFF — Unlimited free access for users"
+        elif not free_on and shortner_on:
+            mode_txt = "Free Link OFF + Shortner ON — Token required from start (verify time based)"
+        elif free_on and shortner_on:
+            mode_txt = "Free Link ON + Shortner ON — Token required after free links"
+        else:
+            mode_txt = "Free Link ON + Shortner OFF — Premium required after free links"
         await _edit(query,
             f"<b>🆓 Free Link Settings</b>\n\n"
             f"<b>Daily Free Links:</b> <code>{limit}</code> per user\n"
             f"<b>Mode:</b> {mode_txt}\n\n"
             "<i>Select the daily free link limit below:</i>",
             InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton(("🔴 Free Link: OFF" if free_on else "🟢 Free Link: ON") if False else (f"{'🟢' if free_on else '🔴'} Free Link: {'ON' if free_on else 'OFF'}"), callback_data=("stg_freelink_off" if free_on else "stg_freelink_on"))
+                ],
                 [
                     InlineKeyboardButton("5"  if limit != 5  else "✅ 5",  callback_data="stg_fl_5"),
                     InlineKeyboardButton("10" if limit != 10 else "✅ 10", callback_data="stg_fl_10"),
@@ -705,13 +716,24 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         await db.set_free_link_limit(new_limit)
         await query.answer(f"✅ Free Link limit set to {new_limit}/day", show_alert=True)
         shortner_on = await db.get_shortner_enabled()
-        mode_txt = "Shortner ON (token required after free links)" if shortner_on else "Shortner OFF (premium required after free links)"
+        free_on = await db.get_free_link_enabled()
+        if not free_on and not shortner_on:
+            mode_txt = "Free Link OFF + Shortner OFF — Unlimited free access for users"
+        elif not free_on and shortner_on:
+            mode_txt = "Free Link OFF + Shortner ON — Token required from start (verify time based)"
+        elif free_on and shortner_on:
+            mode_txt = "Free Link ON + Shortner ON — Token required after free links"
+        else:
+            mode_txt = "Free Link ON + Shortner OFF — Premium required after free links"
         await _edit(query,
             f"<b>🆓 Free Link Settings</b>\n\n"
             f"<b>Daily Free Links:</b> <code>{new_limit}</code> per user\n"
             f"<b>Mode:</b> {mode_txt}\n\n"
             "<i>Select the daily free link limit below:</i>",
             InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton(f"{'🟢' if free_on else '🔴'} Free Link: {'ON' if free_on else 'OFF'}", callback_data=("stg_freelink_off" if free_on else "stg_freelink_on"))
+                ],
                 [
                     InlineKeyboardButton("5"  if new_limit != 5  else "✅ 5",  callback_data="stg_fl_5"),
                     InlineKeyboardButton("10" if new_limit != 10 else "✅ 10", callback_data="stg_fl_10"),
@@ -729,6 +751,46 @@ async def settings_cb(client: Bot, query: CallbackQuery):
             "<b>✏️ Custom Free Link Limit</b>\n\n"
             "📤 Send a <b>number</b> (e.g. <code>25</code>) as the daily free link limit:",
             InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="stg_freelink")]])
+        )
+
+    elif data in ("stg_freelink_on", "stg_freelink_off"):
+        _pending.pop(uid, None)
+        if uid != OWNER_ID:
+            await query.answer("⛔ Only Owner!", show_alert=True)
+            return
+        new_state = (data == "stg_freelink_on")
+        await db.set_free_link_enabled(new_state)
+        await query.answer(f"✅ Free Link turned {'ON' if new_state else 'OFF'}", show_alert=True)
+        # Refresh the Free Link panel
+        limit = await db.get_free_link_limit()
+        free_on = await db.get_free_link_enabled()
+        shortner_on = await db.get_shortner_enabled()
+        if not free_on and not shortner_on:
+            mode_txt = "Free Link OFF + Shortner OFF — Unlimited free access for users"
+        elif not free_on and shortner_on:
+            mode_txt = "Free Link OFF + Shortner ON — Token required from start (verify time based)"
+        elif free_on and shortner_on:
+            mode_txt = "Free Link ON + Shortner ON — Token required after free links"
+        else:
+            mode_txt = "Free Link ON + Shortner OFF — Premium required after free links"
+        await _edit(query,
+            f"<b>🆓 Free Link Settings</b>\n\n"
+            f"<b>Daily Free Links:</b> <code>{limit}</code> per user\n"
+            f"<b>Mode:</b> {mode_txt}\n\n"
+            "<i>Toggle Free Link or pick the daily limit below:</i>",
+            InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton(f"{'🟢' if free_on else '🔴'} Free Link: {'ON' if free_on else 'OFF'}", callback_data=("stg_freelink_off" if free_on else "stg_freelink_on"))
+                ],
+                [
+                    InlineKeyboardButton("5"  if limit != 5  else "✅ 5",  callback_data="stg_fl_5"),
+                    InlineKeyboardButton("10" if limit != 10 else "✅ 10", callback_data="stg_fl_10"),
+                    InlineKeyboardButton("15" if limit != 15 else "✅ 15", callback_data="stg_fl_15"),
+                    InlineKeyboardButton("20" if limit != 20 else "✅ 20", callback_data="stg_fl_20"),
+                ],
+                [InlineKeyboardButton("✏️ Custom", callback_data="stg_fl_custom")],
+                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+            ])
         )
 
     # ══════════════════════════════════════════════════════════
@@ -1006,7 +1068,15 @@ async def handle_settings_input(client: Bot, message: Message):
 
         await db.set_free_link_limit(new_limit)
         shortner_on = await db.get_shortner_enabled()
-        mode_txt = "Shortner ON (token after free links)" if shortner_on else "Shortner OFF (premium after free links)"
+        free_on = await db.get_free_link_enabled()
+        if not free_on and not shortner_on:
+            mode_txt = "Free Link OFF + Shortner OFF — Unlimited free access for users"
+        elif not free_on and shortner_on:
+            mode_txt = "Free Link OFF + Shortner ON — Token required from start (verify time based)"
+        elif free_on and shortner_on:
+            mode_txt = "Free Link ON + Shortner ON — Token required after free links"
+        else:
+            mode_txt = "Free Link ON + Shortner OFF — Premium required after free links"
         await patch(
             f"<b>✅ Free Link limit set to <code>{new_limit}</code>/day.</b>\n\n"
             f"<b>Mode:</b> {mode_txt}",

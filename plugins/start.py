@@ -3,6 +3,7 @@ import os
 import random
 import sys
 import re
+import urllib.parse
 import string 
 import string as rohit
 import time
@@ -20,6 +21,32 @@ from database.db_premium import *
 import config as _cfg
 
 BAN_SUPPORT = f"{BAN_SUPPORT}"
+
+def _is_valid_btn_url(u):
+    """Strict validator for Telegram inline-button URLs."""
+    if not u or not isinstance(u, str):
+        return False
+    u = u.strip()
+    if not u or len(u) > 2048:
+        return False
+    try:
+        p = urllib.parse.urlparse(u)
+    except Exception:
+        return False
+    scheme = (p.scheme or "").lower()
+    if scheme == "tg":
+        return bool(p.netloc or p.path)
+    if scheme not in ("http", "https"):
+        return False
+    host = (p.hostname or "").lower()
+    if not host:
+        return False
+    if host in ("none", "null", "undefined", "localhost"):
+        return False
+    if "." not in host:
+        return False
+    return True
+
 
 
 @Bot.on_message(filters.command('start') & filters.private)
@@ -93,54 +120,107 @@ async def start_command(client: Client, message: Message):
 
         # ── Access gate: free link count → token or premium ──────────────────────
         if tier is None and id != OWNER_ID and not is_admin:
-            free_limit = await db.get_free_link_limit()
-            daily_count = await db.get_user_daily_links(id)
+            free_link_enabled = await db.get_free_link_enabled()
+            shortlink_configured = bool(_cfg.SHORTLINK_URL or _cfg.SHORTLINK_API)
+            shortner_active = bool(shortner_enabled and shortlink_configured)
 
-            if daily_count < free_limit:
-                # Free link available — increment count and allow through
-                await db.increment_user_daily_links(id)
+            async def _send_token_prompt(header_text: str):
+                """Send the verification/token prompt with photo + Open Link + Tutorial + Premium buttons."""
+                token = ''.join(random.choices(rohit.ascii_letters + rohit.digits, k=10))
+                direct_tg_link = f'https://telegram.dog/{client.username}?start=verify_{token}'
+                try:
+                    shortlink = await get_shortlink(_cfg.SHORTLINK_URL, _cfg.SHORTLINK_API, direct_tg_link)
+                except Exception as e:
+                    print(f"[start] shortener failed: {e!r}; using direct tg link as fallback")
+                    shortlink = direct_tg_link
+                if isinstance(shortlink, str):
+                    shortlink = shortlink.strip()
+                await db.update_verify_status(id, verify_token=token, link=shortlink, created_at=time.time())
+                if await db.get_anti_bypass() and WEB_VERIFY_BASE_URL:
+                    btn_url = get_verify_link(WEB_VERIFY_BASE_URL, id, token, client.username)
+                else:
+                    btn_url = shortlink
+                if isinstance(btn_url, str):
+                    btn_url = btn_url.strip()
+                if not _is_valid_btn_url(btn_url):
+                    print(f"[start] btn_url invalid ({btn_url!r}); falling back to direct_tg_link")
+                    btn_url = direct_tg_link
+                if not _is_valid_btn_url(btn_url):
+                    btn_url = f"https://t.me/{client.username}"
+                tut_url = getattr(_cfg, "TUT_VID", None)
+                if isinstance(tut_url, str):
+                    tut_url = tut_url.strip()
+                if not _is_valid_btn_url(tut_url):
+                    tut_url = "https://t.me/How_To_Take_Tokens/12"
+                btn = [
+                    [InlineKeyboardButton("• ᴏᴘᴇɴ ʟɪɴᴋ •", url=btn_url),
+                     InlineKeyboardButton("• ᴛᴜᴛᴏʀɪᴀʟ •", url=tut_url)],
+                    [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
+                ]
+                verify_caption = (
+                    header_text +
+                    f"<b>Please refresh your token to continue using the bot.</b>\n\n"
+                    f"<b>Token Timeout:</b> {get_exp_time(_cfg.VERIFY_EXPIRE)}\n\n"
+                    f"<b>This is an ads token. Passing one ad allows you to use the bot until the next day.</b>\n\n"
+                    f"<blockquote><b>To skip the token, get our Premium for unlimited access.</b></blockquote>"
+                )
+                try:
+                    return await message.reply_photo(
+                        photo=PREMIUM_PIC,
+                        caption=verify_caption,
+                        reply_markup=InlineKeyboardMarkup(btn),
+                    )
+                except Exception as e:
+                    print(f"[start] reply_photo failed: {e!r}; btn_url={btn_url!r} tut_url={tut_url!r} — retrying with safe URLs")
+                    safe_open = f"https://t.me/{client.username}"
+                    btn_safe = [
+                        [InlineKeyboardButton("• ᴏᴘᴇɴ ʟɪɴᴋ •", url=safe_open),
+                         InlineKeyboardButton("• ᴛᴜᴛᴏʀɪᴀʟ •", url="https://t.me/How_To_Take_Tokens/12")],
+                        [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
+                    ]
+                    return await message.reply_photo(
+                        photo=PREMIUM_PIC,
+                        caption=verify_caption,
+                        reply_markup=InlineKeyboardMarkup(btn_safe),
+                    )
+
+            # ── Case 1: Free Link OFF + Shortner OFF → unlimited free access (no gate) ──
+            if (not free_link_enabled) and (not shortner_active):
+                pass  # fall through, full free access
+
+            # ── Case 2: Free Link OFF + Shortner ON → direct token flow (no free quota) ──
+            elif (not free_link_enabled) and shortner_active:
+                if not verify_status['is_verified']:
+                    return await _send_token_prompt(
+                        f"<b>🔒 Token verification required to use the bot.</b>\n\n"
+                    )
+                # else: verified, fall through
+
+            # ── Case 3 & 4: Free Link ON → existing daily-quota behavior ──
             else:
-                # Free links exhausted
-                if shortner_enabled and (_cfg.SHORTLINK_URL or _cfg.SHORTLINK_API):
-                    # Mode: Shortner ON — require token after free limit
-                    if not verify_status['is_verified']:
-                        token = ''.join(random.choices(rohit.ascii_letters + rohit.digits, k=10))
-                        direct_tg_link = f'https://telegram.dog/{client.username}?start=verify_{token}'
-                        shortlink = await get_shortlink(_cfg.SHORTLINK_URL, _cfg.SHORTLINK_API, direct_tg_link)
-                        await db.update_verify_status(id, verify_token=token, link=shortlink, created_at=time.time())
-                        if await db.get_anti_bypass() and WEB_VERIFY_BASE_URL:
-                            btn_url = get_verify_link(WEB_VERIFY_BASE_URL, id, token, client.username)
-                        else:
-                            btn_url = shortlink
-                        btn = [
-                            [InlineKeyboardButton("• ᴏᴘᴇɴ ʟɪɴᴋ •", url=btn_url),
-                             InlineKeyboardButton("• ᴛᴜᴛᴏʀɪᴀʟ •", url=_cfg.TUT_VID)],
-                            [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
-                        ]
+                free_limit = await db.get_free_link_limit()
+                daily_count = await db.get_user_daily_links(id)
+                if daily_count < free_limit:
+                    await db.increment_user_daily_links(id)
+                else:
+                    if shortner_active:
+                        if not verify_status['is_verified']:
+                            return await _send_token_prompt(
+                                f"<b>🔒 Your {free_limit} free daily links have been used!</b>\n\n"
+                            )
+                        # else verified, fall through
+                    else:
                         return await message.reply_photo(
                             photo=PREMIUM_PIC,
                             caption=(
                                 f"<b>🔒 Your {free_limit} free daily links have been used!</b>\n\n"
-                                f"<b>Please refresh your token to continue using the bot.</b>\n\n"
-                                f"<b>Token Timeout:</b> {get_exp_time(_cfg.VERIFY_EXPIRE)}\n\n"
-                                f"<b>This is an ads token. Passing one ad allows you to use the bot until the next day.</b>\n\n"
-                                f"<blockquote><b>To skip the token, get our Premium for unlimited access.</b></blockquote>"
+                                f"<b>Daily limit reached. Come back tomorrow for {free_limit} more free links.</b>\n\n"
+                                f"<b>Get Premium for unlimited access with no daily restrictions!</b>"
                             ),
-                            reply_markup=InlineKeyboardMarkup(btn)
+                            reply_markup=InlineKeyboardMarkup([
+                                [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
+                            ])
                         )
-                else:
-                    # Mode: Shortner OFF — require premium after free limit
-                    return await message.reply_photo(
-                        photo=PREMIUM_PIC,
-                        caption=(
-                            f"<b>🔒 Your {free_limit} free daily links have been used!</b>\n\n"
-                            f"<b>Daily limit reached. Come back tomorrow for {free_limit} more free links.</b>\n\n"
-                            f"<b>Get Premium for unlimited access with no daily restrictions!</b>"
-                        ),
-                        reply_markup=InlineKeyboardMarkup([
-                            [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
-                        ])
-                    )
 
         try:
             base64_string = text.split(" ", 1)[1]
