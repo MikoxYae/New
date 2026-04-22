@@ -30,8 +30,7 @@ TUT_VID = os.environ.get("TUT_VID","https://t.me/How_To_Take_Tokens/12")
 ANTI_BYPASS_ENABLED = True if os.environ.get("ANTI_BYPASS_ENABLED", "True") == "True" else False
 ANTI_BYPASS_MIN_WAIT = int(os.environ.get("ANTI_BYPASS_MIN_WAIT", "8"))
 ANTI_BYPASS_BLOCK_SCORE = int(os.environ.get("ANTI_BYPASS_BLOCK_SCORE", "70"))
-WEB_VERIFY_BASE_URL = os.environ.get("WEB_VERIFY_BASE_URL", " https://believes-contacting-assessment-editorial.try
-cloudflare.com").rstrip("/")
+WEB_VERIFY_BASE_URL = os.environ.get("WEB_VERIFY_BASE_URL", " https://believes-contacting-assessment-editorial.trycloudflare.com").rstrip("/")
 if not WEB_VERIFY_BASE_URL:
     _public_host = (
         os.environ.get("RENDER_EXTERNAL_HOSTNAME") or
