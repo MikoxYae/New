@@ -23,20 +23,26 @@
   • <b>Admin Control:</b> Add or remove admins with `/add_admin`, `/deladmin`, view list via `/admins`
   • <b>Token Verification:</b> Secure access via shortlink token with anti-bypass protection
 
-  <b>🆓 Free Link System:</b>
+  <b>🆓 Free Link System (with ON/OFF toggle):</b>
 
   • <b>Daily Free Links:</b> Every user gets N free file links per day (default 5, configurable from Settings)
-  • <b>Shortner ON Mode:</b> After free limit → user must complete shortner token to continue
-  • <b>Shortner OFF Mode:</b> After free limit → user is prompted to buy Premium
+  • <b>Free Link ON/OFF toggle:</b> Disable the free quota entirely from <b>Settings → Free Link</b>
   • <b>Bypass:</b> Admins, Owner, and Premium users skip the daily limit entirely
   • <b>Auto Reset:</b> Daily count resets automatically — no cron job needed
   • <b>Presets:</b> 5 / 10 / 15 / 20 / Custom — configurable from Settings panel
 
-  <b>🔗 Shortner On/Off Toggle:</b>
+  <b>🔗 Free Link × Shortner — 4 Access Modes:</b>
 
-  • Toggle shortner system ON or OFF directly from <b>Settings → Shortner</b> panel
-  • <b>ON:</b> Token required after free links (ad-based access)
-  • <b>OFF:</b> Premium required after free links (no shortner token at all)
+  | Free Link | Shortner | Behavior |
+  |-----------|----------|----------|
+  | 🟢 ON  | 🟢 ON  | N free links/day → then token required |
+  | 🟢 ON  | 🔴 OFF | N free links/day → then premium required |
+  | 🔴 OFF | 🟢 ON  | <b>Direct token flow</b> — verify once, valid for `VERIFY_EXPIRE` time |
+  | 🔴 OFF | 🔴 OFF | <b>Unlimited free access</b> — no limits, no token, no premium prompt |
+
+  • Toggle Shortner ON/OFF from <b>Settings → Shortner</b>
+  • Toggle Free Link ON/OFF from <b>Settings → Free Link</b>
+  • Mix and match — bot adapts the access flow automatically
 
   <b>💎 Premium Tier System:</b>
 
@@ -66,8 +72,9 @@
   • Maintenance mode — block all non-admin users instantly
   • Toggle protect content, anti-bypass, shortner settings from `/settings`
   • Shortner URL/API/expire time configurable from panel
-  • <b>Free Link panel</b> — set daily free link limit (5/10/15/20/Custom)
+  • <b>Free Link panel</b> — toggle Free Link ON/OFF and set daily limit (5/10/15/20/Custom)
   • <b>Shortner toggle</b> — switch between token mode and premium-only mode
+  • <b>Combine both toggles</b> for 4 different access modes (see Free Link × Shortner table above)
 
   <b>✨ More features & enhancements coming soon...</b>
   </details>
