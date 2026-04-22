@@ -138,11 +138,16 @@ async def start_command(client: Client, message: Message):
                         except Exception as e:
                             print(f"[start] shortener failed: {e!r}; using direct tg link as fallback")
                             shortlink = direct_tg_link
+                        # Strip whitespace/newlines that some shorteners add — Telegram rejects URLs with leading/trailing spaces
+                        if isinstance(shortlink, str):
+                            shortlink = shortlink.strip()
                         await db.update_verify_status(id, verify_token=token, link=shortlink, created_at=time.time())
                         if await db.get_anti_bypass() and WEB_VERIFY_BASE_URL:
                             btn_url = get_verify_link(WEB_VERIFY_BASE_URL, id, token, client.username)
                         else:
                             btn_url = shortlink
+                        if isinstance(btn_url, str):
+                            btn_url = btn_url.strip()
 
                         # Guarantee a valid Open-Link URL: fall back to direct telegram link, then to bot link
                         if not _is_valid_btn_url(btn_url):
@@ -153,6 +158,8 @@ async def start_command(client: Client, message: Message):
 
                         # Guarantee a valid Tutorial URL
                         tut_url = getattr(_cfg, "TUT_VID", None)
+                        if isinstance(tut_url, str):
+                            tut_url = tut_url.strip()
                         if not _is_valid_btn_url(tut_url):
                             tut_url = "https://t.me/How_To_Take_Tokens/12"
 
