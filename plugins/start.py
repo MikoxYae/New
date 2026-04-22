@@ -21,6 +21,15 @@ import config as _cfg
 
 BAN_SUPPORT = f"{BAN_SUPPORT}"
 
+def _is_valid_btn_url(u):
+    if not u or not isinstance(u, str):
+        return False
+    u = u.strip()
+    if not u:
+        return False
+    return bool(re.match(r'^(https?://|tg://|t\\.me/|telegram\\.me/|telegram\\.dog/)', u, re.IGNORECASE))
+
+
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
@@ -112,9 +121,26 @@ async def start_command(client: Client, message: Message):
                             btn_url = get_verify_link(WEB_VERIFY_BASE_URL, id, token, client.username)
                         else:
                             btn_url = shortlink
+
+                        # Validate URLs to avoid Telegram BUTTON_URL_INVALID (400) errors
+                        if not _is_valid_btn_url(btn_url):
+                            print(f"[start] Invalid verify btn_url={btn_url!r}; aborting token flow")
+                            return await message.reply_photo(
+                                photo=PREMIUM_PIC,
+                                caption=(
+                                    "<b>⚠️ Unable to generate your verification link right now.</b>\n\n"
+                                    "<i>Please try again in a moment, or contact support.</i>"
+                                ),
+                                reply_markup=InlineKeyboardMarkup([
+                                    [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
+                                ])
+                            )
+
+                        first_row = [InlineKeyboardButton("• ᴏᴘᴇɴ ʟɪɴᴋ •", url=btn_url)]
+                        if _is_valid_btn_url(getattr(_cfg, "TUT_VID", None)):
+                            first_row.append(InlineKeyboardButton("• ᴛᴜᴛᴏʀɪᴀʟ •", url=_cfg.TUT_VID))
                         btn = [
-                            [InlineKeyboardButton("• ᴏᴘᴇɴ ʟɪɴᴋ •", url=btn_url),
-                             InlineKeyboardButton("• ᴛᴜᴛᴏʀɪᴀʟ •", url=_cfg.TUT_VID)],
+                            first_row,
                             [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
                         ]
                         return await message.reply_photo(
