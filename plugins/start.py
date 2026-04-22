@@ -3,6 +3,7 @@ import os
 import random
 import sys
 import re
+import urllib.parse
 import string 
 import string as rohit
 import time
@@ -22,12 +23,29 @@ import config as _cfg
 BAN_SUPPORT = f"{BAN_SUPPORT}"
 
 def _is_valid_btn_url(u):
+    """Strict validator for Telegram inline-button URLs."""
     if not u or not isinstance(u, str):
         return False
     u = u.strip()
-    if not u:
+    if not u or len(u) > 2048:
         return False
-    return bool(re.match(r'^(https?://|tg://|t\\.me/|telegram\\.me/|telegram\\.dog/)', u, re.IGNORECASE))
+    try:
+        p = urllib.parse.urlparse(u)
+    except Exception:
+        return False
+    scheme = (p.scheme or "").lower()
+    if scheme == "tg":
+        return bool(p.netloc or p.path)
+    if scheme not in ("http", "https"):
+        return False
+    host = (p.hostname or "").lower()
+    if not host:
+        return False
+    if host in ("none", "null", "undefined", "localhost"):
+        return False
+    if "." not in host:
+        return False
+    return True
 
 
 
@@ -143,17 +161,29 @@ async def start_command(client: Client, message: Message):
                             first_row,
                             [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
                         ]
-                        return await message.reply_photo(
-                            photo=PREMIUM_PIC,
-                            caption=(
-                                f"<b>🔒 Your {free_limit} free daily links have been used!</b>\n\n"
-                                f"<b>Please refresh your token to continue using the bot.</b>\n\n"
-                                f"<b>Token Timeout:</b> {get_exp_time(_cfg.VERIFY_EXPIRE)}\n\n"
-                                f"<b>This is an ads token. Passing one ad allows you to use the bot until the next day.</b>\n\n"
-                                f"<blockquote><b>To skip the token, get our Premium for unlimited access.</b></blockquote>"
-                            ),
-                            reply_markup=InlineKeyboardMarkup(btn)
+                        verify_caption = (
+                            f"<b>🔒 Your {free_limit} free daily links have been used!</b>\n\n"
+                            f"<b>Please refresh your token to continue using the bot.</b>\n\n"
+                            f"<b>Token Timeout:</b> {get_exp_time(_cfg.VERIFY_EXPIRE)}\n\n"
+                            f"<b>This is an ads token. Passing one ad allows you to use the bot until the next day.</b>\n\n"
+                            f"<blockquote><b>To skip the token, get our Premium for unlimited access.</b></blockquote>"
                         )
+                        try:
+                            return await message.reply_photo(
+                                photo=PREMIUM_PIC,
+                                caption=verify_caption,
+                                reply_markup=InlineKeyboardMarkup(btn),
+                            )
+                        except Exception as e:
+                            print(f"[start] reply_photo failed for verify flow: {e!r}; btn_url={btn_url!r} TUT_VID={getattr(_cfg, 'TUT_VID', None)!r}")
+                            safe_caption = verify_caption + f"\n\n<b>🔗 Verify Link:</b> {btn_url}"
+                            return await message.reply_text(
+                                safe_caption,
+                                reply_markup=InlineKeyboardMarkup([
+                                    [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
+                                ]),
+                                disable_web_page_preview=True,
+                            )
                 else:
                     # Mode: Shortner OFF — require premium after free limit
                     return await message.reply_photo(
