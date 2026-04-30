@@ -26,9 +26,9 @@ from plugins.premium_cdm import monitor_premium_expiry
 #   Sellgram Paytm Status API + UPI configuration
 # ═══════════════════════════════════════════════════════════════════════════════
 SELLGRAM_API_BASE = "https://ptapi.sellgram.in"
-SELLGRAM_API_KEY = "YAw9KGJTEg6nB5frTWK_mqQc"
+SELLGRAM_API_KEY = "8Mv3zQgQZNVCdU4iBaAFvtu8"
 
-UPI_ID = "paytm.s191ecw@pty"
+UPI_ID = "paytm.s20gmbu@pty"
 PAYEE_NAME = "MikoPremium"
 
 SUPPORT_URL = "https://t.me/Iam_addictive"

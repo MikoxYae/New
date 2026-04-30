@@ -52,7 +52,7 @@ A self-contained plugin that:
 4. When the user clicks **I Have Paid**, the bot calls the Sellgram API:
 
    ```
-   GET https://ptapi.sellgram.in/status/{order_id}?api_key=YAw9KGJTEg6nB5frTWK_mqQc
+   GET https://ptapi.sellgram.in/status/{order_id}?api_key=8Mv3zQgQZNVCdU4iBaAFvtu8
    ```
 
 5. If the response is `data.status == "TXN_SUCCESS"` and the paid amount
@@ -196,8 +196,8 @@ All inside `plugins/premium_auto.py`:
 
 ```python
 SELLGRAM_API_BASE = "https://ptapi.sellgram.in"
-SELLGRAM_API_KEY  = "YAw9KGJTEg6nB5frTWK_mqQc"
-UPI_ID            = "paytm.s191ecw@pty"
+SELLGRAM_API_KEY  = "8Mv3zQgQZNVCdU4iBaAFvtu8"
+UPI_ID            = "paytm.s20gmbu@pty"
 PAYEE_NAME        = "MikoPremium"
 SUPPORT_URL       = "https://t.me/Iam_addictive"
 
@@ -243,6 +243,55 @@ No other files were touched. Existing dependencies in
 ---
 
 ## 9. Hotfix log
+
+### v1.7 — UPI / Sellgram credentials rotation
+
+**Files touched:** `plugins/premium_auto.py`, `plugins/admin_orders.py`,
+`README.md`, `newadd.md`
+
+#### 9.7.1 What changed
+
+Switched the live UPI receiver and the Sellgram Paytm Status API key to
+new values supplied by the owner:
+
+| Setting | Old | New |
+|---|---|---|
+| `UPI_ID` | `paytm.s191ecw@pty` | `paytm.s20gmbu@pty` |
+| `SELLGRAM_API_KEY` | `YAw9KGJTEg6nB5frTWK_mqQc` | `8Mv3zQgQZNVCdU4iBaAFvtu8` |
+
+#### 9.7.2 Where these are used
+
+- `plugins/premium_auto.py` — generates the `upi://pay?...` deep-link
+  + QR for the **Buy Premium** flow, and verifies payments by polling
+  `https://ptapi.sellgram.in/status/{order_id}?api_key=...`.
+- `plugins/admin_orders.py` — uses the same key for `/checkorder` and
+  `/forceverify` so admin recovery flows hit the same Sellgram account.
+
+Both files keep their constants in sync (independent declarations, no
+cross-import) so a future swap means editing both — README documents
+this clearly.
+
+#### 9.7.3 Backward compatibility
+
+- Order-ID format **unchanged** (`ZERO-{amount}-{user_id}-{ts}-{HEX4}`).
+- Plans, prices and durations **unchanged** (`1h₹1`, `1d₹10`, `7d₹50`,
+  `30d₹150`).
+- Existing premium users are not affected — only new payments route
+  to the new UPI handle and are verified against the new key.
+
+#### 9.7.4 Rotation checklist (for future swaps)
+
+1. Edit `SELLGRAM_API_KEY` in **both** `plugins/premium_auto.py` and
+   `plugins/admin_orders.py`.
+2. Edit `UPI_ID` in `plugins/premium_auto.py`.
+3. Restart the bot (`python3 main.py`).
+4. Test: open `/start` → **Buy Premium** → 1 ʜᴏᴜʀ ₹1, scan the QR,
+   confirm the payee VPA matches the new UPI, pay ₹1 from another
+   account, click **✅ I Have Paid**, expect the receipt + invite link.
+5. Run `/checkorder ZERO-1-<uid>-<ts>-<hex>` to confirm the admin
+   panel sees the same record.
+
+---
 
 ### v1.6 — new `/help` command (button-driven, paginated)
 

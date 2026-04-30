@@ -38,16 +38,25 @@
   • <b>ON:</b> Token required after free links (ad-based access)
   • <b>OFF:</b> Premium required after free links (no shortner token at all)
 
-  <b>💎 Premium Tier System:</b>
+  <b>💎 Premium System (Auto UPI Verification):</b>
 
-  | Tier | Token Bypass | Free Link Bypass | Protect Content Bypass | Force Sub Bypass |
-  |------|:---:|:---:|:---:|:---:|
-  | 🥇 Gold | ✅ | ✅ | ✅ | ❌ |
-  | 💎 Platinum | ✅ | ✅ | ✅ | ✅ |
+  | Plan | Price | Duration |
+  |------|:---:|:---:|
+  | ⏱️ Test     | ₹1   | 1 hour  |
+  | 📅 Daily    | ₹10  | 1 day   |
+  | 📆 Weekly   | ₹50  | 7 days  |
+  | 🗓️ Monthly | ₹150 | 30 days |
 
-  • Auto expiry notification — 24h reminder + 1h final reminder
-  • Auto removal when premium expires — no manual cleanup needed
-  • `/myplan` — users can check their tier and time remaining
+  • <b>One-tap UPI checkout</b> — bot auto-builds a `upi://pay` deep-link + QR with a unique `ZERO-{amount}-{user_id}-{ts}-{HEX4}` order ID
+  • <b>Sellgram Paytm Status API</b> verifies the transaction in real-time — no manual approval, no screenshot uploads
+  • <b>Auto receipt + invite link</b> the moment the payment lands
+  • <b>Auto expiry notification</b> — 24h + 1h reminders before plan ends
+  • <b>Auto removal</b> when premium expires — `/start_premium_monitoring` runs the background job
+  • <b>`/myplan`</b> — any user can check their plan and time remaining
+  • <b>Manual override:</b> `/addpremium <user_id> <duration>` (e.g. `/addpremium 7137144805 30d`), `/remove_premium <user_id>`, `/premium_users`
+  • <b>Recovery:</b> `/checkorder <order_id>` (read-only debug) and `/forceverify <order_id>` (re-runs Sellgram check + activates premium when API succeeded but DB lagged)
+  • <b>Reporting:</b> `/id [today|yesterday|DD-MM-YYYY]`, `/ord <user_id>`, `/amount [today|yesterday|DD-MM-YYYY]`, `/stats`
+  • <b>UPI / API key</b> live as constants in `plugins/premium_auto.py` (and mirrored in `plugins/admin_orders.py`) — see `newadd.md` for the rotation checklist
 
   <b>🛡️ Flood Protection:</b>
 
@@ -139,34 +148,48 @@
 
   ## 𝐶𝑜𝑚𝑚𝑎𝑛𝑑𝑠
 
+  > 💡 The bot ships a button-driven **`/help`** menu that lists every command with description + example. Use it for the most up-to-date inline reference. The list below is the same content for quick GitHub browsing.
+
   ### 👤 User Commands
   ```
-  start      - Start the bot or get files
-  myplan     - Check your premium tier and time remaining
+  start      - Start the bot or get files via deep link
+  help       - Open the paginated help menu (USER + OWNER + SUPPORT)
+  myplan     - Check your premium plan and time remaining
   ```
 
   ### 🔗 Link Management (Admin)
   ```
-  batch         - Create link for multiple posts
-  genlink       - Create link for a single post
-  custom_batch  - Create custom batch from channel/group
+  batch         - Generate a range link between two DB-channel messages
+  genlink       - Generate a share-link for a single DB-channel message
+  custom_batch  - Interactive: send media -> press STOP -> get one batch link
   ```
 
   ### 📢 Broadcast (Admin)
   ```
-  broadcast   - Broadcast text message to all users
-  dbroadcast  - Broadcast document/video to all users
-  pbroadcast  - Broadcast photo to all users
+  broadcast   - (reply) Send the replied-to message to all users
+  pbroadcast  - (reply) Same as /broadcast + pin in every PM
+  dbroadcast  - (reply) Auto-deleting broadcast: /dbroadcast <seconds>
   ```
 
-  ### 👑 Premium Management (Admin)
+  ### 💎 Premium Management (Admin)
   ```
-  addpremium     - Add premium user: /addpremium user_id time unit tier
-                   Tiers: gold | platinum
-                   Example: /addpremium 123456 1 d gold
-  remove_premium - Remove premium from a user
-  premium_users  - List all active premium users with tier info
-  myplan         - Check premium status (any user)
+  addpremium                - /addpremium <user_id> <duration>
+                              duration examples: 1h, 1d, 7d, 30d
+                              e.g. /addpremium 7137144805 30d
+  remove_premium            - /remove_premium <user_id>
+  premium_users             - List all active premium users with expiry
+  start_premium_monitoring  - (Re)start background expiry monitor
+  myplan                    - Check premium status (any user)
+  ```
+
+  ### 🧾 Admin Orders (Owner-only — auto-premium flow)
+  ```
+  id           - /id [today|yesterday|DD-MM-YYYY] — list paid user-ids on a date
+  ord          - /ord <user_id> — list every order for a specific user
+  amount       - /amount [today|yesterday|DD-MM-YYYY] — total revenue for a date
+  stats        - Bot + orders stats (users, paid users, lifetime revenue)
+  checkorder   - /checkorder <order_id> — Sellgram + DB lookup (read-only)
+  forceverify  - /forceverify <order_id> — re-run verification + recover paid order
   ```
 
   ### 🛡️ User Management (Admin)
@@ -200,12 +223,27 @@
 
   ### ⚙️ Settings & Stats (Admin)
   ```
-  settings  - Open bot settings panel
-  stats     - Check bot uptime
+  settings  - Open the inline bot settings panel
+  commands  - Legacy short admin-cmds list (kept for backward compat)
+  stats     - Check bot uptime + orders stats (see Admin Orders above)
   users     - View total user count
   count     - Count shortner clicks
   dlt_time  - Set auto-delete timer for files
   ```
+
+  <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
+
+  ## 🔄 Recent Updates
+
+  Full changelog with code snippets and rationale lives in **[`newadd.md`](./newadd.md)**. Highlights:
+
+  - **v1.7** — UPI / Sellgram credentials rotated to `paytm.s20gmbu@pty` + new API key
+  - **v1.6** — New `/help` command: button-driven, paginated, every command documented with examples
+  - **v1.5** — `/custom_batch` double-copy + STOP-junk-link bug fix
+  - **v1.4.1** — Channel-post exclusion-list fix kept; auto-delete (DD) reverted on user request
+  - **v1.3** — Order-ID prefix changed from `MIKO-` to `ZERO-`
+  - **v1.2** — New owner-only Admin Orders panel: `/id`, `/ord`, `/amount`, `/stats`, `/checkorder`, `/forceverify`
+  - **v1.0** — Replaced manual gold/platinum tiers with **fully-automatic Sellgram Paytm Status API** verification (UPI deep-link + QR + auto receipt + auto invite)
 
   <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 

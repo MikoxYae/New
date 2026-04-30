@@ -32,7 +32,7 @@ from plugins.premium_cdm import monitor_premium_expiry
 #   Sellgram (mirrors premium_auto.py — kept independent to avoid circular import)
 # ═══════════════════════════════════════════════════════════════════════════════
 SELLGRAM_API_BASE = "https://ptapi.sellgram.in"
-SELLGRAM_API_KEY = "YAw9KGJTEg6nB5frTWK_mqQc"
+SELLGRAM_API_KEY = "8Mv3zQgQZNVCdU4iBaAFvtu8"
 
 PLAN_LABELS = {"1h": "1ʜ", "1d": "1ᴅ", "7d": "7ᴅ", "30d": "30ᴅ"}
 PLAN_AMOUNTS = {"1h": 1, "1d": 10, "7d": 50, "30d": 150}
