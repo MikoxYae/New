@@ -81,6 +81,11 @@ logging.basicConfig(
     ]
 )
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
+# Silence the noisy "Empty messages cannot be copied." warning that fires
+# when a DB-channel message has been deleted. We already filter empty
+# messages in helper_func.get_messages and plugins/start.py; this just
+# keeps the log clean if any future call site forgets to.
+logging.getLogger("pyrogram.types.messages_and_media.message").setLevel(logging.ERROR)
 
 def LOGGER(name: str) -> logging.Logger:
     return logging.getLogger(name)

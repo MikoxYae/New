@@ -123,10 +123,24 @@ async def start_command(client: Client, message: Message):
         finally:
             await temp_msg.delete()
 
+        # Defensive: even though get_messages already filters out empty
+        # messages, double-check here so a single bad message can never
+        # spam the log with "Empty messages cannot be copied." warnings.
+        messages = [m for m in messages if m and not getattr(m, "empty", False)]
+
+        if not messages:
+            return await message.reply_text(
+                "<b>⚠️ ᴛʜᴇsᴇ ғɪʟᴇs ᴀʀᴇ ɴᴏ ʟᴏɴɢᴇʀ ᴀᴠᴀɪʟᴀʙʟᴇ. ᴘʟᴇᴀsᴇ ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ.</b>"
+            )
+
         yaemiko_msgs = []
         custom_caption = await db.get_custom_caption()
         protect_content = False if tier in ("gold", "platinum") else await db.get_protect_content()
         for msg in messages:
+            # Skip any message that slipped through as empty / deleted.
+            if not msg or getattr(msg, "empty", False):
+                continue
+
             caption = (custom_caption.format(previouscaption="" if not msg.caption else msg.caption.html,
                                              filename=msg.document.file_name) if bool(custom_caption) and bool(msg.document)
                        else ("" if not msg.caption else msg.caption.html))
@@ -136,12 +150,17 @@ async def start_command(client: Client, message: Message):
             try:
                 copied_msg = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML, 
                                             reply_markup=reply_markup, protect_content=protect_content)
-                yaemiko_msgs.append(copied_msg)
+                if copied_msg:
+                    yaemiko_msgs.append(copied_msg)
             except FloodWait as e:
                 await asyncio.sleep(e.value)
-                copied_msg = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML, 
-                                            reply_markup=reply_markup, protect_content=protect_content)
-                yaemiko_msgs.append(copied_msg)
+                try:
+                    copied_msg = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML,
+                                                reply_markup=reply_markup, protect_content=protect_content)
+                    if copied_msg:
+                        yaemiko_msgs.append(copied_msg)
+                except Exception as e2:
+                    print(f"Failed to send message after FloodWait: {e2}")
             except Exception as e:
                 print(f"Failed to send message: {e}")
                 pass

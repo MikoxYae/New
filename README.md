@@ -222,6 +222,7 @@
 
   Full changelog with code snippets and rationale lives in **[`newadd.md`](./newadd.md)**. Highlights:
 
+  - **v1.10** — Empty/deleted DB-channel message crash fix — bot no longer hangs when users open links to deleted files
   - **v1.9** — Free Link system now has ON/OFF toggle: OFF = unlimited free access for everyone, ON = original daily-limit-then-premium flow
   - **v1.8** — Token / Shortner / Anti-Bypass system fully removed — bot is now free-links → premium only
   - **v1.7** — UPI / Sellgram credentials rotated to `paytm.s20gmbu@pty` + new API key

@@ -71,6 +71,15 @@ async def decode(base64_string):
     return string
 
 async def get_messages(client, message_ids):
+    """Fetch DB-channel messages by id.
+
+    Pyrogram returns a stub `Message` with `.empty=True` for ids that no
+    longer exist (deleted from the DB channel). Calling `.copy()` on those
+    spams the log with `Empty messages cannot be copied.` warnings and
+    returns `None`, which downstream code can mishandle. We filter them
+    out (and any `None`s) right here so every caller only sees real
+    messages.
+    """
     messages = []
     total_messages = 0
     while total_messages != len(message_ids):
@@ -90,7 +99,14 @@ async def get_messages(client, message_ids):
             print(f"[!] get_messages error: {ex}")
             msgs = []
         total_messages += len(temb_ids)
-        messages.extend(msgs)
+        # Drop None and empty/deleted-message stubs so callers never try to
+        # copy them (which would log "Empty messages cannot be copied.").
+        for m in msgs:
+            if m is None:
+                continue
+            if getattr(m, "empty", False):
+                continue
+            messages.append(m)
     return messages
 
 async def get_message_id(client, message):

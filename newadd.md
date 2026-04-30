@@ -5,6 +5,55 @@ replaces the previous manual Gold / Platinum screenshot-based flow.
 
 ---
 
+## 🔥 v1.10 — Empty / Deleted Message Crash Fix
+
+### The bug
+
+Bot logs were getting flooded with this warning whenever a user opened
+a deep link whose underlying DB-channel message had been deleted:
+
+```
+[WARNING] - pyrogram.types.messages_and_media.message - Empty messages cannot be copied.
+[WARNING] - pyrogram.types.messages_and_media.message - Empty messages cannot be copied.
+[WARNING] - pyrogram.types.messages_and_media.message - Empty messages cannot be copied.
+```
+
+For batches that mixed valid + deleted ids, dozens of these warnings
+fired per request and the bot effectively hung / died under load.
+
+### Root cause
+
+`client.get_messages(chat_id, message_ids=[...])` doesn't raise when an
+id is missing — it returns a stub `Message` with `.empty == True`. Our
+copy loop in `plugins/start.py` then called `.copy()` on every entry,
+which:
+
+1. logged the warning above
+2. returned `None`
+3. left a `None` inside the `yaemiko_msgs` list that downstream
+   auto-delete / counting code had to special-case
+
+### Fix (3 layers, defense-in-depth)
+
+| File | What changed |
+|------|--------------|
+| `helper_func.py` | `get_messages()` now filters out `None` and any message with `.empty=True` **before** returning. Every caller receives only real messages. |
+| `plugins/start.py` | Added a defensive re-filter on the returned list, an early "files no longer available" reply when the list is empty after filtering, an in-loop `if not msg or getattr(msg, "empty", False): continue` guard, and proper `if copied_msg:` guards on the copy results so `None` never sneaks into `yaemiko_msgs`. The FloodWait retry path is now wrapped in its own `try/except` so a second failure can't kill the whole request. |
+| `config.py` | Belt-and-suspenders: `pyrogram.types.messages_and_media.message` logger is bumped to `ERROR` so even if a future code path forgets to filter, the warning won't spam the console. |
+
+### User-visible behavior
+
+- If **all** requested files have been deleted from the DB channel, the
+  user now gets a clear `⚠️ ᴛʜᴇsᴇ ғɪʟᴇs ᴀʀᴇ ɴᴏ ʟᴏɴɢᴇʀ ᴀᴠᴀɪʟᴀʙʟᴇ`
+  message instead of an empty/silent batch.
+- If **some** files in a batch are deleted, the bot delivers the
+  remaining valid ones and silently skips the missing ones (no warning
+  spam, no crash).
+- Auto-delete cleanup keeps working — `if snt_msg:` guard already
+  protected it, and now it never sees `None` entries either.
+
+---
+
 ## 🔥 v1.9 — Free Link System ON / OFF Toggle
 
 The **🆓 Free Link** system now has a live ON/OFF switch that the owner
