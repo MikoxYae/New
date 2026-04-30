@@ -244,6 +244,76 @@ No other files were touched. Existing dependencies in
 
 ## 9. Hotfix log
 
+### v1.6 — new `/help` command (button-driven, paginated)
+
+**File added:** `plugins/help_cmd.py`
+
+#### 9.6.1 Why a new file
+
+The old "help" was a callback inside `cbb.py` that just rendered the
+empty `HELP_TXT` constant. With the v1.2 admin-orders panel and v1.5
+batch fixes there are now ~25 commands across the bot — far too many
+for a single message under Telegram's 4096-char text limit. The new
+`/help` is a fully button-driven menu so we can keep every page short,
+readable, and easy to edit in one file.
+
+`cbb.py` is **not touched** — its old `help` callback (triggered from
+the `/start` screen's "ʜᴇʟᴘ" button) keeps working. The new system uses
+its own callback prefix `hlp_*` so there is zero collision.
+
+#### 9.6.2 Layout
+
+```
+/help
+ ├─ 👤 USER COMMANDS                  →  hlp_user
+ ├─ ⚙️ OWNER COMMANDS  (owner only)   →  hlp_owner
+ │     ├─ 📋 Admin Orders             →  hlp_o_orders
+ │     ├─ 💎 Premium Mgmt             →  hlp_o_prem
+ │     ├─ 🔗 Link Gen                 →  hlp_o_link
+ │     ├─ 📢 Broadcasts               →  hlp_o_bc
+ │     └─ 📊 Stats & Settings         →  hlp_o_stat
+ ├─ 📞 SUPPORT  (url → t.me/{OWNER})
+ └─ ❌ CLOSE                          →  hlp_close (deletes the menu)
+```
+
+Every sub-page has 🔙 BACK and ❌ CLOSE.
+
+#### 9.6.3 Coverage
+
+| Section | Commands documented |
+|---|---|
+| 👤 User           | `/start`, `/help`, `/myplan`, premium-buy flow |
+| 📋 Admin Orders   | `/id`, `/ord`, `/amount`, `/stats`, `/checkorder`, `/forceverify` |
+| 💎 Premium Mgmt   | `/addpremium`, `/remove_premium`, `/premium_users`, `/start_premium_monitoring` |
+| 🔗 Link Gen       | `/genlink`, `/batch`, `/custom_batch`, direct upload |
+| 📢 Broadcasts     | `/broadcast`, `/pbroadcast`, `/dbroadcast` |
+| 📊 Stats & Settings | `/settings`, `/peakhours`, `/weeklyreport`, `/cleanstats`, `/commands` |
+
+Every command entry includes:
+- The exact syntax with `<placeholder>` arguments
+- A short description of what it does
+- One or more concrete `<i>ᴇxᴀᴍᴘʟᴇ:</i>` lines
+
+#### 9.6.4 Owner-only safety
+
+The OWNER COMMANDS button is hidden for normal users (the keyboard is
+built dynamically based on `await _is_owner_or_admin(uid)` which checks
+`OWNER_ID` first then `db.admin_exist(uid)`). Even if a user crafts a
+`hlp_owner` callback by hand, the callback router re-checks ownership
+and answers `"Owner-only."` instead of rendering the page.
+
+#### 9.6.5 Robustness
+
+- `_safe_edit()` handles the case where the user opened `/help` on a
+  message that's a photo/caption — it edits if possible, otherwise
+  deletes and re-sends fresh.
+- All `query.answer()` and `delete()` calls are wrapped in try/except
+  so a rate-limit or stale callback never crashes the handler.
+- No new env-vars. SUPPORT button uses the existing `OWNER` username
+  from `config.py` (`t.me/{OWNER}`).
+
+---
+
 ### v1.5 — `/custom_batch`: double-copy + STOP-junk-link bug fix
 
 **File touched:** `plugins/channel_post.py`
