@@ -5,6 +5,88 @@ replaces the previous manual Gold / Platinum screenshot-based flow.
 
 ---
 
+## 🧾 v1.11 — Auto-Delete QR + Detailed Payment Receipt
+
+### What changed
+
+When a user finishes paying and presses **✅ ɪ ʜᴀᴠᴇ ᴘᴀɪᴅ**, the bot
+now does two things differently:
+
+1. **The QR + instructions message is automatically deleted.**
+   Previously the `💳 ᴄᴏᴍᴘʟᴇᴛᴇ ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ` photo (with the QR
+   code, plan info and 5-step instructions) stayed on the user's
+   screen forever, even after the order was successfully verified.
+   Now it's deleted the moment Sellgram returns `TXN_SUCCESS`.
+
+2. **A detailed payment receipt is sent in its place.**
+   The receipt contains every field the user (and the support
+   team) needs to prove or look up the transaction:
+
+   ```
+   🧾 ᴘᴀʏᴍᴇɴᴛ ʀᴇᴄᴇɪᴘᴛ — ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ!
+   ━━━━━━━━━━━━━━━━━━━━━━━
+
+   👤 ᴜsᴇʀ ɴᴀᴍᴇ:   <first + last + @username>
+   🆔 ᴜsᴇʀ ɪᴅ:     <telegram user id>
+   💎 ᴘʟᴀɴ ᴛʏᴘᴇ:   <plan label, e.g. "1 ʜᴏᴜʀ — 1 hour">
+   💰 ᴘʟᴀɴ ᴀᴍᴏᴜɴᴛ: ₹<amount>
+   📦 ᴏʀᴅᴇʀ ɪᴅ:    <ZERO-...-...-...>
+   🔖 ᴛxɴ ɪᴅ:      <Sellgram txn_id>
+   📅 ᴀᴄᴛɪᴠᴇ ᴅᴀᴛᴇ: <YYYY-MM-DD HH:MM:SS PM IST>
+   ⏳ ᴇxᴘɪʀᴇ ᴅᴀᴛᴇ: <YYYY-MM-DD HH:MM:SS PM IST>
+
+   ━━━━━━━━━━━━━━━━━━━━━━━
+   ✨ ᴇɴᴊᴏʏ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss!
+   ```
+
+   The receipt has two buttons: **🆘 sᴜᴘᴘᴏʀᴛ** and **🔒 ᴄʟᴏsᴇ**.
+
+### Why
+
+A reference screenshot from another bot — saved in this repo as
+[`docs/v1.11_qr_expired_reference.jpg`](docs/v1.11_qr_expired_reference.jpg)
+— showed the messy state when the QR sticks around: a stale "still
+on hold" card, a half-broken `/verify` flow, and a try-again loop
+that scared paid users into thinking the bot ate their money. By
+replacing the QR with a clean receipt the moment the payment lands,
+the user immediately sees proof of their successful purchase and
+both they and the support team have something to point at.
+
+### Files changed
+
+| File | What changed |
+|------|--------------|
+| `plugins/premium_auto.py` | • `pick_plan` now persists `plan_label` in the `pending_orders` doc so the receipt can show a human-readable plan name.<br>• Added `from pytz import timezone as _tz` so we can format the active date in IST.<br>• `i_have_paid` success branch now: (a) deletes `query.message` (the QR photo) first, (b) builds the new receipt with all 8 fields, (c) sends it via `client.send_message` with a Support + Close keyboard, (d) keeps the existing gift-channel delivery + owner-notification branches untouched. |
+| `plugins/help_cmd.py` | `USER_TXT` updated with a new **🧾 ᴘᴀʏᴍᴇɴᴛ ʀᴇᴄᴇɪᴘᴛ** section listing all 8 receipt fields. |
+| `newadd.md` | This section. |
+
+### Edge cases handled
+
+- If `client.send_message` fails (e.g. user blocked the bot between
+  payment and verification), we fall back to `query.message.reply`
+  which Pyrogram tolerates even on a deleted message.
+- If `query.message.delete()` raises (e.g. message older than 48h
+  in some chats, or already deleted), we swallow the error and
+  still send the receipt — the user always gets their proof of
+  payment.
+- `txn_id` is shown as `—` if Sellgram doesn't return one (very
+  rare, but the receipt never crashes on a `None`).
+- `active_date` falls back to UTC if the `pytz` IST conversion
+  ever fails.
+- Username / last name are optional — the user-name line gracefully
+  collapses when they're missing.
+
+### Backward compatibility
+
+- Old pending orders (created before this release) don't have a
+  `plan_label` field. The receipt code falls back to
+  `f"{time_value}{time_unit}"` (e.g. `30d`) so older orders still
+  render cleanly.
+- `_deliver_gift` and the owner-notification block are unchanged.
+- No DB schema migrations required.
+
+---
+
 ## 🔥 v1.10 — Empty / Deleted Message Crash Fix
 
 ### The bug
