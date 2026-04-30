@@ -78,6 +78,14 @@
   • <b>Free Link panel</b> — set daily free link limit (5/10/15/20/Custom)
   • <b>Shortner toggle</b> — switch between token mode and premium-only mode
 
+  <b>💎 Premium Plan Manager (`/psetting`):</b>
+
+  • Button-driven admin panel — add / list / delete premium plans
+  • Each plan: name, tier (silver/gold/diamond), duration (days), price
+  • Quick **Grant Plan** flow — pick a plan, give it to any user by ID
+  • Users see live plans with `/plans` command
+  • Full guide: see [`add.md`](./add.md)
+
   <b>✨ More features & enhancements coming soon...</b>
   </details>
 

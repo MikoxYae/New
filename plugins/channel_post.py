@@ -58,6 +58,8 @@ _EXCLUDED_COMMANDS = [
     "batch", "custom_batch", "genlink",
     # premium admin
     "addpremium", "premium_users", "remove_premium", "myplan",
+    # premium plan manager (v1.3)
+    "psetting", "plans",
     # settings + monitoring
     "settings", "peakhours", "weeklyreport", "cleanstats",
     "start_premium_monitoring",
