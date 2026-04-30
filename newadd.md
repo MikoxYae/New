@@ -242,7 +242,35 @@ No other files were touched. Existing dependencies in
 
 ---
 
-## 9. Quick smoke test (1₹ flow)
+## 9. Hotfix log
+
+### v1.1 — config import fix
+
+**Problem:** First push imported `DATABASE_URL` and `DATABASE_NAME` from
+`config.py`, but the project actually exports those values under the
+constant names **`DB_URI`** and **`DB_NAME`** (the `DATABASE_URL` /
+`DATABASE_NAME` strings are only the env-var keys read inside `config.py`).
+Result: the bot crashed at startup with
+
+```
+ImportError: cannot import name 'DATABASE_URL' from 'config'
+```
+
+**Fix:** `plugins/premium_auto.py` now imports the correct names:
+
+```python
+from config import DB_URI, DB_NAME, OWNER_ID, PREMIUM_PIC
+…
+_mongo = AsyncIOMotorClient(DB_URI)
+_db    = _mongo[DB_NAME]
+_orders_col = _db["pending_orders"]
+```
+
+After pulling this fix, `python3 main.py` starts cleanly.
+
+---
+
+## 10. Quick smoke test (1₹ flow)
 
 1. Set the free-link limit to a low number from `/settings → Free Link`.
 2. From a non-admin account, hit `/start <link>` repeatedly until the

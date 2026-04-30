@@ -17,7 +17,7 @@ from pyrogram.types import (
 )
 
 from bot import Bot
-from config import DATABASE_URL, DATABASE_NAME, OWNER_ID, PREMIUM_PIC
+from config import DB_URI, DB_NAME, OWNER_ID, PREMIUM_PIC
 from database.db_premium import add_premium
 from plugins.premium_cdm import monitor_premium_expiry
 
@@ -48,8 +48,8 @@ PLANS = {
 # ═══════════════════════════════════════════════════════════════════════════════
 #   MongoDB collection for pending orders (survives restarts)
 # ═══════════════════════════════════════════════════════════════════════════════
-_mongo = AsyncIOMotorClient(DATABASE_URL)
-_db = _mongo[DATABASE_NAME]
+_mongo = AsyncIOMotorClient(DB_URI)
+_db = _mongo[DB_NAME]
 _orders_col = _db["pending_orders"]
 
 
