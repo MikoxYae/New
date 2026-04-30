@@ -212,3 +212,25 @@ If no plans are defined, the bot replies with: `No premium plans available yet.`
 
 No existing behaviour was removed; everything described in the previous
 revision of `add.md` still works exactly as before.
+
+---
+
+## 🧾 v1.11 Update — Detailed Receipt + QR Auto-Delete
+
+After a buyer presses **✅ ɪ ʜᴀᴠᴇ ᴘᴀɪᴅ** and Sellgram confirms
+`TXN_SUCCESS`, the bot now:
+
+1. **Deletes the QR / instructions photo** so the user no longer sees
+   the stale "complete your payment" card.
+2. **Sends a detailed receipt** containing:
+   👤 User Name · 🆔 User ID · 💎 Plan Type · 💰 Plan Amount ·
+   📦 Order ID · 🔖 Txn ID · 📅 Active Date (IST) · ⏳ Expire Date (IST).
+
+This is fully compatible with the **Gift Channel** flow described
+above — the receipt is sent first, then the **🎀 Open Channel / ✅ Done**
+card appears underneath. Nothing in `/psetting`, `grant_gift`, or
+the expiry-kick path was changed.
+
+See `newadd.md` → "v1.11 — Auto-Delete QR + Detailed Payment Receipt"
+for the full technical writeup and the visual reference saved at
+[`docs/v1.11_qr_expired_reference.jpg`](docs/v1.11_qr_expired_reference.jpg).
