@@ -244,6 +244,109 @@ No other files were touched. Existing dependencies in
 
 ## 9. Hotfix log
 
+### v1.2 — admin-side orders panel + order-id polish
+
+#### 9.2.1 Order ID change
+
+**Before:** `0MIKO-1-7137144805-1777510697-0104` — leading `0`, last 4 chars
+were digits only.
+**Now:**   `MIKO-1-7137144805-1777510697-A1F4` — no leading `0`, last 4
+chars are uppercase HEX. Format:
+
+```
+MIKO-{amount}-{user_id}-{unix_ts}-{rand4_HEX}
+```
+
+Generator (`plugins/premium_auto.py → _gen_order_id`):
+
+```python
+def _gen_order_id(amount, user_id):
+    ts = int(time.time())
+    rand = "".join(random.choices("0123456789ABCDEF", k=4))
+    return f"MIKO-{amount}-{user_id}-{ts}-{rand}"
+```
+
+Old `0MIKO-…` orders already in MongoDB still verify normally — lookup
+is by `order_id` field, not by prefix.
+
+#### 9.2.2 New file: `plugins/admin_orders.py`
+
+A self-contained admin panel that reads the `pending_orders` Mongo
+collection (filled by `premium_auto.py`) and ships **6 owner-only
+commands**. All commands are gated by `filters.user(OWNER_ID)` —
+non-owners get nothing.
+
+##### 📊 Reporting commands
+
+| Command | What it does |
+|---|---|
+| `/id [date]` | Paginated successful-orders feed for the date (default = today). 10 per page. Header shows total count + total ₹ + page indicator. Each row shows: `MIKO-…` order id, user id, plan label (Gold 1ʜ / 1ᴅ / 7ᴅ / 30ᴅ), amount, IST time, and the bank TXN id. Buttons: **◀️ ᴘʀᴇᴠ / page / ɴᴇxᴛ ▶️**, **📄 ᴇxᴘᴏʀᴛ ᴀʟʟ**, **💰 ᴀᴍᴏᴜɴᴛ**, **🔄 ʀᴇғʀᴇsʜ**, **✖️ ᴄʟᴏsᴇ**. |
+| `/ord [date]` | Plain serial-wise list of just the order IDs (`1. MIKO-…`). Auto-falls-back to a `.txt` document if the list goes over 4000 chars. |
+| `/amount [date]` | Per-plan income breakdown: `1ʜ × N = ₹X`, `1ᴅ × N = ₹X`, `7ᴅ × N = ₹X`, `30ᴅ × N = ₹X`, plus Gold total + Grand total + order count. Buttons: **📋 ᴏʀᴅᴇʀ ɪᴅs**, **✖️ ᴄʟᴏsᴇ**. |
+| `/stats` | One-screen lifetime dashboard: total orders, total revenue, active premium users (distinct user ids that ever paid), top-selling plan (plan + price + count), and best-performing day (IST date + revenue). |
+
+`[date]` accepts:
+
+- *(omitted)* → today (IST)
+- `today`
+- `yesterday`
+- `DD-MM-YYYY` / `DD/MM/YYYY` / `YYYY-MM-DD` / `DD-MM-YY`
+
+##### 💸 Payments & recovery
+
+| Command | What it does |
+|---|---|
+| `/checkorder <order_id>` | Read-only debug. Looks up the order in our DB **and** queries Sellgram `/status/<order_id>`, prints both side-by-side. If DB says `pending` but Sellgram says `TXN_SUCCESS`, prints a `⚠️ ᴍɪsᴍᴀᴛᴄʜ` hint suggesting `/forceverify`. |
+| `/forceverify <order_id>` | Recovery command. When Sellgram confirms `TXN_SUCCESS` and the amount matches but our DB still says `pending` (e.g. user closed the chat before tapping *I have paid*), this re-checks, promotes the order to `paid`, calls `add_premium(...)`, spawns the expiry monitor, sends the user the standard **receipt** (order id, amount, duration, expiry), and the order then shows up in `/id`, `/ord`, and `/amount`. Idempotent — already-paid orders short-circuit with an `ℹ️ ᴀʟʀᴇᴀᴅʏ ᴘᴀɪᴅ` reply. |
+
+##### Mongo schema queried
+
+`pending_orders` (already created by `premium_auto.py`):
+
+```jsonc
+{
+  "order_id":   "MIKO-150-5473072051-1777487452-A2F1",
+  "user_id":    5473072051,
+  "amount":     150,
+  "plan_id":    "30d",       // one of: 1h, 1d, 7d, 30d
+  "time_value": 30,
+  "time_unit":  "d",
+  "status":     "paid",      // or "pending"
+  "created_at": "2026-04-30T00:01:32.123456",
+  "paid_at":    "2026-04-30T00:02:48.456789",
+  "txn_id":     "2026043011091000025639071124752288",
+  "force_verified": true     // only present when /forceverify reconciled it
+}
+```
+
+Date filtering converts IST day boundaries to **naive UTC ISO strings**
+(matching how `paid_at` is stored via `datetime.utcnow().isoformat()`)
+and uses a Mongo range query `{"$gte": start, "$lt": end}`, so it stays
+fast even on large collections.
+
+##### Callback router
+
+| `callback_data` regex | Action |
+|---|---|
+| `aord_id_<YYYYMMDD>_<page>` | Re-render `/id` page |
+| `aord_amt_<YYYYMMDD>`        | Render `/amount` for date |
+| `aord_exp_<YYYYMMDD>`        | Build `.txt` and reply as document |
+| `aord_close`                 | Delete message |
+| `aord_noop`                  | Pagination indicator (no-op) |
+
+All callbacks re-validate `query.from_user.id == OWNER_ID`, so even if
+a button leaks, only the owner can actuate it.
+
+##### Files touched in v1.2
+
+| File | Change |
+|---|---|
+| `plugins/admin_orders.py` | **New** — full admin panel (~430 lines). |
+| `plugins/premium_auto.py` | Order-ID generator: dropped leading `0`, switched random suffix to uppercase HEX. |
+| `newadd.md`               | This section. |
+
+---
+
 ### v1.1 — config import fix
 
 **Problem:** First push imported `DATABASE_URL` and `DATABASE_NAME` from
