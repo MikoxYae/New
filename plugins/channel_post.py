@@ -12,8 +12,7 @@ from asyncio import TimeoutError
 
 from bot import Bot
 from config import *
-from helper_func import encode, admin, get_message_id, get_exp_time
-from database.database import db
+from helper_func import encode, admin, get_message_id
 from database.db_stats import log_activity
 
 _in_custom_batch: set = set()
@@ -30,49 +29,6 @@ def not_in_batch_filter(_, __, message: Message) -> bool:
 
 
 not_in_batch = filters.create(not_in_batch_filter)
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-#  Auto-delete helper
-#
-#  When the admin uploads a file (or runs /batch /genlink /custom_batch) the
-#  bot replies with the share-link. If the global "Auto Delete" timer is set
-#  (via /settings → ⏱ Auto Delete) we ALSO clean up:
-#     - the admin's original upload message
-#     - the bot's reply that carries the share-link
-#  after `FILE_AUTO_DELETE` seconds, so the admin's PM stays tidy.
-# ─────────────────────────────────────────────────────────────────────────────
-async def _autodel_after(delay: int, *messages: Message):
-    if delay <= 0:
-        return
-    try:
-        await asyncio.sleep(delay)
-    except Exception:
-        return
-    for m in messages:
-        if not m:
-            continue
-        try:
-            await m.delete()
-        except Exception:
-            pass
-
-
-def _autodel_suffix(seconds: int) -> str:
-    if seconds <= 0:
-        return ""
-    return (
-        f"\n\n<i>⏱ ᴀᴜᴛᴏ-ᴄʟᴇᴀɴ: ᴛʜɪs ʟɪɴᴋ ᴍᴇssᴀɢᴇ "
-        f"ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(seconds)}.</i>"
-    )
-
-
-async def _get_autodel_timer() -> int:
-    try:
-        v = await db.get_del_timer()
-        return int(v or 0)
-    except Exception:
-        return 0
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -126,13 +82,10 @@ async def channel_post(client: Client, message: Message):
     base64_string = await encode(f"get-{converted_id}")
     link = f"https://t.me/{client.username}?start={base64_string}"
 
-    auto_del = await _get_autodel_timer()
-
     custom_message = (
         f"{link}\n\n"
         f"<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ: <a href=\"https://t.me/Base_Angle\">ᴀɴɢʟᴇ ʙᴀsᴇ</a>\n\n"
         f"ɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
-        f"{_autodel_suffix(auto_del)}"
     )
     await reply_text.edit(custom_message, disable_web_page_preview=True)
 
@@ -146,9 +99,6 @@ async def channel_post(client: Client, message: Message):
             await post_message.edit_reply_markup(None)
         except Exception:
             pass
-
-    if auto_del > 0:
-        asyncio.create_task(_autodel_after(auto_del, reply_text, message))
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -196,18 +146,14 @@ async def batch(client: Client, message: Message):
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
 
-    auto_del = await _get_autodel_timer()
     custom_message = (
         f"{link}\n\n"
         f"<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ: <a href=\"https://t.me/Base_Angle\">ᴀɴɢʟᴇ ʙᴀsᴇ</a>\n\n"
         f"ɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
-        f"{_autodel_suffix(auto_del)}"
     )
-    sent = await second_message.reply_text(
+    await second_message.reply_text(
         custom_message, quote=True, disable_web_page_preview=True
     )
-    if auto_del > 0:
-        asyncio.create_task(_autodel_after(auto_del, sent))
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -236,18 +182,14 @@ async def link_generator(client: Client, message: Message):
     base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
     link = f"https://t.me/{client.username}?start={base64_string}"
 
-    auto_del = await _get_autodel_timer()
     custom_message = (
         f"{link}\n\n"
         f"<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ: <a href=\"https://t.me/Base_Angle\">ᴀɴɢʟᴇ ʙᴀsᴇ</a>\n\n"
         f"ɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
-        f"{_autodel_suffix(auto_del)}"
     )
-    sent = await channel_message.reply_text(
+    await channel_message.reply_text(
         custom_message, quote=True, disable_web_page_preview=True
     )
-    if auto_del > 0:
-        asyncio.create_task(_autodel_after(auto_del, sent))
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -307,13 +249,9 @@ async def custom_batch(client: Client, message: Message):
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
 
-    auto_del = await _get_autodel_timer()
     custom_message = (
         f"<b>ʜᴇʀᴇ ɪs ʏᴏᴜʀ ᴄᴜsᴛᴏᴍ ʙᴀᴛᴄʜ ʟɪɴᴋ:</b>\n\n{link}\n\n"
         f"<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ: <a href=\"https://t.me/Base_Angle\">ᴀɴɢʟᴇ ʙᴀsᴇ</a>\n\n"
         f"ɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
-        f"{_autodel_suffix(auto_del)}"
     )
-    sent = await message.reply(custom_message, disable_web_page_preview=True)
-    if auto_del > 0:
-        asyncio.create_task(_autodel_after(auto_del, sent))
+    await message.reply(custom_message, disable_web_page_preview=True)

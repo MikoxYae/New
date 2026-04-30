@@ -244,9 +244,13 @@ No other files were touched. Existing dependencies in
 
 ## 9. Hotfix log
 
-### v1.4 — channel_post: auto-delete filter + missing-exclusion bug fix
+### v1.4 — channel_post: missing-exclusion bug fix + small polish
 
 **File touched:** `plugins/channel_post.py`
+
+> Note: an earlier draft of v1.4 also added an Auto-Delete (DD) filter
+> to channel-post replies. That feature was **reverted on user request**
+> in v1.4.1 — see below. v1.4 is now bug-fix + polish only.
 
 #### 9.4.1 BUG FIX — admin commands were being swallowed
 
@@ -277,50 +281,7 @@ happened:
 `help` and `about` (which were also missing). The exclusion list is now
 named and centralised at the top of the file.
 
-#### 9.4.2 NEW — auto-delete (DD) filter on channel-post replies
-
-`channel_post.py` now reads the global Auto-Delete timer set from
-`/settings → ⏱ Auto Delete` (DB field `del_timer`, same one already used
-by `start.py` for delivered-file auto-delete) and applies it to **all
-four admin link-generator flows**:
-
-| Trigger | What auto-deletes |
-|---|---|
-| Direct file/message upload to the bot | the bot's link-reply **and** the admin's original upload message |
-| `/batch`        | the bot's link-reply (the second forwarded msg sent by admin stays — it's a forward) |
-| `/genlink`      | the bot's link-reply |
-| `/custom_batch` | the bot's final link-reply |
-
-The reply now also carries an inline notice:
-
-```
-⏱ ᴀᴜᴛᴏ-ᴄʟᴇᴀɴ: ᴛʜɪs ʟɪɴᴋ ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ ɪɴ 5m 0s.
-```
-
-(`get_exp_time(seconds)` from `helper_func.py` — same formatter
-`start.py` uses, so 90s shows as `1m 30s`, 3600s shows as `1h`, etc.)
-
-If the timer is `0` (Auto-Delete disabled in settings) nothing changes —
-no notice is added, nothing is scheduled for deletion. The behaviour is
-fully toggled by the existing settings panel; no new env-vars or
-commands needed.
-
-Implementation:
-
-```python
-async def _autodel_after(delay: int, *messages: Message):
-    if delay <= 0:
-        return
-    await asyncio.sleep(delay)
-    for m in messages:
-        try: await m.delete()
-        except Exception: pass
-```
-
-Scheduled via `asyncio.create_task(...)` so the handler returns
-immediately — no blocking.
-
-#### 9.4.3 Other minor polish in `channel_post.py`
+#### 9.4.2 Other minor polish in `channel_post.py`
 
 - The previously-defined-but-unused `not_in_batch` filter is now wired
   into the catch-all handler, so the in-progress `/custom_batch` lock
@@ -329,6 +290,32 @@ immediately — no blocking.
   `/custom_batch` link replies so the Telegram link-preview no longer
   clutters the chat.
 - Bare `except:` in `client.ask` blocks tightened to `except Exception:`.
+
+#### 9.4.3 v1.4.1 — Auto-Delete (DD) filter REVERTED on user request
+
+The Auto-Delete (DD) timer integration that was added in the first push
+of v1.4 (link replies + admin upload auto-deleting after the global
+`db.get_del_timer()` value) was rolled back. Reasoning from the user:
+they did not want channel-post link replies tied to the same global
+Auto-Delete timer that controls user-side file delivery in `start.py`.
+
+Specifically the following were removed from `channel_post.py`:
+
+- import of `database.database.db` and `helper_func.get_exp_time`
+- the `_autodel_after(delay, *messages)` helper
+- the `_autodel_suffix(seconds)` helper
+- the `_get_autodel_timer()` helper
+- all `auto_del = await _get_autodel_timer()` lookups in
+  `channel_post`, `batch`, `link_generator`, `custom_batch`
+- all `asyncio.create_task(_autodel_after(...))` schedules
+- the inline `⏱ ᴀᴜᴛᴏ-ᴄʟᴇᴀɴ:` notice appended to link replies
+
+The 9.4.1 exclusion-list bug fix and the 9.4.2 polish (wired
+`not_in_batch`, `disable_web_page_preview=True`, tightened excepts)
+remain — they are unrelated to auto-delete.
+
+`start.py`'s own Auto-Delete behaviour for delivered files is
+**unchanged** and continues to work as before.
 
 ---
 
