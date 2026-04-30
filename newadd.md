@@ -244,30 +244,37 @@ No other files were touched. Existing dependencies in
 
 ## 9. Hotfix log
 
+### v1.3 — order-id prefix renamed to `ZERO-`
+
+`_gen_order_id` now emits `ZERO-…` instead of `MIKO-…`:
+
+```
+ZERO-{amount}-{user_id}-{unix_ts}-{rand4_HEX}
+```
+
+Example: `ZERO-1-7137144805-1777510697-A1F4`
+
+Old orders (`0MIKO-…` from v1.0 and `MIKO-…` from v1.2) already saved in
+MongoDB still verify normally — every lookup is by the exact `order_id`
+field, never by prefix. Only **new** orders created from now on use
+`ZERO-`.
+
+---
+
 ### v1.2 — admin-side orders panel + order-id polish
 
 #### 9.2.1 Order ID change
 
-**Before:** `0MIKO-1-7137144805-1777510697-0104` — leading `0`, last 4 chars
-were digits only.
-**Now:**   `MIKO-1-7137144805-1777510697-A1F4` — no leading `0`, last 4
-chars are uppercase HEX. Format:
-
-```
-MIKO-{amount}-{user_id}-{unix_ts}-{rand4_HEX}
-```
-
-Generator (`plugins/premium_auto.py → _gen_order_id`):
+**v1.0 → v1.2:** prefix went from `0MIKO-` to `MIKO-`, and the random
+suffix switched from 4 digits to 4 uppercase HEX chars.
+**v1.3:** prefix is now `ZERO-` (see above).
 
 ```python
 def _gen_order_id(amount, user_id):
     ts = int(time.time())
     rand = "".join(random.choices("0123456789ABCDEF", k=4))
-    return f"MIKO-{amount}-{user_id}-{ts}-{rand}"
+    return f"ZERO-{amount}-{user_id}-{ts}-{rand}"
 ```
-
-Old `0MIKO-…` orders already in MongoDB still verify normally — lookup
-is by `order_id` field, not by prefix.
 
 #### 9.2.2 New file: `plugins/admin_orders.py`
 

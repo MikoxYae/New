@@ -57,10 +57,10 @@ _orders_col = _db["pending_orders"]
 #   Helpers
 # ═══════════════════════════════════════════════════════════════════════════════
 def _gen_order_id(amount: int, user_id: int) -> str:
-    """Order ID format -> MIKO-{amount}-{user_id}-{timestamp}-{rand4_HEX}"""
+    """Order ID format -> ZERO-{amount}-{user_id}-{timestamp}-{rand4_HEX}"""
     ts = int(time.time())
     rand = "".join(random.choices("0123456789ABCDEF", k=4))
-    return f"MIKO-{amount}-{user_id}-{ts}-{rand}"
+    return f"ZERO-{amount}-{user_id}-{ts}-{rand}"
 
 
 def _make_qr(amount: int, order_id: str) -> BytesIO:
