@@ -5,6 +5,95 @@ replaces the previous manual Gold / Platinum screenshot-based flow.
 
 ---
 
+## 🖼️ v1.12 — PNG Image Receipts + Configurable Support Link
+
+Two big changes in v1.12: every payment receipt is now a **PNG image
+delivered as a document**, and the **Support link** that appears across
+the bot is now **owner-configurable from `/settings`** instead of being
+hard-coded.
+
+### 1. Receipts are now PNG images (not text)
+
+All four receipt code-paths now render a styled PNG and send it via
+`send_document` so the user gets a clean, downloadable
+`receipt_<order_id>.png` file:
+
+| Trigger                                  | File                                       |
+| ---------------------------------------- | ------------------------------------------ |
+| Auto-verify after `✅ ɪ ʜᴀᴠᴇ ᴘᴀɪᴅ`        | `plugins/premium_system/premium_auto.py`   |
+| `/addpremium <user_id> <duration>`       | `plugins/premium_system/premium_cdm.py`    |
+| `/psetting` → manual grant               | `plugins/premium_system/psetting.py`       |
+| `/forceverify <order_id>` recovery       | `plugins/premium_system/admin_orders.py`   |
+
+The renderer lives in **`plugins/premium_system/receipt_image.py`** and
+uses Pillow (already in `requirements.txt`). Each receipt is a 980 px
+wide PNG with:
+
+- Dark gradient background, gold border + corner brackets
+- Header band with title + subtitle (e.g. *"PAYMENT RECEIPT — VERIFIED"*)
+- Label/value rows for every field below
+- "MIKO PREMIUM" brand mark in the bottom-right
+
+The on-card fields exactly match the previous text receipt:
+
+```
+👤 ᴜsᴇʀ ɴᴀᴍᴇ
+🆔 ᴜsᴇʀ ɪᴅ
+💎 ᴘʟᴀɴ ᴛʏᴘᴇ
+💰 ᴘʟᴀɴ ᴀᴍᴏᴜɴᴛ      (auto + force-verify only)
+📦 ᴏʀᴅᴇʀ ɪᴅ          (auto + force-verify only)
+🔖 ᴛxɴ ɪᴅ            (auto + force-verify only)
+📅 ᴀᴄᴛɪᴠᴇ ᴅᴀᴛᴇ      (IST)
+⏳ ᴇxᴘɪʀᴇ ᴅᴀᴛᴇ      (IST)
+🎁 ɢʀᴀɴᴛᴇᴅ ʙʏ        (manual / force-verify only)
+```
+
+A short HTML caption still ships with the document so the user can see
+the plan and expiry inline without opening the file.
+
+### 2. Configurable Support link
+
+A new **🆘 sᴜᴘᴘᴏʀᴛ** button has been added to the inline `/settings`
+panel (`plugins/settings_panel_cb.py`). Tapping it lets the admin:
+
+- **Set** a support link by sending any of:
+  - `https://t.me/Iam_addictive`
+  - `t.me/Iam_addictive`
+  - `@Iam_addictive`
+  - `Iam_addictive`
+  Bare `joinchat/...` and `+phone` invites are also accepted.
+- **Clear** the saved link to fall back to the default
+  (`https://t.me/Iam_addictive`).
+
+All inputs are normalised to a canonical `https://t.me/...` URL by
+`normalize_support_link()` in `helper_func.py` before being stored in
+the new `support_link` document inside the `bot_settings_data`
+collection (`database/database.py`: `set_support_link`,
+`get_support_link`).
+
+The runtime helper `get_support_url(default=...)` in `helper_func.py`
+reads the saved link (falling back to the supplied default) and is
+used by:
+
+- `plugins/premium_system/premium_auto.py` — receipt + QR-error +
+  amount-mismatch contact buttons.
+- `plugins/start.py` — the *Contact Support* button on the ban screen.
+- `plugins/help_cmd.py` — the *📞 sᴜᴘᴘᴏʀᴛ* button on `/help`.
+
+This removes the previously hard-coded `SUPPORT_URL` references and
+lets owners point users at any t.me account/group/channel without
+touching code or restarting the bot.
+
+### Migration notes
+
+- Pillow is already pinned in `requirements.txt`; no new dependency.
+- No DB collections were renamed. A single new document key
+  `support_link` is created in `bot_settings_data` on first set.
+- No user-visible commands were renamed.
+- Restart not required for support-link changes (live read from DB).
+
+---
+
 ## 📁 v1.11.1 — Premium files moved to `plugins/premium_system/`
 
 To keep the `plugins/` directory tidy, every premium-related plugin

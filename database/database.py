@@ -143,6 +143,20 @@ class Rohit:
             return CUSTOM_CAPTION
         return data.get('value')
 
+    # SUPPORT LINK (for Support button shown to users in receipts / errors)
+    async def set_support_link(self, value):
+        await self.bot_settings_data.update_one(
+            {'_id': 'support_link'},
+            {'$set': {'value': value}},
+            upsert=True
+        )
+
+    async def get_support_link(self):
+        data = await self.bot_settings_data.find_one({'_id': 'support_link'})
+        if data is None:
+            return None
+        return data.get('value')
+
     # CHANNEL MANAGEMENT
     async def channel_exist(self, channel_id: int):
         found = await self.fsub_data.find_one({'_id': channel_id})

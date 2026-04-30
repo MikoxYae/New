@@ -166,3 +166,67 @@ def get_exp_time(seconds):
 
 subscribed = filters.create(is_subscribed)
 admin = filters.create(check_admin)
+
+
+# ──────────────────────────────────────────────────────────────────
+#  SUPPORT LINK HELPERS
+# ──────────────────────────────────────────────────────────────────
+#
+#  Admin can paste any of the following in /settings → Support:
+#      https://t.me/Iam_addictive
+#      http://t.me/Iam_addictive
+#      t.me/Iam_addictive
+#      @Iam_addictive
+#      Iam_addictive
+#  …and the bot stores a canonical `https://t.me/<handle>` URL.
+#  For invite/joinchat/+phone style links we keep the URL as-is.
+
+_TG_URL_RE = re.compile(r'^https?://(?:t\.me|telegram\.me|telegram\.dog)/', re.IGNORECASE)
+_BARE_TME_RE = re.compile(r'^(?:t\.me|telegram\.me|telegram\.dog)/', re.IGNORECASE)
+_USERNAME_RE = re.compile(r'^[A-Za-z][A-Za-z0-9_]{3,31}$')
+
+
+def normalize_support_link(raw: str):
+    """Convert any of the accepted user inputs into a canonical t.me URL.
+
+    Returns None if the input cannot be normalized.
+    """
+    if not raw:
+        return None
+    s = str(raw).strip()
+    if not s:
+        return None
+
+    # Already a full http(s) telegram URL → keep as-is.
+    if _TG_URL_RE.match(s):
+        return s
+
+    # bare t.me/... → just add scheme
+    if _BARE_TME_RE.match(s):
+        return "https://" + s
+
+    # Strip leading @
+    if s.startswith("@"):
+        s = s[1:]
+
+    # Bare valid username
+    if _USERNAME_RE.match(s):
+        return f"https://t.me/{s}"
+
+    # Anything else (e.g. invite hash / +phone) — wrap as t.me/<value>
+    # so the admin can still paste joinchat hashes like  joinchat/AAA…
+    cleaned = s.lstrip("/")
+    if cleaned:
+        return f"https://t.me/{cleaned}"
+    return None
+
+
+async def get_support_url(default: str = "https://t.me/Iam_addictive") -> str:
+    """Return the admin-configured support URL, or the fallback default."""
+    try:
+        url = await db.get_support_link()
+    except Exception:
+        url = None
+    if url and isinstance(url, str) and url.strip():
+        return url.strip()
+    return default

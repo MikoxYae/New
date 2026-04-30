@@ -448,13 +448,52 @@ async def forceverify_cmd(client, message: Message):
 
     user_notified = True
     try:
-        await client.send_message(
+        # Lazy import to avoid pulling Pillow at module import time.
+        from .receipt_image import build_receipt_image
+
+        # Try to fetch the user's display name for the receipt.
+        try:
+            _u = await client.get_users(user_id)
+            _full_name = (_u.first_name or "").strip()
+            if getattr(_u, "last_name", None):
+                _full_name = f"{_full_name} {_u.last_name}".strip()
+            if not _full_name:
+                _full_name = "—"
+            if getattr(_u, "username", None):
+                _full_name = f"{_full_name} (@{_u.username})"
+        except Exception:
+            _full_name = str(user_id)
+
+        try:
+            _active = datetime.now(timezone("Asia/Kolkata")).strftime(
+                "%Y-%m-%d %H:%M:%S %p IST"
+            )
+        except Exception:
+            _active = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+
+        receipt_img = build_receipt_image(
+            title="PAYMENT RECEIPT",
+            subtitle="FORCE-VERIFIED",
+            user_name=_full_name,
+            user_id=user_id,
+            plan_type=f"{order['time_value']}{order['time_unit']}",
+            plan_amount=f"₹{order['amount']}",
+            order_id=oid,
+            txn_id=str(data.get("txn_id") or "—"),
+            active_date=_active,
+            expire_date=str(expiration_time),
+            granted_by="ADMIN (FORCE VERIFY)",
+        )
+        receipt_img.name = f"receipt_{oid}.png"
+
+        await client.send_document(
             chat_id=user_id,
-            text=(
+            document=receipt_img,
+            file_name=receipt_img.name,
+            caption=(
                 f"<b>✅ ᴘᴀʏᴍᴇɴᴛ ᴠᴇʀɪғɪᴇᴅ — ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ!</b>\n\n"
                 f"<b>ᴏʀᴅᴇʀ ɪᴅ:</b> <code>{oid}</code>\n"
                 f"<b>ᴀᴍᴏᴜɴᴛ:</b> ₹{order['amount']}\n"
-                f"<b>ᴅᴜʀᴀᴛɪᴏɴ:</b> {order['time_value']}{order['time_unit']}\n"
                 f"<b>ᴇxᴘɪʀᴇs ᴏɴ:</b> {expiration_time}\n\n"
                 f"<i>ᴇɴᴊᴏʏ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss! 🎉</i>"
             ),

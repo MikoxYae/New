@@ -23,6 +23,7 @@ from database.db_plans import (
     set_gift_channel, clear_gift_channel,
 )
 from database.db_premium import add_premium
+from .receipt_image import build_receipt_image
 
 # Pretty unit labels for the manual-grant receipt
 _UNIT_LABELS_SMALLCAPS = {
@@ -668,26 +669,38 @@ async def psetting_input(client: Bot, message: Message):
         except Exception:
             full_name = str(target_id)
 
-        receipt = (
-            "<b>🧾 ᴘʀᴇᴍɪᴜᴍ ʀᴇᴄᴇɪᴘᴛ — ᴍᴀɴᴜᴀʟʟʏ ɢʀᴀɴᴛᴇᴅ</b>\n"
-            "<code>━━━━━━━━━━━━━━━━━━━━━━━</code>\n\n"
-            f"👤 <b>ᴜsᴇʀ ɴᴀᴍᴇ:</b> {full_name}\n"
-            f"🆔 <b>ᴜsᴇʀ ɪᴅ:</b> <code>{target_id}</code>\n"
-            f"🥇 <b>ᴘʟᴀɴ ᴛʏᴘᴇ:</b> {plan_label}\n"
-            f"📅 <b>ᴀᴄᴛɪᴠᴇ ᴅᴀᴛᴇ:</b> <code>{active_date}</code>\n"
-            f"⏳ <b>ᴇxᴘɪʀᴇ ᴅᴀᴛᴇ:</b> <code>{expiration_time}</code>\n"
-            f"🎁 <b>ɢʀᴀɴᴛᴇᴅ ʙʏ:</b> ᴀᴅᴍɪɴ\n\n"
+        # Build the PNG receipt and deliver it as a downloadable document.
+        receipt_img = build_receipt_image(
+            title="PREMIUM RECEIPT",
+            subtitle="MANUALLY GRANTED",
+            user_name=full_name,
+            user_id=target_id,
+            plan_type=plan_label,
+            active_date=active_date,
+            expire_date=str(expiration_time),
+            granted_by="ADMIN",
+        )
+        receipt_img.name = f"receipt_{target_id}.png"
+
+        receipt_caption = (
+            "<b>🧾 ᴘʀᴇᴍɪᴜᴍ ʀᴇᴄᴇɪᴘᴛ — ᴍᴀɴᴜᴀʟʟʏ ɢʀᴀɴᴛᴇᴅ</b>\n\n"
+            f"🥇 <b>ᴘʟᴀɴ:</b> {plan_label}\n"
+            f"⏳ <b>ᴇxᴘɪʀᴇs:</b> <code>{expiration_time}</code>\n\n"
             "<b>ᴘᴇʀᴋs ᴜɴʟᴏᴄᴋᴇᴅ:</b>\n"
             "  ✅ ғʀᴇᴇ ʟɪɴᴋ ʙʏᴘᴀss\n"
             "  ✅ ᴘʀᴏᴛᴇᴄᴛ-ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss\n"
             "  ✅ ᴜɴʟɪᴍɪᴛᴇᴅ ᴅᴀɪʟʏ ʟɪɴᴋs\n\n"
-            "<code>━━━━━━━━━━━━━━━━━━━━━━━</code>\n"
             "<i>✨ ᴇɴᴊᴏʏ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss! ᴋᴇᴇᴘ ᴛʜɪs ʀᴇᴄᴇɪᴘᴛ ғᴏʀ ʀᴇғᴇʀᴇɴᴄᴇ.</i>"
         )
 
         # Send the receipt to the target user (best-effort)
         try:
-            await client.send_message(target_id, receipt, disable_web_page_preview=True)
+            await client.send_document(
+                chat_id=target_id,
+                document=receipt_img,
+                file_name=receipt_img.name,
+                caption=receipt_caption,
+            )
         except Exception:
             pass
 

@@ -7,6 +7,7 @@ from database.db_premium import *
 from database.db_plans import revoke_user_gifts
 from pytz import timezone
 from datetime import datetime, timedelta
+from .receipt_image import build_receipt_image
 
 monitoring_started = False
 
@@ -69,25 +70,36 @@ async def add_premium_user_command(client, msg):
         except Exception:
             user_name = "—"
 
-        receipt = (
-            "<b>🧾 ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ — ʀᴇᴄᴇɪᴘᴛ</b>\n"
-            "━━━━━━━━━━━━━━━━━━━━━\n"
-            f"👤 <b>ᴜsᴇʀ ɴᴀᴍᴇ:</b> {user_name}\n"
-            f"🆔 <b>ᴜsᴇʀ ɪᴅ:</b> <code>{user_id}</code>\n"
-            f"🥇 <b>ᴘʟᴀɴ ᴛʏᴘᴇ:</b> ɢᴏʟᴅ ({duration_str})\n"
-            f"📅 <b>ᴀᴄᴛɪᴠᴇ ᴅᴀᴛᴇ:</b> {active_str}\n"
-            f"⏳ <b>ᴇxᴘɪʀᴇ ᴅᴀᴛᴇ:</b> {expiration_time}\n"
-            f"🎁 <b>ɢʀᴀɴᴛᴇᴅ ʙʏ:</b> ᴀᴅᴍɪɴ\n"
-            "━━━━━━━━━━━━━━━━━━━━━\n\n"
+        # Build PNG receipt and deliver as a downloadable document.
+        receipt_img = build_receipt_image(
+            title="PREMIUM RECEIPT",
+            subtitle="MANUALLY GRANTED",
+            user_name=user_name,
+            user_id=user_id,
+            plan_type=f"GOLD ({duration_str})",
+            active_date=active_str,
+            expire_date=str(expiration_time),
+            granted_by="ADMIN",
+        )
+        receipt_img.name = f"receipt_{user_id}.png"
+
+        receipt_caption = (
+            "<b>🧾 ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ — ʀᴇᴄᴇɪᴘᴛ</b>\n\n"
+            f"🥇 <b>ᴘʟᴀɴ:</b> ɢᴏʟᴅ ({duration_str})\n"
+            f"⏳ <b>ᴇxᴘɪʀᴇs:</b> <code>{expiration_time}</code>\n\n"
             "<b>ʏᴏᴜʀ ᴘᴇʀᴋs:</b>\n"
             "✅ ғʀᴇᴇ ʟɪɴᴋ ʙʏᴘᴀss\n"
             "✅ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss\n\n"
-            "<i>🎉 ᴇɴᴊᴏʏ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss!</i>\n"
-            "<i>ᴋᴇᴇᴘ ᴛʜɪs ʀᴇᴄᴇɪᴘᴛ ғᴏʀ ʏᴏᴜʀ ʀᴇᴄᴏʀᴅs.</i>"
+            "<i>🎉 ᴇɴᴊᴏʏ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss! ᴋᴇᴇᴘ ᴛʜᴇ ʀᴇᴄᴇɪᴘᴛ ғᴏʀ ʏᴏᴜʀ ʀᴇᴄᴏʀᴅs.</i>"
         )
 
         try:
-            await client.send_message(chat_id=user_id, text=receipt)
+            await client.send_document(
+                chat_id=user_id,
+                document=receipt_img,
+                file_name=receipt_img.name,
+                caption=receipt_caption,
+            )
         except Exception as e:
             await msg.reply_text(
                 f"<b>⚠️ ᴄᴏᴜʟᴅ ɴᴏᴛ ᴅᴍ ᴜsᴇʀ:</b> <code>{e}</code>"

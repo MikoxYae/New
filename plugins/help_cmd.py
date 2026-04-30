@@ -29,6 +29,7 @@ from pyrogram.types import (
 from bot import Bot
 from config import OWNER, OWNER_ID
 from database.database import db
+from helper_func import get_support_url
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -44,12 +45,22 @@ async def _is_owner_or_admin(uid: int) -> bool:
         return False
 
 
-def _support_url() -> str:
-    """t.me/{OWNER} — used for the SUPPORT button. OWNER is a username."""
+def _owner_fallback_url() -> str:
+    """t.me/{OWNER} — fallback used when the admin hasn't set a support link."""
     user = (OWNER or "").lstrip("@").strip()
     if not user:
         return "https://t.me/"
     return f"https://t.me/{user}"
+
+
+async def _support_url() -> str:
+    """
+    Resolve the live support URL for the SUPPORT button.
+
+    Prefers the admin-configured link saved via /settings → Support,
+    and falls back to the OWNER's t.me profile when nothing is set.
+    """
+    return await get_support_url(_owner_fallback_url())
 
 
 def _close_row():
@@ -93,9 +104,11 @@ USER_TXT = (
     "<code>30ᴅ ₹150</code>) → sᴄᴀɴ ᴜᴘɪ ǫʀ → ᴘᴀʏ ᴛʜᴇ ᴇxᴀᴄᴛ ᴀᴍᴏᴜɴᴛ → "
     "ᴛᴀᴘ <code>✅ ɪ ᴘᴀɪᴅ</code>. ᴀᴜᴛᴏ-ᴠᴇʀɪғɪᴇᴅ ᴠɪᴀ sᴇʟʟɢʀᴀᴍ ᴀᴘɪ.\n"
     "<i>ᴏʀᴅᴇʀ-ɪᴅ ғᴏʀᴍᴀᴛ:</i> <code>ZERO-{amount}-{user_id}-{ts}-{HEX4}</code>\n\n"
-    "🔹 <b>🧾 ᴘᴀʏᴍᴇɴᴛ ʀᴇᴄᴇɪᴘᴛ</b> <i>(ɴᴇᴡ — ᴠ1.11)</i>\n"
+    "🔹 <b>🧾 ᴘᴀʏᴍᴇɴᴛ ʀᴇᴄᴇɪᴘᴛ</b> <i>(ᴜᴘᴅᴀᴛᴇᴅ — ᴠ1.12)</i>\n"
     "ᴀs sᴏᴏɴ ᴀs ᴛʜᴇ ᴘᴀʏᴍᴇɴᴛ ɪs ᴠᴇʀɪғɪᴇᴅ, ᴛʜᴇ ǫʀ + ɪɴsᴛʀᴜᴄᴛɪᴏɴs ᴍᴇssᴀɢᴇ "
-    "ɪs <b>ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇᴅ</b> ᴀɴᴅ ʏᴏᴜ ɢᴇᴛ ᴀ ᴅᴇᴛᴀɪʟᴇᴅ ʀᴇᴄᴇɪᴘᴛ ᴄᴏɴᴛᴀɪɴɪɴɢ:\n"
+    "ɪs <b>ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇᴅ</b> ᴀɴᴅ ʏᴏᴜ ɢᴇᴛ ᴀ <b>ᴘɴɢ ʀᴇᴄᴇɪᴘᴛ ɪᴍᴀɢᴇ</b> ᴅᴇʟɪᴠᴇʀᴇᴅ "
+    "ᴀs ᴀ ᴅᴏᴄᴜᴍᴇɴᴛ (ᴅᴏᴡɴʟᴏᴀᴅᴀʙʟᴇ <code>receipt_&lt;order_id&gt;.png</code>) "
+    "ᴄᴏɴᴛᴀɪɴɪɴɢ:\n"
     "  • 👤 ᴜsᴇʀ ɴᴀᴍᴇ\n"
     "  • 🆔 ᴜsᴇʀ ɪᴅ\n"
     "  • 💎 ᴘʟᴀɴ ᴛʏᴘᴇ\n"
@@ -104,7 +117,7 @@ USER_TXT = (
     "  • 🔖 ᴛxɴ ɪᴅ\n"
     "  • 📅 ᴀᴄᴛɪᴠᴇ ᴅᴀᴛᴇ (ɪsᴛ)\n"
     "  • ⏳ ᴇxᴘɪʀᴇ ᴅᴀᴛᴇ (ɪsᴛ)\n"
-    "<i>ᴋᴇᴇᴘ ᴛʜᴇ ʀᴇᴄᴇɪᴘᴛ ғᴏʀ ʏᴏᴜʀ ʀᴇᴄᴏʀᴅs — sᴜᴘᴘᴏʀᴛ ᴄᴀɴ ᴜsᴇ ᴛʜᴇ ᴏʀᴅᴇʀ-ɪᴅ "
+    "<i>sᴀᴠᴇ ᴛʜᴇ ɪᴍᴀɢᴇ ғᴏʀ ʏᴏᴜʀ ʀᴇᴄᴏʀᴅs — sᴜᴘᴘᴏʀᴛ ᴄᴀɴ ᴜsᴇ ᴛʜᴇ ᴏʀᴅᴇʀ-ɪᴅ "
     "ᴏʀ ᴛxɴ-ɪᴅ ғᴏʀ ʟᴏᴏᴋᴜᴘ.</i>"
 )
 
@@ -229,6 +242,15 @@ OWNER_STATS_TXT = (
     "ʀᴇǫᴜᴇsᴛ ᴍᴏᴅᴇ, ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ, sʜᴏʀᴛᴇɴᴇʀ, ᴄᴀᴘᴛɪᴏɴ, "
     "ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ, ᴇᴛᴄ.\n"
     "<i>ᴇxᴀᴍᴘʟᴇ:</i> <code>/settings</code>\n\n"
+    "🔸 <b>🆘 sᴜᴘᴘᴏʀᴛ ʟɪɴᴋ</b>  <i>(ɴᴇᴡ — ᴠ1.12)</i>\n"
+    "ɪɴ <code>/settings</code> → tap <b>🆘 sᴜᴘᴘᴏʀᴛ</b> ᴛᴏ sᴇᴛ ᴛʜᴇ sᴜᴘᴘᴏʀᴛ "
+    "ʟɪɴᴋ ᴛʜᴀᴛ ᴀᴘᴘᴇᴀʀs ᴀᴄʀᴏss ᴛʜᴇ ʙᴏᴛ (ʀᴇᴄᴇɪᴘᴛs, ǫʀ-ᴇʀʀᴏʀs, "
+    "ᴀᴍᴏᴜɴᴛ-ᴍɪsᴍᴀᴛᴄʜ, ʙᴀɴ ɴᴏᴛɪᴄᴇ, /help). ᴀᴄᴄᴇᴘᴛs ᴀɴʏ ᴏғ:\n"
+    "  • <code>https://t.me/Iam_addictive</code>\n"
+    "  • <code>t.me/Iam_addictive</code>\n"
+    "  • <code>@Iam_addictive</code>\n"
+    "  • <code>Iam_addictive</code>\n"
+    "ᴀᴜᴛᴏ-ɴᴏʀᴍᴀʟɪᴢᴇᴅ ᴀɴᴅ sᴀᴠᴇᴅ ᴛᴏ ᴅʙ. ᴜsᴇ ᴄʟᴇᴀʀ ᴛᴏ ʀᴇᴠᴇʀᴛ ᴛᴏ ᴅᴇғᴀᴜʟᴛ.\n\n"
     "🔸 <b>/ᴘᴇᴀᴋʜᴏᴜʀs</b>\n"
     "sʜᴏᴡ ʜᴏᴜʀʟʏ ᴀᴄᴛɪᴠɪᴛʏ ʜɪsᴛᴏɢʀᴀᴍ — ᴡʜᴇɴ ᴜsᴇʀs ᴀʀᴇ ᴍᴏsᴛ ᴀᴄᴛɪᴠᴇ.\n"
     "<i>ᴇxᴀᴍᴘʟᴇ:</i> <code>/peakhours</code>\n\n"
@@ -247,7 +269,7 @@ OWNER_STATS_TXT = (
 # ═════════════════════════════════════════════════════════════════════════════
 #  Keyboards
 # ═════════════════════════════════════════════════════════════════════════════
-def _main_kb(is_owner: bool) -> InlineKeyboardMarkup:
+def _main_kb(is_owner: bool, support_url: str) -> InlineKeyboardMarkup:
     rows = [[InlineKeyboardButton("👤 ᴜsᴇʀ ᴄᴏᴍᴍᴀɴᴅs", callback_data="hlp_user")]]
     if is_owner:
         rows.append(
@@ -255,7 +277,7 @@ def _main_kb(is_owner: bool) -> InlineKeyboardMarkup:
         )
     rows.append(
         [
-            InlineKeyboardButton("📞 sᴜᴘᴘᴏʀᴛ", url=_support_url()),
+            InlineKeyboardButton("📞 sᴜᴘᴘᴏʀᴛ", url=support_url),
             InlineKeyboardButton("❌ ᴄʟᴏsᴇ", callback_data="hlp_close"),
         ]
     )
@@ -290,9 +312,10 @@ def _owner_sub_kb() -> InlineKeyboardMarkup:
 @Bot.on_message(filters.command("help") & filters.private)
 async def help_cmd(client: Client, message: Message):
     is_owner = await _is_owner_or_admin(message.from_user.id)
+    support_url = await _support_url()
     await message.reply_text(
         MAIN_TXT,
-        reply_markup=_main_kb(is_owner),
+        reply_markup=_main_kb(is_owner, support_url),
         disable_web_page_preview=True,
         quote=True,
     )
@@ -329,7 +352,8 @@ async def help_cb(client: Client, query: CallbackQuery):
 
     # ── main ─────────────────────────────────────────────────────────────
     if data == "hlp_main":
-        await _safe_edit(query, MAIN_TXT, _main_kb(is_owner))
+        support_url = await _support_url()
+        await _safe_edit(query, MAIN_TXT, _main_kb(is_owner, support_url))
         return
 
     # ── user commands ────────────────────────────────────────────────────

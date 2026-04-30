@@ -10,7 +10,7 @@ from pyrogram.enums import ChatMemberStatus, ChatType
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from bot import Bot
 from config import OWNER_ID
-from helper_func import get_readable_time
+from helper_func import get_readable_time, normalize_support_link, get_support_url
 from database.database import db
 
 
@@ -50,6 +50,9 @@ def _main_markup():
         [
             InlineKeyboardButton("📝 ᴄᴀᴘᴛɪᴏɴ",     callback_data="stg_caption"),
             InlineKeyboardButton("🔧 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ", callback_data="stg_maintenance")
+        ],
+        [
+            InlineKeyboardButton("🆘 sᴜᴘᴘᴏʀᴛ",     callback_data="stg_support")
         ]
     ])
 
@@ -680,6 +683,51 @@ async def settings_cb(client: Bot, query: CallbackQuery):
             ])
         )
 
+    # ══════════════════════════════════════════════════════════
+    #  SUPPORT LINK PANEL
+    # ══════════════════════════════════════════════════════════
+
+    elif data == "stg_support":
+        _pending.pop(uid, None)
+        current = await get_support_url()
+        await _edit(query,
+            "<b>🆘 sᴜᴘᴘᴏʀᴛ ʟɪɴᴋ</b>\n\n"
+            f"<b>ᴄᴜʀʀᴇɴᴛ:</b> <a href=\"{current}\">{current}</a>\n\n"
+            "<i>ᴛʜɪs ɪs ᴛʜᴇ ʟɪɴᴋ ᴜsᴇᴅ ʙʏ ᴀʟʟ <b>sᴜᴘᴘᴏʀᴛ</b> ʙᴜᴛᴛᴏɴs (ᴘᴀʏᴍᴇɴᴛ ʀᴇᴄᴇɪᴘᴛs, "
+            "ᴇʀʀᴏʀ ᴍᴇssᴀɢᴇs, ᴇᴛᴄ.).</i>",
+            InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("✏️ sᴇᴛ ʟɪɴᴋ", callback_data="stg_support_set"),
+                    InlineKeyboardButton("❌ ʀᴇsᴇᴛ",     callback_data="stg_support_clear")
+                ],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
+            ])
+        )
+
+    elif data == "stg_support_set":
+        _pending[uid] = {"action": "support_set", "msg_id": query.message.id, "chat_id": query.message.chat.id}
+        await _edit(query,
+            "<b>🆘 sᴇᴛ sᴜᴘᴘᴏʀᴛ ʟɪɴᴋ</b>\n\n"
+            "📤 sᴇɴᴅ ᴀ ᴜsᴇʀɴᴀᴍᴇ ᴏʀ ʟɪɴᴋ ɴᴏᴡ.\n\n"
+            "<b>ᴀᴄᴄᴇᴘᴛᴇᴅ ғᴏʀᴍᴀᴛs:</b>\n"
+            "• <code>https://t.me/Iam_addictive</code>\n"
+            "• <code>t.me/Iam_addictive</code>\n"
+            "• <code>@Iam_addictive</code>\n"
+            "• <code>Iam_addictive</code>\n\n"
+            "<i>ᴀɴʏ ᴏғ ᴛʜᴇ ᴀʙᴏᴠᴇ ɪs ᴀᴜᴛᴏ-ᴄᴏɴᴠᴇʀᴛᴇᴅ ɪɴᴛᴏ ᴀ ғᴜʟʟ <code>https://t.me/...</code> ʟɪɴᴋ.</i>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="stg_support")]])
+        )
+
+    elif data == "stg_support_clear":
+        _pending.pop(uid, None)
+        await db.set_support_link(None)
+        fallback = await get_support_url()
+        await _edit(query,
+            "<b>✅ sᴜᴘᴘᴏʀᴛ ʟɪɴᴋ ʀᴇsᴇᴛ.</b>\n\n"
+            f"<b>ɴᴏᴡ ᴜsɪɴɢ ᴅᴇғᴀᴜʟᴛ:</b> <a href=\"{fallback}\">{fallback}</a>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_support")]])
+        )
+
     raise StopPropagation
 
 
@@ -855,6 +903,27 @@ async def handle_settings_input(client: Bot, message: Message):
             InlineKeyboardMarkup([
                 [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ", callback_data="stg_autodel_set"),
                  InlineKeyboardButton("🔙 ʙᴀᴄᴋ",   callback_data="stg_autodel")]
+            ])
+        )
+
+    # ── SUPPORT LINK SET ─────────────────────────────────────
+    elif action == "support_set":
+        link = normalize_support_link(raw)
+        if not link:
+            await patch(
+                "<b>❌ ɪɴᴠᴀʟɪᴅ ɪɴᴘᴜᴛ.</b>\n\n"
+                "sᴇɴᴅ ᴀ ᴜsᴇʀɴᴀᴍᴇ ᴏʀ ᴀ <code>t.me</code> ʟɪɴᴋ.",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_support")]])
+            )
+            raise StopPropagation
+
+        await db.set_support_link(link)
+        await patch(
+            f"<b>✅ sᴜᴘᴘᴏʀᴛ ʟɪɴᴋ ᴜᴘᴅᴀᴛᴇᴅ.</b>\n\n"
+            f"<b>ɴᴇᴡ:</b> <a href=\"{link}\">{link}</a>",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ", callback_data="stg_support_set"),
+                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ",   callback_data="stg_support")]
             ])
         )
 

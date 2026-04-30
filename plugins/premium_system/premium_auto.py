@@ -29,6 +29,8 @@ from database.db_plans import (
     grant_gift,
 )
 from plugins.premium_system.premium_cdm import monitor_premium_expiry
+from plugins.premium_system.receipt_image import build_receipt_image
+from helper_func import get_support_url
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -40,6 +42,8 @@ SELLGRAM_API_KEY = "8Mv3zQgQZNVCdU4iBaAFvtu8"
 UPI_ID = "paytm.s20gmbu@pty"
 PAYEE_NAME = "MikoPremium"
 
+# Default fallback. The actual link is read at runtime from the database via
+# ``await get_support_url()`` so that admins can change it from /settings.
 SUPPORT_URL = "https://t.me/Iam_addictive"
 
 
@@ -344,10 +348,11 @@ async def pick_plan(client: Bot, query: CallbackQuery):
         f"💬 ɴᴇᴇᴅ ʜᴇʟᴘ? ᴜsᴇ ᴛʜᴇ <b>sᴜᴘᴘᴏʀᴛ</b> ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ."
     )
 
+    support_url = await get_support_url(SUPPORT_URL)
     kb = InlineKeyboardMarkup([
         [
             InlineKeyboardButton("✅ ɪ ʜᴀᴠᴇ ᴘᴀɪᴅ", callback_data=f"pa_paid_{order_id}"),
-            InlineKeyboardButton("🆘 sᴜᴘᴘᴏʀᴛ",     url=SUPPORT_URL),
+            InlineKeyboardButton("🆘 sᴜᴘᴘᴏʀᴛ",     url=support_url),
         ],
         [
             InlineKeyboardButton("🔒 ᴄʟᴏsᴇ", callback_data="pa_close"),
@@ -422,11 +427,12 @@ async def i_have_paid(client: Bot, query: CallbackQuery):
 
     # Amount mismatch
     if paid_amount and paid_amount < expected:
+        _support_url = await get_support_url(SUPPORT_URL)
         return await query.message.reply(
             f"<b>❌ ᴘᴀʏᴍᴇɴᴛ ᴀᴍᴏᴜɴᴛ ᴍɪsᴍᴀᴛᴄʜ.</b>\n\n"
             f"<b>ᴘᴀɪᴅ:</b> ₹{paid_amount}\n"
             f"<b>ᴇxᴘᴇᴄᴛᴇᴅ:</b> ₹{expected}\n\n"
-            f"<i>ᴄᴏɴᴛᴀᴄᴛ <a href=\"{SUPPORT_URL}\">sᴜᴘᴘᴏʀᴛ</a> ɪғ ʏᴏᴜ ᴘᴀɪᴅ ᴛʜᴇ ᴄᴏʀʀᴇᴄᴛ ᴀᴍᴏᴜɴᴛ.</i>"
+            f"<i>ᴄᴏɴᴛᴀᴄᴛ <a href=\"{_support_url}\">sᴜᴘᴘᴏʀᴛ</a> ɪғ ʏᴏᴜ ᴘᴀɪᴅ ᴛʜᴇ ᴄᴏʀʀᴇᴄᴛ ᴀᴍᴏᴜɴᴛ.</i>"
         )
 
     # ✅ All good — activate premium with the tier saved on the order
@@ -484,40 +490,50 @@ async def i_have_paid(client: Bot, query: CallbackQuery):
         order.get("plan_label")
         or f"{order['time_value']}{order['time_unit']}"
     )
-    receipt = (
-        f"<b>🧾 ᴘᴀʏᴍᴇɴᴛ ʀᴇᴄᴇɪᴘᴛ — ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ!</b>\n"
-        f"<code>━━━━━━━━━━━━━━━━━━━━━━━</code>\n\n"
-        f"👤 <b>ᴜsᴇʀ ɴᴀᴍᴇ:</b> {full_name}\n"
-        f"🆔 <b>ᴜsᴇʀ ɪᴅ:</b> <code>{user_id}</code>\n"
-        f"🥇 <b>ᴘʟᴀɴ ᴛʏᴘᴇ:</b> {plan_label}\n"
-        f"💰 <b>ᴘʟᴀɴ ᴀᴍᴏᴜɴᴛ:</b> ₹{order['amount']}\n"
+
+    # ── Build the PNG receipt and deliver it as a document ───────
+    receipt_img = build_receipt_image(
+        title="PAYMENT RECEIPT",
+        subtitle="PREMIUM ACTIVATED",
+        user_name=full_name,
+        user_id=user_id,
+        plan_type=plan_label,
+        plan_amount=f"₹{order['amount']}",
+        order_id=order_id,
+        txn_id=txn_id,
+        active_date=active_date,
+        expire_date=str(expiration_time),
+    )
+    receipt_img.name = f"receipt_{order_id}.png"
+
+    receipt_caption = (
+        "<b>🧾 ᴘᴀʏᴍᴇɴᴛ ʀᴇᴄᴇɪᴘᴛ — ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ!</b>\n\n"
         f"📦 <b>ᴏʀᴅᴇʀ ɪᴅ:</b> <code>{order_id}</code>\n"
         f"🔖 <b>ᴛxɴ ɪᴅ:</b> <code>{txn_id}</code>\n"
-        f"📅 <b>ᴀᴄᴛɪᴠᴇ ᴅᴀᴛᴇ:</b> <code>{active_date}</code>\n"
-        f"⏳ <b>ᴇxᴘɪʀᴇ ᴅᴀᴛᴇ:</b> <code>{expiration_time}</code>\n\n"
-        f"<code>━━━━━━━━━━━━━━━━━━━━━━━</code>\n"
-        f"<i>✨ ᴇɴᴊᴏʏ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss! ᴋᴇᴇᴘ ᴛʜɪs ʀᴇᴄᴇɪᴘᴛ ғᴏʀ ʀᴇғᴇʀᴇɴᴄᴇ.</i>"
+        f"⏳ <b>ᴇxᴘɪʀᴇs:</b> <code>{expiration_time}</code>\n\n"
+        "<i>✨ ʏᴏᴜʀ ʀᴇᴄᴇɪᴘᴛ ɪs ᴀᴛᴛᴀᴄʜᴇᴅ ᴀʙᴏᴠᴇ — ᴋᴇᴇᴘ ɪᴛ ғᴏʀ ʀᴇғᴇʀᴇɴᴄᴇ.</i>"
     )
 
+    support_url = await get_support_url(SUPPORT_URL)
     receipt_kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🆘 sᴜᴘᴘᴏʀᴛ", url=SUPPORT_URL)],
+        [InlineKeyboardButton("🆘 sᴜᴘᴘᴏʀᴛ", url=support_url)],
         [InlineKeyboardButton("🔒 ᴄʟᴏsᴇ", callback_data="pa_close")],
     ])
 
-    # Send the receipt as a fresh message (the QR is now gone).
+    # Send the receipt image as a downloadable document (the QR is now gone).
     try:
-        await client.send_message(
+        await client.send_document(
             chat_id=qr_chat_id,
-            text=receipt,
+            document=receipt_img,
+            file_name=receipt_img.name,
+            caption=receipt_caption,
             reply_markup=receipt_kb,
-            disable_web_page_preview=True,
         )
     except Exception:
-        # Last-resort fallback: plain reply via the (possibly already-
-        # deleted) query.message handle. Telegram will just send a new
-        # message in that chat in this case.
+        # Last-resort fallback: plain text reply if the image upload
+        # fails (network glitch, file-too-big, etc.).
         try:
-            await query.message.reply(receipt, reply_markup=receipt_kb)
+            await query.message.reply(receipt_caption, reply_markup=receipt_kb)
         except Exception:
             pass
 
