@@ -5,6 +5,49 @@ replaces the previous manual Gold / Platinum screenshot-based flow.
 
 ---
 
+## 📁 v1.11.1 — Premium files moved to `plugins/premium_system/`
+
+To keep the `plugins/` directory tidy, every premium-related plugin
+has been moved into a dedicated sub-package:
+
+```
+plugins/premium_system/
+├── __init__.py
+├── premium_auto.py     (UPI flow, QR generation, payment verify, receipt)
+├── premium_cdm.py      (admin /addpremium, /remove_premium, expiry monitor)
+├── admin_orders.py     (/id, /ord, /amount, /stats, /checkorder, /forceverify)
+├── psetting.py         (/psetting plan manager + /plans)
+└── rotate_creds.py     (/rotate_upi, /show_creds — owner-only)
+```
+
+### Why
+- `plugins/` had grown to 18+ flat files, mixing core file-sharing
+  plugins with the premium subsystem. The split makes ownership and
+  searchability obvious.
+- Pyrogram's `plugins={"root": "plugins"}` recursively scans
+  sub-packages, so no loader changes are needed — the bot picks up
+  every handler in `plugins/premium_system/` automatically.
+
+### Imports updated
+- `premium_auto.py`: `from plugins.premium_cdm` → `from plugins.premium_system.premium_cdm`
+- `admin_orders.py`: same fix
+- `rotate_creds.py`: `import plugins.premium_auto as _pa` → `import plugins.premium_system.premium_auto as _pa` (and same for `admin_orders`)
+- `rotate_creds.py` `_PLUGINS_DIR` continues to use `os.path.dirname(__file__)`, so it correctly resolves to the new location and writes `premium_auto.py` / `admin_orders.py` next to itself.
+- `plugins/help_cmd.py` `OWNER_CREDS_TXT` now references the new paths.
+
+### Not moved
+- `start.py`, `cbb.py`, `help_cmd.py`, `channel_post.py`, `settings.py`,
+  `settings_panel_cb.py`, `flood.py`, `broadcast.py`,
+  `request_fsub.py`, `stats_tracker.py`, `route.py` — these are
+  general-purpose plugins, not premium-specific.
+
+### Migration notes
+- No DB collections were renamed.
+- No user-visible commands were renamed.
+- A bot restart is required so Pyrogram re-discovers handlers from the new path.
+
+---
+
 ## 🧾 v1.11 — Auto-Delete QR + Detailed Payment Receipt
 
 ### What changed
