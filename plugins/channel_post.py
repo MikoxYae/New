@@ -1,17 +1,28 @@
 import asyncio
 from pyrogram import filters, Client
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from pyrogram.types import (
+    Message,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
+)
 from pyrogram.errors import FloodWait
 from asyncio import TimeoutError
 
 from bot import Bot
 from config import *
-from helper_func import encode, admin, get_message_id
+from helper_func import encode, admin, get_message_id, get_exp_time
+from database.database import db
 from database.db_stats import log_activity
 
 _in_custom_batch: set = set()
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+#  Custom-batch lock filter — used to prevent the generic channel_post handler
+#  from also intercepting messages while admin is collecting a custom batch.
+# ─────────────────────────────────────────────────────────────────────────────
 def not_in_batch_filter(_, __, message: Message) -> bool:
     if message.from_user is None:
         return True
@@ -21,33 +32,107 @@ def not_in_batch_filter(_, __, message: Message) -> bool:
 not_in_batch = filters.create(not_in_batch_filter)
 
 
-@Bot.on_message(filters.private & admin & ~filters.command([
-    'start', 'commands', 'broadcast', 'batch', 'custom_batch', 'genlink',
-    'dbroadcast', 'pbroadcast', 'addpremium', 'premium_users', 'remove_premium',
-    'myplan', 'settings', 'peakhours', 'weeklyreport', 'cleanstats', 'start_premium_monitoring'
-]))
-async def channel_post(client: Client, message: Message):
-    if message.from_user and message.from_user.id in _in_custom_batch:
+# ─────────────────────────────────────────────────────────────────────────────
+#  Auto-delete helper
+#
+#  When the admin uploads a file (or runs /batch /genlink /custom_batch) the
+#  bot replies with the share-link. If the global "Auto Delete" timer is set
+#  (via /settings → ⏱ Auto Delete) we ALSO clean up:
+#     - the admin's original upload message
+#     - the bot's reply that carries the share-link
+#  after `FILE_AUTO_DELETE` seconds, so the admin's PM stays tidy.
+# ─────────────────────────────────────────────────────────────────────────────
+async def _autodel_after(delay: int, *messages: Message):
+    if delay <= 0:
         return
+    try:
+        await asyncio.sleep(delay)
+    except Exception:
+        return
+    for m in messages:
+        if not m:
+            continue
+        try:
+            await m.delete()
+        except Exception:
+            pass
+
+
+def _autodel_suffix(seconds: int) -> str:
+    if seconds <= 0:
+        return ""
+    return (
+        f"\n\n<i>⏱ ᴀᴜᴛᴏ-ᴄʟᴇᴀɴ: ᴛʜɪs ʟɪɴᴋ ᴍᴇssᴀɢᴇ "
+        f"ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(seconds)}.</i>"
+    )
+
+
+async def _get_autodel_timer() -> int:
+    try:
+        v = await db.get_del_timer()
+        return int(v or 0)
+    except Exception:
+        return 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Commands the channel_post catch-all must NOT swallow.
+#  Anything here must match a command actually handled by another plugin.
+# ─────────────────────────────────────────────────────────────────────────────
+_EXCLUDED_COMMANDS = [
+    # core / help
+    "start", "commands", "help", "about",
+    # broadcasts
+    "broadcast", "dbroadcast", "pbroadcast",
+    # batching / link gen
+    "batch", "custom_batch", "genlink",
+    # premium admin
+    "addpremium", "premium_users", "remove_premium", "myplan",
+    # settings + monitoring
+    "settings", "peakhours", "weeklyreport", "cleanstats",
+    "start_premium_monitoring",
+    # NEW v1.2 admin orders panel  ← previously missing, caused channel_post
+    # to also fire and dump the command text into the DB channel as a "file"
+    "id", "ord", "amount", "stats", "checkorder", "forceverify",
+]
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#   Catch-all admin upload  ->  store in db_channel and return share link
+# ═══════════════════════════════════════════════════════════════════════════════
+@Bot.on_message(
+    filters.private
+    & admin
+    & not_in_batch
+    & ~filters.command(_EXCLUDED_COMMANDS)
+)
+async def channel_post(client: Client, message: Message):
     reply_text = await message.reply_text("<b>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ...</b>", quote=True)
     try:
-        post_message = await message.copy(chat_id=client.db_channel.id, disable_notification=True)
+        post_message = await message.copy(
+            chat_id=client.db_channel.id, disable_notification=True
+        )
     except FloodWait as e:
         await asyncio.sleep(e.x)
-        post_message = await message.copy(chat_id=client.db_channel.id, disable_notification=True)
+        post_message = await message.copy(
+            chat_id=client.db_channel.id, disable_notification=True
+        )
     except Exception as e:
-        print(e)
+        print(f"channel_post copy failed: {e}")
         await reply_text.edit_text("<b>sᴏᴍᴇᴛʜɪɴɢ ᴡᴇɴᴛ ᴡʀᴏɴɢ!</b>")
         return
+
     converted_id = post_message.id * abs(client.db_channel.id)
-    string = f"get-{converted_id}"
-    base64_string = await encode(string)
+    base64_string = await encode(f"get-{converted_id}")
     link = f"https://t.me/{client.username}?start={base64_string}"
+
+    auto_del = await _get_autodel_timer()
 
     custom_message = (
         f"{link}\n\n"
         f"<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ: <a href=\"https://t.me/Base_Angle\">ᴀɴɢʟᴇ ʙᴀsᴇ</a>\n\n"
         f"ɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
+        f"{_autodel_suffix(auto_del)}"
     )
     await reply_text.edit(custom_message, disable_web_page_preview=True)
 
@@ -62,8 +147,14 @@ async def channel_post(client: Client, message: Message):
         except Exception:
             pass
 
+    if auto_del > 0:
+        asyncio.create_task(_autodel_after(auto_del, reply_text, message))
 
-@Bot.on_message(filters.private & admin & filters.command('batch'))
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#   /batch  -  range link
+# ═══════════════════════════════════════════════════════════════════════════════
+@Bot.on_message(filters.private & admin & filters.command("batch"))
 async def batch(client: Client, message: Message):
     while True:
         try:
@@ -71,19 +162,17 @@ async def batch(client: Client, message: Message):
                 text="<b>ғᴏʀᴡᴀʀᴅ ᴛʜᴇ ғɪʀsᴛ ᴍᴇssᴀɢᴇ ғʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ (ᴡɪᴛʜ ǫᴜᴏᴛᴇs)..\n\nᴏʀ sᴇɴᴅ ᴛʜᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ ᴘᴏsᴛ ʟɪɴᴋ</b>",
                 chat_id=message.from_user.id,
                 filters=(filters.forwarded | (filters.text & ~filters.forwarded)),
-                timeout=60
+                timeout=60,
             )
-        except:
+        except Exception:
             return
         f_msg_id = await get_message_id(client, first_message)
         if f_msg_id:
             break
-        else:
-            await first_message.reply(
-                "<b>❌ ᴇʀʀᴏʀ\n\nᴛʜɪs ғᴏʀᴡᴀʀᴅᴇᴅ ᴘᴏsᴛ ɪs ɴᴏᴛ ғʀᴏᴍ ᴍʏ ᴅʙ ᴄʜᴀɴɴᴇʟ ᴏʀ ᴛʜɪs ʟɪɴᴋ ɪs ɴᴏᴛ ᴛᴀᴋᴇɴ ғʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ</b>",
-                quote=True
-            )
-            continue
+        await first_message.reply(
+            "<b>❌ ᴇʀʀᴏʀ\n\nᴛʜɪs ғᴏʀᴡᴀʀᴅᴇᴅ ᴘᴏsᴛ ɪs ɴᴏᴛ ғʀᴏᴍ ᴍʏ ᴅʙ ᴄʜᴀɴɴᴇʟ ᴏʀ ᴛʜɪs ʟɪɴᴋ ɪs ɴᴏᴛ ᴛᴀᴋᴇɴ ғʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ</b>",
+            quote=True,
+        )
 
     while True:
         try:
@@ -91,33 +180,40 @@ async def batch(client: Client, message: Message):
                 text="<b>ғᴏʀᴡᴀʀᴅ ᴛʜᴇ ʟᴀsᴛ ᴍᴇssᴀɢᴇ ғʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ (ᴡɪᴛʜ ǫᴜᴏᴛᴇs)..\nᴏʀ sᴇɴᴅ ᴛʜᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ ᴘᴏsᴛ ʟɪɴᴋ</b>",
                 chat_id=message.from_user.id,
                 filters=(filters.forwarded | (filters.text & ~filters.forwarded)),
-                timeout=60
+                timeout=60,
             )
-        except:
+        except Exception:
             return
         s_msg_id = await get_message_id(client, second_message)
         if s_msg_id:
             break
-        else:
-            await second_message.reply(
-                "<b>❌ ᴇʀʀᴏʀ\n\nᴛʜɪs ғᴏʀᴡᴀʀᴅᴇᴅ ᴘᴏsᴛ ɪs ɴᴏᴛ ғʀᴏᴍ ᴍʏ ᴅʙ ᴄʜᴀɴɴᴇʟ ᴏʀ ᴛʜɪs ʟɪɴᴋ ɪs ɴᴏᴛ ᴛᴀᴋᴇɴ ғʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ</b>",
-                quote=True
-            )
-            continue
+        await second_message.reply(
+            "<b>❌ ᴇʀʀᴏʀ\n\nᴛʜɪs ғᴏʀᴡᴀʀᴅᴇᴅ ᴘᴏsᴛ ɪs ɴᴏᴛ ғʀᴏᴍ ᴍʏ ᴅʙ ᴄʜᴀɴɴᴇʟ ᴏʀ ᴛʜɪs ʟɪɴᴋ ɪs ɴᴏᴛ ᴛᴀᴋᴇɴ ғʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ</b>",
+            quote=True,
+        )
 
     string = f"get-{f_msg_id * abs(client.db_channel.id)}-{s_msg_id * abs(client.db_channel.id)}"
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
 
+    auto_del = await _get_autodel_timer()
     custom_message = (
         f"{link}\n\n"
         f"<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ: <a href=\"https://t.me/Base_Angle\">ᴀɴɢʟᴇ ʙᴀsᴇ</a>\n\n"
         f"ɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
+        f"{_autodel_suffix(auto_del)}"
     )
-    await second_message.reply_text(custom_message, quote=True)
+    sent = await second_message.reply_text(
+        custom_message, quote=True, disable_web_page_preview=True
+    )
+    if auto_del > 0:
+        asyncio.create_task(_autodel_after(auto_del, sent))
 
 
-@Bot.on_message(filters.private & admin & filters.command('genlink'))
+# ═══════════════════════════════════════════════════════════════════════════════
+#   /genlink  -  single message link
+# ═══════════════════════════════════════════════════════════════════════════════
+@Bot.on_message(filters.private & admin & filters.command("genlink"))
 async def link_generator(client: Client, message: Message):
     while True:
         try:
@@ -125,31 +221,38 @@ async def link_generator(client: Client, message: Message):
                 text="<b>ғᴏʀᴡᴀʀᴅ ᴍᴇssᴀɢᴇ ғʀᴏᴍ ᴛʜᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ (ᴡɪᴛʜ ǫᴜᴏᴛᴇs)..\nᴏʀ sᴇɴᴅ ᴛʜᴇ ᴅʙ ᴄʜᴀɴɴᴇʟ ᴘᴏsᴛ ʟɪɴᴋ</b>",
                 chat_id=message.from_user.id,
                 filters=(filters.forwarded | (filters.text & ~filters.forwarded)),
-                timeout=60
+                timeout=60,
             )
-        except:
+        except Exception:
             return
         msg_id = await get_message_id(client, channel_message)
         if msg_id:
             break
-        else:
-            await channel_message.reply(
-                "<b>❌ ᴇʀʀᴏʀ\n\nᴛʜɪs ғᴏʀᴡᴀʀᴅᴇᴅ ᴘᴏsᴛ ɪs ɴᴏᴛ ғʀᴏᴍ ᴍʏ ᴅʙ ᴄʜᴀɴɴᴇʟ ᴏʀ ᴛʜɪs ʟɪɴᴋ ɪs ɴᴏᴛ ᴛᴀᴋᴇɴ ғʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ</b>",
-                quote=True
-            )
-            continue
+        await channel_message.reply(
+            "<b>❌ ᴇʀʀᴏʀ\n\nᴛʜɪs ғᴏʀᴡᴀʀᴅᴇᴅ ᴘᴏsᴛ ɪs ɴᴏᴛ ғʀᴏᴍ ᴍʏ ᴅʙ ᴄʜᴀɴɴᴇʟ ᴏʀ ᴛʜɪs ʟɪɴᴋ ɪs ɴᴏᴛ ᴛᴀᴋᴇɴ ғʀᴏᴍ ᴅʙ ᴄʜᴀɴɴᴇʟ</b>",
+            quote=True,
+        )
 
     base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
     link = f"https://t.me/{client.username}?start={base64_string}"
 
+    auto_del = await _get_autodel_timer()
     custom_message = (
         f"{link}\n\n"
         f"<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ: <a href=\"https://t.me/Base_Angle\">ᴀɴɢʟᴇ ʙᴀsᴇ</a>\n\n"
         f"ɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
+        f"{_autodel_suffix(auto_del)}"
     )
-    await channel_message.reply_text(custom_message, quote=True)
+    sent = await channel_message.reply_text(
+        custom_message, quote=True, disable_web_page_preview=True
+    )
+    if auto_del > 0:
+        asyncio.create_task(_autodel_after(auto_del, sent))
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+#   /custom_batch  -  collect messages then build a range link
+# ═══════════════════════════════════════════════════════════════════════════════
 @Bot.on_message(filters.private & admin & filters.command("custom_batch"))
 async def custom_batch(client: Client, message: Message):
     uid = message.from_user.id
@@ -159,7 +262,7 @@ async def custom_batch(client: Client, message: Message):
     _in_custom_batch.add(uid)
     await message.reply(
         "<b>sᴇɴᴅ ᴀʟʟ ᴍᴇssᴀɢᴇs ʏᴏᴜ ᴡᴀɴᴛ ᴛᴏ ɪɴᴄʟᴜᴅᴇ ɪɴ ʙᴀᴛᴄʜ.\n\nᴘʀᴇss sᴛᴏᴘ ᴡʜᴇɴ ʏᴏᴜ'ʀᴇ ᴅᴏɴᴇ.</b>",
-        reply_markup=STOP_KEYBOARD
+        reply_markup=STOP_KEYBOARD,
     )
 
     try:
@@ -168,9 +271,11 @@ async def custom_batch(client: Client, message: Message):
                 user_msg = await client.ask(
                     chat_id=message.chat.id,
                     text="<b>ᴡᴀɪᴛɪɴɢ ғᴏʀ ғɪʟᴇs / ᴍᴇssᴀɢᴇs...\nᴘʀᴇss sᴛᴏᴘ ᴛᴏ ғɪɴɪsʜ.</b>",
-                    timeout=60
+                    timeout=60,
                 )
             except asyncio.TimeoutError:
+                break
+            except Exception:
                 break
 
             if user_msg.text and user_msg.text.strip().upper() == "STOP":
@@ -180,12 +285,17 @@ async def custom_batch(client: Client, message: Message):
                 sent = await user_msg.copy(client.db_channel.id, disable_notification=True)
                 collected.append(sent.id)
             except Exception as e:
-                await message.reply(f"<b>❌ ғᴀɪʟᴇᴅ ᴛᴏ sᴛᴏʀᴇ ᴀ ᴍᴇssᴀɢᴇ:</b>\n<code>{e}</code>")
+                await message.reply(
+                    f"<b>❌ ғᴀɪʟᴇᴅ ᴛᴏ sᴛᴏʀᴇ ᴀ ᴍᴇssᴀɢᴇ:</b>\n<code>{e}</code>"
+                )
                 continue
     finally:
         _in_custom_batch.discard(uid)
 
-    await message.reply("<b>✅ ʙᴀᴛᴄʜ ᴄᴏʟʟᴇᴄᴛɪᴏɴ ᴄᴏᴍᴘʟᴇᴛᴇ.</b>", reply_markup=ReplyKeyboardRemove())
+    await message.reply(
+        "<b>✅ ʙᴀᴛᴄʜ ᴄᴏʟʟᴇᴄᴛɪᴏɴ ᴄᴏᴍᴘʟᴇᴛᴇ.</b>",
+        reply_markup=ReplyKeyboardRemove(),
+    )
 
     if not collected:
         await message.reply("<b>❌ ɴᴏ ᴍᴇssᴀɢᴇs ᴡᴇʀᴇ ᴀᴅᴅᴇᴅ ᴛᴏ ʙᴀᴛᴄʜ.</b>")
@@ -197,9 +307,13 @@ async def custom_batch(client: Client, message: Message):
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
 
+    auto_del = await _get_autodel_timer()
     custom_message = (
         f"<b>ʜᴇʀᴇ ɪs ʏᴏᴜʀ ᴄᴜsᴛᴏᴍ ʙᴀᴛᴄʜ ʟɪɴᴋ:</b>\n\n{link}\n\n"
         f"<b>𝗠ᴜsᴛ 𝗝ᴏɪɴ: <a href=\"https://t.me/Base_Angle\">ᴀɴɢʟᴇ ʙᴀsᴇ</a>\n\n"
         f"ɢɪᴠᴇ sᴏᴍᴇ ʟᴏᴠᴇ ᴛᴏ ᴜs, ʜɪᴛ ᴛʜᴇ ʀᴇᴀᴄᴛɪᴏɴ! 🔥💫⚡</b>"
+        f"{_autodel_suffix(auto_del)}"
     )
-    await message.reply(custom_message)
+    sent = await message.reply(custom_message, disable_web_page_preview=True)
+    if auto_del > 0:
+        asyncio.create_task(_autodel_after(auto_del, sent))

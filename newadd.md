@@ -244,6 +244,94 @@ No other files were touched. Existing dependencies in
 
 ## 9. Hotfix log
 
+### v1.4 — channel_post: auto-delete filter + missing-exclusion bug fix
+
+**File touched:** `plugins/channel_post.py`
+
+#### 9.4.1 BUG FIX — admin commands were being swallowed
+
+The catch-all handler in `channel_post.py` listens to *every* private
+admin message that is **not** in its excluded-commands list, copies it
+into the DB channel, and replies with a share-link. Its exclusion list
+was last updated long before v1.2 and was missing the new admin
+commands:
+
+| Command | Was it excluded? |
+|---|---|
+| `/id`           | ❌ no |
+| `/ord`          | ❌ no |
+| `/amount`       | ❌ no |
+| `/stats`        | ❌ no |
+| `/checkorder`   | ❌ no |
+| `/forceverify`  | ❌ no |
+
+Result: every time the owner typed e.g. `/id today`, two things
+happened:
+
+1. The admin-orders handler answered correctly with the orders list.
+2. The channel_post handler **also** ran, copied the literal text
+   "`/id today`" into the DB channel as a "file", and replied with a
+   junk share-link.
+
+**Fix:** all six commands are now in the `_EXCLUDED_COMMANDS` list, plus
+`help` and `about` (which were also missing). The exclusion list is now
+named and centralised at the top of the file.
+
+#### 9.4.2 NEW — auto-delete (DD) filter on channel-post replies
+
+`channel_post.py` now reads the global Auto-Delete timer set from
+`/settings → ⏱ Auto Delete` (DB field `del_timer`, same one already used
+by `start.py` for delivered-file auto-delete) and applies it to **all
+four admin link-generator flows**:
+
+| Trigger | What auto-deletes |
+|---|---|
+| Direct file/message upload to the bot | the bot's link-reply **and** the admin's original upload message |
+| `/batch`        | the bot's link-reply (the second forwarded msg sent by admin stays — it's a forward) |
+| `/genlink`      | the bot's link-reply |
+| `/custom_batch` | the bot's final link-reply |
+
+The reply now also carries an inline notice:
+
+```
+⏱ ᴀᴜᴛᴏ-ᴄʟᴇᴀɴ: ᴛʜɪs ʟɪɴᴋ ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ ɪɴ 5m 0s.
+```
+
+(`get_exp_time(seconds)` from `helper_func.py` — same formatter
+`start.py` uses, so 90s shows as `1m 30s`, 3600s shows as `1h`, etc.)
+
+If the timer is `0` (Auto-Delete disabled in settings) nothing changes —
+no notice is added, nothing is scheduled for deletion. The behaviour is
+fully toggled by the existing settings panel; no new env-vars or
+commands needed.
+
+Implementation:
+
+```python
+async def _autodel_after(delay: int, *messages: Message):
+    if delay <= 0:
+        return
+    await asyncio.sleep(delay)
+    for m in messages:
+        try: await m.delete()
+        except Exception: pass
+```
+
+Scheduled via `asyncio.create_task(...)` so the handler returns
+immediately — no blocking.
+
+#### 9.4.3 Other minor polish in `channel_post.py`
+
+- The previously-defined-but-unused `not_in_batch` filter is now wired
+  into the catch-all handler, so the in-progress `/custom_batch` lock
+  is enforced at the filter layer (cleaner than the runtime check).
+- `disable_web_page_preview=True` added to `/batch`, `/genlink`, and
+  `/custom_batch` link replies so the Telegram link-preview no longer
+  clutters the chat.
+- Bare `except:` in `client.ask` blocks tightened to `except Exception:`.
+
+---
+
 ### v1.3 — order-id prefix renamed to `ZERO-`
 
 `_gen_order_id` now emits `ZERO-…` instead of `MIKO-…`:
