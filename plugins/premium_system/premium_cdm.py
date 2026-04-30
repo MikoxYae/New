@@ -17,19 +17,20 @@ async def check_plan(client: Client, message: Message):
     await message.reply(status_message)
 
 
+_UNIT_LABELS = {"s": "sᴇᴄᴏɴᴅs", "m": "ᴍɪɴᴜᴛᴇs", "h": "ʜᴏᴜʀs", "d": "ᴅᴀʏs", "y": "ʏᴇᴀʀs"}
+
+
 @Bot.on_message(filters.command('addpremium') & filters.private & admin)
 async def add_premium_user_command(client, msg):
-    if len(msg.command) not in (4, 5):
+    if len(msg.command) != 4:
         await msg.reply_text(
-            "<b>ᴜsᴀɢᴇ:</b> /ᴀᴅᴅᴘʀᴇᴍɪᴜᴍ ᴜsᴇʀ_ɪᴅ ᴛɪᴍᴇ_ᴠᴀʟᴜᴇ ᴛɪᴍᴇ_ᴜɴɪᴛ ᴛɪᴇʀ\n\n"
-            "<b>ᴛɪᴇʀs:</b>\n"
-            "🥇 ɢᴏʟᴅ — ᴛᴏᴋᴇɴ ʙʏᴘᴀss + ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss\n"
-            "💎 ᴘʟᴀᴛɪɴᴜᴍ — ᴛᴏᴋᴇɴ ʙʏᴘᴀss + ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss + ғᴏʀᴄᴇ sᴜʙ ʙʏᴘᴀss\n\n"
-            "<b>ᴛɪᴍᴇ ᴜɴɪᴛs:</b> s | ᴍ | ʜ | ᴅ | ʏ\n\n"
+            "<b>ᴜsᴀɢᴇ:</b> <code>/addpremium user_id time_value time_unit</code>\n\n"
+            "<b>ᴘʟᴀɴ:</b> 🥇 ɢᴏʟᴅ (ᴏɴʟʏ ᴛɪᴇʀ)\n"
+            "<b>ᴘᴇʀᴋs:</b> ғʀᴇᴇ ʟɪɴᴋ ʙʏᴘᴀss + ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss\n\n"
+            "<b>ᴛɪᴍᴇ ᴜɴɪᴛs:</b> <code>s</code> | <code>m</code> | <code>h</code> | <code>d</code> | <code>y</code>\n\n"
             "<b>ᴇxᴀᴍᴘʟᴇs:</b>\n"
-            "/ᴀᴅᴅᴘʀᴇᴍɪᴜᴍ 123456789 1 ᴅ ɢᴏʟᴅ\n"
-            "/ᴀᴅᴅᴘʀᴇᴍɪᴜᴍ 123456789 1 ᴅ ᴘʟᴀᴛɪɴᴜᴍ\n"
-            "(ᴅᴇғᴀᴜʟᴛ ᴛɪᴇʀ ɪs ɢᴏʟᴅ ɪғ ɴᴏᴛ sᴘᴇᴄɪғɪᴇᴅ)"
+            "<code>/addpremium 123456789 1 d</code>\n"
+            "<code>/addpremium 123456789 30 d</code>"
         )
         return
 
@@ -37,32 +38,60 @@ async def add_premium_user_command(client, msg):
         user_id = int(msg.command[1])
         time_value = int(msg.command[2])
         time_unit = msg.command[3].lower()
-        tier = msg.command[4].lower() if len(msg.command) == 5 else "gold"
 
-        if tier not in ("gold", "platinum"):
-            return await msg.reply_text("<b>ɪɴᴠᴀʟɪᴅ ᴛɪᴇʀ. ᴜsᴇ:</b> <code>gold</code> <b>ᴏʀ</b> <code>platinum</code>")
+        expiration_time = await add_premium(user_id, time_value, time_unit, "gold")
 
-        expiration_time = await add_premium(user_id, time_value, time_unit, tier)
-        tier_emoji = "🥇" if tier == "gold" else "💎"
-        perks = (
-            "ᴛᴏᴋᴇɴ ʙʏᴘᴀss\nᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss"
-            if tier == "gold"
-            else "ᴛᴏᴋᴇɴ ʙʏᴘᴀss\nᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss\nғᴏʀᴄᴇ sᴜʙsᴄʀɪʙᴇ ʙʏᴘᴀss"
-        )
+        # Pretty duration
+        unit_label = _UNIT_LABELS.get(time_unit, time_unit)
+        duration_str = f"{time_value} {unit_label}"
 
+        # Active date (now, IST)
+        ist = timezone("Asia/Kolkata")
+        active_str = datetime.now(ist).strftime('%Y-%m-%d %H:%M:%S %p IST')
+
+        # Admin confirmation
         await msg.reply_text(
-            f"<b>ᴜsᴇʀ</b> <code>{user_id}</code> <b>ᴀᴅᴅᴇᴅ ᴀs</b> {tier_emoji} <b>{tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ ғᴏʀ</b> <code>{time_value}{time_unit}</code><b>.\nᴇxᴘɪʀᴀᴛɪᴏɴ:</b> <code>{expiration_time}</code>"
+            f"<b>✅ ᴘʀᴇᴍɪᴜᴍ ɢʀᴀɴᴛᴇᴅ — ᴍᴀɴᴜᴀʟ ᴀᴅᴅ</b>\n\n"
+            f"<b>ᴜsᴇʀ:</b> <code>{user_id}</code>\n"
+            f"<b>ᴘʟᴀɴ:</b> 🥇 ɢᴏʟᴅ\n"
+            f"<b>ᴅᴜʀᴀᴛɪᴏɴ:</b> <code>{duration_str}</code>\n"
+            f"<b>ᴇxᴘɪʀᴇs:</b> <code>{expiration_time}</code>\n\n"
+            f"<i>ʀᴇᴄᴇɪᴘᴛ sᴇɴᴛ ᴛᴏ ᴜsᴇʀ.</i>"
         )
 
-        await client.send_message(
-            chat_id=user_id,
-            text=(
-                f"{tier_emoji} <b>{tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ!</b>\n\n"
-                f"ᴅᴜʀᴀᴛɪᴏɴ: <b>{time_value}{time_unit}</b>\n"
-                f"ᴇxᴘɪʀᴇs ᴏɴ: <b>{expiration_time}</b>\n\n"
-                f"<b>ʏᴏᴜʀ ᴘᴇʀᴋs:</b>\n{perks}"
-            ),
+        # User receipt — same template as auto receipt, BUT
+        # no order_id / txn_id / amount (this is a manual grant).
+        try:
+            user_info = await client.get_users(user_id)
+            user_name = user_info.first_name or "—"
+            if user_info.last_name:
+                user_name = f"{user_name} {user_info.last_name}"
+        except Exception:
+            user_name = "—"
+
+        receipt = (
+            "<b>🧾 ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ — ʀᴇᴄᴇɪᴘᴛ</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            f"👤 <b>ᴜsᴇʀ ɴᴀᴍᴇ:</b> {user_name}\n"
+            f"🆔 <b>ᴜsᴇʀ ɪᴅ:</b> <code>{user_id}</code>\n"
+            f"🥇 <b>ᴘʟᴀɴ ᴛʏᴘᴇ:</b> ɢᴏʟᴅ ({duration_str})\n"
+            f"📅 <b>ᴀᴄᴛɪᴠᴇ ᴅᴀᴛᴇ:</b> {active_str}\n"
+            f"⏳ <b>ᴇxᴘɪʀᴇ ᴅᴀᴛᴇ:</b> {expiration_time}\n"
+            f"🎁 <b>ɢʀᴀɴᴛᴇᴅ ʙʏ:</b> ᴀᴅᴍɪɴ\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n\n"
+            "<b>ʏᴏᴜʀ ᴘᴇʀᴋs:</b>\n"
+            "✅ ғʀᴇᴇ ʟɪɴᴋ ʙʏᴘᴀss\n"
+            "✅ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss\n\n"
+            "<i>🎉 ᴇɴᴊᴏʏ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss!</i>\n"
+            "<i>ᴋᴇᴇᴘ ᴛʜɪs ʀᴇᴄᴇɪᴘᴛ ғᴏʀ ʏᴏᴜʀ ʀᴇᴄᴏʀᴅs.</i>"
         )
+
+        try:
+            await client.send_message(chat_id=user_id, text=receipt)
+        except Exception as e:
+            await msg.reply_text(
+                f"<b>⚠️ ᴄᴏᴜʟᴅ ɴᴏᴛ ᴅᴍ ᴜsᴇʀ:</b> <code>{e}</code>"
+            )
 
         asyncio.create_task(monitor_premium_expiry(client, user_id))
 
@@ -107,8 +136,6 @@ async def list_premium_users_command(client, message):
     async for user in premium_users_cursor:
         user_id = user["user_id"]
         expiration_timestamp = user["expiration_timestamp"]
-        tier = user.get("tier", "gold")
-        tier_emoji = "🥇" if tier == "gold" else "💎"
 
         try:
             expiration_time = datetime.fromisoformat(expiration_timestamp).astimezone(ist)
@@ -130,7 +157,7 @@ async def list_premium_users_command(client, message):
             expiry_info = f"{days}d {hours}h {minutes}m {seconds}s left"
 
             premium_user_list.append(
-                f"{tier_emoji} <b>{tier.capitalize()}</b>\n"
+                f"🥇 <b>ɢᴏʟᴅ</b>\n"
                 f"ᴜsᴇʀɪᴅ: <code>{user_id}</code>\n"
                 f"ᴜsᴇʀ: @{username} | {mention}\n"
                 f"ᴇxᴘɪʀʏ: {expiry_info}"
@@ -160,8 +187,6 @@ async def monitor_premium_expiry(client, user_id):
             expiration_time = datetime.fromisoformat(user["expiration_timestamp"]).astimezone(ist)
             current_time = datetime.now(ist)
             time_remaining = expiration_time - current_time
-            tier = user.get("tier", "gold")
-            tier_emoji = "🥇" if tier == "gold" else "💎"
 
             # Auto remove on expiry
             if time_remaining.total_seconds() <= 0:
@@ -179,7 +204,7 @@ async def monitor_premium_expiry(client, user_id):
                     )
                     await client.send_message(
                         user_id,
-                        f"{tier_emoji} <b>{tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ ᴇxᴘɪʀᴇᴅ!</b>\n\n"
+                        f"🥇 <b>ɢᴏʟᴅ ᴘʀᴇᴍɪᴜᴍ ᴇxᴘɪʀᴇᴅ!</b>\n\n"
                         "ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss ʜᴀs ʙᴇᴇɴ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ʀᴇᴍᴏᴠᴇᴅ."
                         f"{extra}\n\n"
                         "ʀᴇɴᴇᴡ ᴘʀᴇᴍɪᴜᴍ ᴛᴏ ᴄᴏɴᴛɪɴᴜᴇ ᴇɴᴊᴏʏɪɴɢ ʏᴏᴜʀ ᴘᴇʀᴋs."
@@ -194,7 +219,7 @@ async def monitor_premium_expiry(client, user_id):
                 try:
                     await client.send_message(
                         user_id,
-                        f"<b>⏰ {tier_emoji} {tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ ᴇxᴘɪʀʏ ʀᴇᴍɪɴᴅᴇʀ</b>\n\n"
+                        f"<b>⏰ 🥇 ɢᴏʟᴅ ᴘʀᴇᴍɪᴜᴍ ᴇxᴘɪʀʏ ʀᴇᴍɪɴᴅᴇʀ</b>\n\n"
                         f"ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴇxᴘɪʀᴇs ɪɴ ʟᴇss ᴛʜᴀɴ 24 ʜᴏᴜʀs!\n"
                         f"<b>ᴇxᴘɪʀᴇs ᴏɴ:</b> {formatted_time}\n\n"
                         "ʀᴇɴᴇᴡ ɴᴏᴡ ᴛᴏ ᴋᴇᴇᴘ ʏᴏᴜʀ ᴘᴇʀᴋs."
@@ -209,7 +234,7 @@ async def monitor_premium_expiry(client, user_id):
                 try:
                     await client.send_message(
                         user_id,
-                        f"<b>🚨 {tier_emoji} ғɪɴᴀʟ ʀᴇᴍɪɴᴅᴇʀ — {tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ</b>\n\n"
+                        f"<b>🚨 🥇 ғɪɴᴀʟ ʀᴇᴍɪɴᴅᴇʀ — ɢᴏʟᴅ ᴘʀᴇᴍɪᴜᴍ</b>\n\n"
                         f"ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴇxᴘɪʀᴇs ɪɴ ʟᴇss ᴛʜᴀɴ 1 ʜᴏᴜʀ!\n"
                         f"<b>ᴇxᴘɪʀᴇs ᴀᴛ:</b> {formatted_time}\n\n"
                         "ᴛʜɪs ɪs ʏᴏᴜʀ ʟᴀsᴛ ʀᴇᴍɪɴᴅᴇʀ. ʀᴇɴᴇᴡ ɴᴏᴡ!"

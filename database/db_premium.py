@@ -11,7 +11,7 @@ collection = database['premium-users']
 async def is_premium_user(user_id):
     return await get_premium_tier(user_id) is not None
 
-# Get premium tier: returns 'gold', 'platinum', or None if not premium / expired
+# Get premium tier: returns 'gold' or None if not premium / expired
 async def get_premium_tier(user_id):
     ist = timezone("Asia/Kolkata")
     user = await collection.find_one({"user_id": user_id})
@@ -69,12 +69,10 @@ async def list_premium_users():
             )
     return premium_user_list
 
-# Add premium user with tier (gold / platinum)
+# Add premium user (single tier: gold)
 async def add_premium(user_id, time_value, time_unit, tier="gold"):
     time_unit = time_unit.lower()
-    tier = tier.lower()
-    if tier not in ("gold", "platinum"):
-        raise ValueError("Invalid tier. Use 'gold' or 'platinum'.")
+    tier = "gold"  # only one tier supported
 
     ist = timezone("Asia/Kolkata")
     now = datetime.now(ist)
@@ -122,10 +120,8 @@ async def check_user_plan(user_id):
                 (remaining_time.seconds // 60) % 60,
                 remaining_time.seconds % 60,
             )
-            tier = user.get("tier", "gold")
-            tier_emoji = "🥇" if tier == "gold" else "💎"
             return (
-                f"{tier_emoji} <b>{tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴇ</b>\n"
+                f"🥇 <b>ɢᴏʟᴅ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴇ</b>\n"
                 f"ᴛɪᴍᴇ ʟᴇғᴛ: <b>{days}ᴅ {hours}ʜ {minutes}ᴍ {seconds}s</b>"
             )
         else:

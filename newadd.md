@@ -1103,3 +1103,56 @@ ASCII range it scans for, so re-running the pass is a no-op.
 - `InlineKeyboardButton` labels were converted to small-caps but **not**
   wrapped in `<b>` — Telegram does not render HTML inside button text.
 
+
+---
+
+## 📁 v1.11.2 — Single-tier (Gold only) + Manual Receipt + Wording Cleanup
+
+### What changed
+1. **Platinum tier removed entirely.** Gold is now the only premium
+   tier. The DB layer rejects anything else, the `/psetting` Add-Plan
+   wizard auto-sets `tier="gold"` and skips the tier-pick step (now
+   3 steps: name → duration → price, instead of 4).
+2. **Manual `/addpremium` now generates a receipt.** Both
+   `/addpremium <user_id> <value> <unit>` and the `/psetting → Grant`
+   inline flow send a full receipt to the target user. Manual
+   receipts deliberately omit `order_id` and `txn_id` (since no
+   transaction exists) and add a `🎁 ɢʀᴀɴᴛᴇᴅ ʙʏ: ᴀᴅᴍɪɴ` row instead.
+3. **"Token bypass" wording removed.** This bot has no token system,
+   so every "ᴛᴏᴋᴇɴ ʙʏᴘᴀss" / "ɴᴏ sʜᴏʀᴛɴᴇʀ ᴛᴏᴋᴇɴ" perk line is now
+   "ғʀᴇᴇ ʟɪɴᴋ ʙʏᴘᴀss" in the user's small-caps font.
+4. **`ᴀɴᴛɪ-ʙʏᴘᴀss` removed** from the `/settings` help text in
+   `help_cmd.py` (no such feature exists).
+5. **`force-sub bypass`** perk line removed from the buy-premium menu —
+   gold has never bypassed force-sub in `start.py`, so the perk listing
+   was misleading.
+6. **All `/psetting` and `/plans` captions converted to small-caps +
+   `<b></b>`** to match the rest of the bot's house style. Plain
+   English Hindi-tinged instruction text is gone.
+
+### Files touched
+- `database/db_premium.py` — `check_user_plan` simplified to gold-only.
+- `database/db_plans.py` — `ALLOWED_TIERS = ("gold",)`, `_tier_emoji`
+  always 🥇, tier coerced to `"gold"`.
+- `plugins/premium_system/psetting.py` — Platinum button removed,
+  wizard collapsed to 3 steps, every caption / button label converted
+  to small-caps, `Grant` flow now sends a full manual receipt
+  (no order_id / no txn_id).
+- `plugins/premium_system/premium_cdm.py` — `/addpremium` switched to
+  4-arg form (`/addpremium <uid> <value> <unit>`), tier inferred as
+  `"gold"`, full manual receipt generated and sent. List/monitor
+  output no longer branches on tier.
+- `plugins/premium_system/premium_auto.py` — Buy-menu captions and
+  payment receipt now use 🥇 only and "ғʀᴇᴇ ʟɪɴᴋ ʙʏᴘᴀss".
+- `plugins/start.py` — Removed the `tier != "platinum"` exception in
+  the force-sub guard; removed `tier in ("gold","platinum")` check
+  (now `tier == "gold"`).
+- `plugins/help_cmd.py` — Removed `ᴀɴᴛɪ-ʙʏᴘᴀss` from the `/settings`
+  description.
+
+### Backward compatibility
+- Old DB documents that still carry `tier="platinum"` are clamped to
+  `"gold"` on read by `check_user_plan` / `add_premium`, so existing
+  users are not locked out. The next write normalises them.
+- The `tier` column is kept in the schema (orders, plans, users) so
+  no migrations are needed; it is just always `"gold"` from now on.

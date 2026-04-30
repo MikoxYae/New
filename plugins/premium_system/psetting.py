@@ -11,15 +11,24 @@ from pyrogram.types import (
     InlineKeyboardMarkup, InlineKeyboardButton,
 )
 
+from datetime import datetime
+from pytz import timezone
+
 from bot import Bot
 from helper_func import admin
 from database.db_plans import (
     add_plan, list_plans, delete_plan, get_plan,
     format_plan_line, format_plans_block,
-    ALLOWED_UNITS, ALLOWED_TIERS, to_addpremium_unit,
+    ALLOWED_UNITS, to_addpremium_unit,
     set_gift_channel, clear_gift_channel,
 )
 from database.db_premium import add_premium
+
+# Pretty unit labels for the manual-grant receipt
+_UNIT_LABELS_SMALLCAPS = {
+    "s": "sᴇᴄᴏɴᴅs", "m": "ᴍɪɴᴜᴛᴇs", "h": "ʜᴏᴜʀs",
+    "d": "ᴅᴀʏs", "w": "ᴡᴇᴇᴋs", "mon": "ᴍᴏɴᴛʜs", "y": "ʏᴇᴀʀs",
+}
 
 PSETTING_PIC = "https://graph.org/file/d18515f99d522b3ee4e6f-876aedcb4f5dde2d4e.jpg"
 
@@ -34,32 +43,22 @@ _pending: dict = {}
 def _main_markup():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("📋 List Plans",  callback_data="pst_list"),
-            InlineKeyboardButton("➕ Add Plan",    callback_data="pst_add"),
+            InlineKeyboardButton("📋 ʟɪsᴛ ᴘʟᴀɴs",  callback_data="pst_list"),
+            InlineKeyboardButton("➕ ᴀᴅᴅ ᴘʟᴀɴ",    callback_data="pst_add"),
         ],
         [
-            InlineKeyboardButton("🗑 Delete Plan", callback_data="pst_del_menu"),
-            InlineKeyboardButton("🎁 Grant",       callback_data="pst_grant_menu"),
+            InlineKeyboardButton("🗑 ᴅᴇʟᴇᴛᴇ ᴘʟᴀɴ", callback_data="pst_del_menu"),
+            InlineKeyboardButton("🎁 ɢʀᴀɴᴛ",       callback_data="pst_grant_menu"),
         ],
         [
-            InlineKeyboardButton("🎀 Gift Channel", callback_data="pst_gift_menu"),
+            InlineKeyboardButton("🎀 ɢɪғᴛ ᴄʜᴀɴɴᴇʟ", callback_data="pst_gift_menu"),
         ],
-        [InlineKeyboardButton("❌ Close", callback_data="pst_close")],
+        [InlineKeyboardButton("❌ ᴄʟᴏsᴇ", callback_data="pst_close")],
     ])
 
 
 def _back_main():
-    return InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="pst_back")]])
-
-
-def _tier_markup():
-    return InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("🥇 Gold",     callback_data="pst_tier_gold"),
-            InlineKeyboardButton("💎 Platinum", callback_data="pst_tier_platinum"),
-        ],
-        [InlineKeyboardButton("❌ Cancel", callback_data="pst_back")],
-    ])
+    return InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="pst_back")]])
 
 
 def _unit_markup():
@@ -70,7 +69,7 @@ def _unit_markup():
             InlineKeyboardButton(label, callback_data=f"pst_unit_{code}")
             for code, label in units[i:i + 3]
         ])
-    rows.append([InlineKeyboardButton("❌ Cancel", callback_data="pst_back")])
+    rows.append([InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="pst_back")])
     return InlineKeyboardMarkup(rows)
 
 
@@ -97,15 +96,15 @@ async def _patch(client: Client, chat_id: int, msg_id: int, caption: str, markup
 
 def _main_caption() -> str:
     return (
-        "<b>💎 Premium Plan Manager</b>\n"
+        "<b>🥇 ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴ ᴍᴀɴᴀɢᴇʀ</b>\n"
         "─────────────────────\n\n"
-        "<b>📋 List Plans</b> — see all configured plans\n"
-        "<b>➕ Add Plan</b> — create a new plan (name, tier, duration, price)\n"
-        "<b>🗑 Delete Plan</b> — remove an existing plan\n"
-        "<b>🎁 Grant</b> — apply a plan to a specific user\n"
-        "<b>🎀 Gift Channel</b> — link a Telegram channel to a plan;\n"
-        "    buyers are auto-added on payment, removed on expiry\n\n"
-        "<i>Tip: users can run /plans to see your available offers.</i>"
+        "<b>📋 ʟɪsᴛ ᴘʟᴀɴs</b> — sᴇᴇ ᴀʟʟ ᴄᴏɴғɪɢᴜʀᴇᴅ ᴘʟᴀɴs\n"
+        "<b>➕ ᴀᴅᴅ ᴘʟᴀɴ</b> — ᴄʀᴇᴀᴛᴇ ᴀ ɴᴇᴡ ᴘʟᴀɴ (ɴᴀᴍᴇ, ᴅᴜʀᴀᴛɪᴏɴ, ᴘʀɪᴄᴇ)\n"
+        "<b>🗑 ᴅᴇʟᴇᴛᴇ ᴘʟᴀɴ</b> — ʀᴇᴍᴏᴠᴇ ᴀɴ ᴇxɪsᴛɪɴɢ ᴘʟᴀɴ\n"
+        "<b>🎁 ɢʀᴀɴᴛ</b> — ᴀᴘᴘʟʏ ᴀ ᴘʟᴀɴ ᴛᴏ ᴀ sᴘᴇᴄɪғɪᴄ ᴜsᴇʀ\n"
+        "<b>🎀 ɢɪғᴛ ᴄʜᴀɴɴᴇʟ</b> — ʟɪɴᴋ ᴀ ᴛᴇʟᴇɢʀᴀᴍ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴀ ᴘʟᴀɴ;\n"
+        "    ʙᴜʏᴇʀs ᴀʀᴇ ᴀᴜᴛᴏ-ᴀᴅᴅᴇᴅ ᴏɴ ᴘᴀʏᴍᴇɴᴛ, ʀᴇᴍᴏᴠᴇᴅ ᴏɴ ᴇxᴘɪʀʏ\n\n"
+        "<i>ᴛɪᴘ: ᴜsᴇʀs ᴄᴀɴ ʀᴜɴ /plans ᴛᴏ sᴇᴇ ʏᴏᴜʀ ᴀᴠᴀɪʟᴀʙʟᴇ ᴏғғᴇʀs.</i>"
     )
 
 
@@ -131,13 +130,13 @@ async def psetting_cmd(client: Client, message: Message):
 async def plans_cmd(client: Client, message: Message):
     plans = await list_plans()
     text = (
-        "<b>💎 Available Premium Plans</b>\n"
+        "<b>🥇 ᴀᴠᴀɪʟᴀʙʟᴇ ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴs</b>\n"
         "─────────────────────\n\n"
         + format_plans_block(plans, with_id=False)
     )
     if plans:
         text += (
-            "\n\n<i>Contact the owner to purchase a plan.</i>"
+            "\n\n<i>ᴄᴏɴᴛᴀᴄᴛ ᴛʜᴇ ᴏᴡɴᴇʀ ᴛᴏ ᴘᴜʀᴄʜᴀsᴇ ᴀ ᴘʟᴀɴ.</i>"
         )
     await message.reply_text(text, disable_web_page_preview=True)
 
@@ -185,36 +184,16 @@ async def psetting_cb(client: Bot, query: CallbackQuery):
     if data == "pst_add":
         _pending[uid] = {
             "step": "name",
-            "draft": {},
+            "draft": {"tier": "gold"},
             "msg_id":  query.message.id,
             "chat_id": query.message.chat.id,
         }
         return await _edit(
             query,
-            "<b>➕ Add New Plan — Step 1 / 4</b>\n\n"
-            "Send the <b>plan name</b> as a message.\n"
-            "<i>Example:  Gold 1 Month</i>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
-        )
-
-    # ── ADD PLAN — TIER PICK ─────────────────────────────────
-    if data.startswith("pst_tier_"):
-        st = _pending.get(uid)
-        if not st or st.get("step") != "tier":
-            return
-        tier = data.split("_", 2)[2]
-        if tier not in ALLOWED_TIERS:
-            return
-        st["draft"]["tier"] = tier
-        st["step"] = "value"
-        return await _edit(
-            query,
-            f"<b>➕ Add New Plan — Step 3 / 4</b>\n\n"
-            f"Plan: <b>{st['draft']['name']}</b>\n"
-            f"Tier: <b>{tier.capitalize()}</b>\n\n"
-            f"Send the <b>duration value</b> as a number.\n"
-            f"<i>Example:  1   |   30   |   12</i>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
+            "<b>➕ ᴀᴅᴅ ɴᴇᴡ ᴘʟᴀɴ — sᴛᴇᴘ 1 / 3</b>\n\n"
+            "sᴇɴᴅ ᴛʜᴇ <b>ᴘʟᴀɴ ɴᴀᴍᴇ</b> ᴀs ᴀ ᴍᴇssᴀɢᴇ.\n"
+            "<i>ᴇxᴀᴍᴘʟᴇ:  Gold 1 Month</i>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="pst_back")]]),
         )
 
     # ── ADD PLAN — UNIT PICK ─────────────────────────────────
@@ -229,14 +208,13 @@ async def psetting_cb(client: Bot, query: CallbackQuery):
         st["step"] = "price"
         return await _edit(
             query,
-            f"<b>➕ Add New Plan — Step 4 / 4</b>\n\n"
-            f"Plan: <b>{st['draft']['name']}</b>\n"
-            f"Tier: <b>{st['draft']['tier'].capitalize()}</b>\n"
-            f"Duration: <b>{st['draft']['duration_value']} "
+            f"<b>➕ ᴀᴅᴅ ɴᴇᴡ ᴘʟᴀɴ — sᴛᴇᴘ 3 / 3</b>\n\n"
+            f"ᴘʟᴀɴ: <b>{st['draft']['name']}</b>\n"
+            f"ᴅᴜʀᴀᴛɪᴏɴ: <b>{st['draft']['duration_value']} "
             f"{ALLOWED_UNITS[unit]}</b>\n\n"
-            f"Send the <b>price</b> as a message.\n"
-            f"<i>Example:  ₹49   |   $5   |   Free</i>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
+            f"sᴇɴᴅ ᴛʜᴇ <b>ᴘʀɪᴄᴇ</b> ᴀs ᴀ ᴍᴇssᴀɢᴇ.\n"
+            f"<i>ᴇxᴀᴍᴘʟᴇ:  ₹49   |   $5   |   Free</i>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="pst_back")]]),
         )
 
     # ── DELETE MENU ──────────────────────────────────────────
@@ -245,33 +223,33 @@ async def psetting_cb(client: Bot, query: CallbackQuery):
         if not plans:
             return await _edit(
                 query,
-                "<b>🗑 Delete Plan</b>\n\nNo plans to delete.",
+                "<b>🗑 ᴅᴇʟᴇᴛᴇ ᴘʟᴀɴ</b>\n\nɴᴏ ᴘʟᴀɴs ᴛᴏ ᴅᴇʟᴇᴛᴇ.",
                 _back_main(),
             )
         rows = []
         for p in plans:
-            label = f"❌ {p.get('name','—')} ({p.get('tier','gold').capitalize()})"
+            label = f"❌ {p.get('name','—')}"
             rows.append([InlineKeyboardButton(label, callback_data=f"pst_del_{p['_id']}")])
-        rows.append([InlineKeyboardButton("🔙 Back", callback_data="pst_back")])
+        rows.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="pst_back")])
         return await _edit(
             query,
-            "<b>🗑 Delete Plan</b>\n\nTap a plan to delete it.",
+            "<b>🗑 ᴅᴇʟᴇᴛᴇ ᴘʟᴀɴ</b>\n\nᴛᴀᴘ ᴀ ᴘʟᴀɴ ᴛᴏ ᴅᴇʟᴇᴛᴇ ɪᴛ.",
             InlineKeyboardMarkup(rows),
         )
 
     if data.startswith("pst_del_"):
         plan_id = data.split("_", 2)[2]
         ok = await delete_plan(plan_id)
-        msg = "✅ Plan deleted." if ok else "❌ Plan not found."
+        msg = "✅ ᴘʟᴀɴ ᴅᴇʟᴇᴛᴇᴅ." if ok else "❌ ᴘʟᴀɴ ɴᴏᴛ ғᴏᴜɴᴅ."
         plans = await list_plans()
         rows = []
         for p in plans:
-            label = f"❌ {p.get('name','—')} ({p.get('tier','gold').capitalize()})"
+            label = f"❌ {p.get('name','—')}"
             rows.append([InlineKeyboardButton(label, callback_data=f"pst_del_{p['_id']}")])
-        rows.append([InlineKeyboardButton("🔙 Back", callback_data="pst_back")])
+        rows.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="pst_back")])
         return await _edit(
             query,
-            f"<b>🗑 Delete Plan</b>\n\n{msg}",
+            f"<b>🗑 ᴅᴇʟᴇᴛᴇ ᴘʟᴀɴ</b>\n\n{msg}",
             InlineKeyboardMarkup(rows) if plans else _back_main(),
         )
 
@@ -281,17 +259,17 @@ async def psetting_cb(client: Bot, query: CallbackQuery):
         if not plans:
             return await _edit(
                 query,
-                "<b>🎁 Grant Plan</b>\n\nNo plans configured. Add one first.",
+                "<b>🎁 ɢʀᴀɴᴛ ᴘʟᴀɴ</b>\n\nɴᴏ ᴘʟᴀɴs ᴄᴏɴғɪɢᴜʀᴇᴅ. ᴀᴅᴅ ᴏɴᴇ ғɪʀsᴛ.",
                 _back_main(),
             )
         rows = []
         for p in plans:
-            label = f"🎁 {p.get('name','—')} ({p.get('tier','gold').capitalize()})"
+            label = f"🎁 {p.get('name','—')}"
             rows.append([InlineKeyboardButton(label, callback_data=f"pst_grant_{p['_id']}")])
-        rows.append([InlineKeyboardButton("🔙 Back", callback_data="pst_back")])
+        rows.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="pst_back")])
         return await _edit(
             query,
-            "<b>🎁 Grant Plan</b>\n\nPick a plan to grant to a user.",
+            "<b>🎁 ɢʀᴀɴᴛ ᴘʟᴀɴ</b>\n\nᴘɪᴄᴋ ᴀ ᴘʟᴀɴ ᴛᴏ ɢʀᴀɴᴛ ᴛᴏ ᴀ ᴜsᴇʀ.",
             InlineKeyboardMarkup(rows),
         )
 
@@ -299,7 +277,7 @@ async def psetting_cb(client: Bot, query: CallbackQuery):
         plan_id = data.split("_", 2)[2]
         plan = await get_plan(plan_id)
         if not plan:
-            return await _edit(query, "<b>❌ Plan not found.</b>", _back_main())
+            return await _edit(query, "<b>❌ ᴘʟᴀɴ ɴᴏᴛ ғᴏᴜɴᴅ.</b>", _back_main())
         _pending[uid] = {
             "step":   "grant_uid",
             "draft":  {"plan_id": plan_id},
@@ -308,10 +286,10 @@ async def psetting_cb(client: Bot, query: CallbackQuery):
         }
         return await _edit(
             query,
-            "<b>🎁 Grant Plan</b>\n\n"
-            f"Plan: {format_plan_line(plan)}\n\n"
-            "Send the <b>user_id</b> to grant this plan to.",
-            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
+            "<b>🎁 ɢʀᴀɴᴛ ᴘʟᴀɴ</b>\n\n"
+            f"ᴘʟᴀɴ: {format_plan_line(plan)}\n\n"
+            "sᴇɴᴅ ᴛʜᴇ <b>ᴜsᴇʀ_ɪᴅ</b> ᴛᴏ ɢʀᴀɴᴛ ᴛʜɪs ᴘʟᴀɴ ᴛᴏ.",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="pst_back")]]),
         )
 
     # ── GIFT CHANNEL — pick a plan ───────────────────────────
@@ -320,24 +298,21 @@ async def psetting_cb(client: Bot, query: CallbackQuery):
         if not plans:
             return await _edit(
                 query,
-                "<b>🎀 Gift Channel</b>\n\nNo plans configured. Add a plan first.",
+                "<b>🎀 ɢɪғᴛ ᴄʜᴀɴɴᴇʟ</b>\n\nɴᴏ ᴘʟᴀɴs ᴄᴏɴғɪɢᴜʀᴇᴅ. ᴀᴅᴅ ᴀ ᴘʟᴀɴ ғɪʀsᴛ.",
                 _back_main(),
             )
         rows = []
         for p in plans:
-            label = (
-                f"🎀 {p.get('name','—')} "
-                f"({p.get('tier','gold').capitalize()})"
-            )
+            label = f"🎀 {p.get('name','—')}"
             if p.get("gift_channel_id"):
                 label += "  ✓"
             rows.append([InlineKeyboardButton(label, callback_data=f"pst_gift_{p['_id']}")])
-        rows.append([InlineKeyboardButton("🔙 Back", callback_data="pst_back")])
+        rows.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="pst_back")])
         return await _edit(
             query,
-            "<b>🎀 Gift Channel</b>\n\n"
-            "Pick a plan to attach a gift channel to.\n"
-            "Plans already linked are marked with <b>✓</b>.",
+            "<b>🎀 ɢɪғᴛ ᴄʜᴀɴɴᴇʟ</b>\n\n"
+            "ᴘɪᴄᴋ ᴀ ᴘʟᴀɴ ᴛᴏ ᴀᴛᴛᴀᴄʜ ᴀ ɢɪғᴛ ᴄʜᴀɴɴᴇʟ ᴛᴏ.\n"
+            "ᴘʟᴀɴs ᴀʟʀᴇᴀᴅʏ ʟɪɴᴋᴇᴅ ᴀʀᴇ ᴍᴀʀᴋᴇᴅ ᴡɪᴛʜ <b>✓</b>.",
             InlineKeyboardMarkup(rows),
         )
 
@@ -348,11 +323,11 @@ async def psetting_cb(client: Bot, query: CallbackQuery):
         plan = await get_plan(plan_id)
         return await _edit(
             query,
-            "<b>🎀 Gift Channel</b>\n\n"
-            "✅ Gift channel removed from this plan.\n\n"
-            f"Plan: {format_plan_line(plan) if plan else '—'}",
+            "<b>🎀 ɢɪғᴛ ᴄʜᴀɴɴᴇʟ</b>\n\n"
+            "✅ ɢɪғᴛ ᴄʜᴀɴɴᴇʟ ʀᴇᴍᴏᴠᴇᴅ ғʀᴏᴍ ᴛʜɪs ᴘʟᴀɴ.\n\n"
+            f"ᴘʟᴀɴ: {format_plan_line(plan) if plan else '—'}",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔙 Back to Gift menu", callback_data="pst_gift_menu")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ ᴛᴏ ɢɪғᴛ ᴍᴇɴᴜ", callback_data="pst_gift_menu")],
             ]),
         )
 
@@ -361,12 +336,12 @@ async def psetting_cb(client: Bot, query: CallbackQuery):
         plan_id = data.split("_", 2)[2]
         plan = await get_plan(plan_id)
         if not plan:
-            return await _edit(query, "<b>❌ Plan not found.</b>", _back_main())
+            return await _edit(query, "<b>❌ ᴘʟᴀɴ ɴᴏᴛ ғᴏᴜɴᴅ.</b>", _back_main())
 
         existing = ""
         if plan.get("gift_channel_id"):
             existing = (
-                f"\n\n<b>Currently linked:</b> "
+                f"\n\n<b>ᴄᴜʀʀᴇɴᴛʟʏ ʟɪɴᴋᴇᴅ:</b> "
                 f"{plan.get('gift_channel_title','—')} "
                 f"(<code>{plan['gift_channel_id']}</code>)"
             )
@@ -378,24 +353,24 @@ async def psetting_cb(client: Bot, query: CallbackQuery):
             "chat_id":  query.message.chat.id,
         }
 
-        rows = [[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]
+        rows = [[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="pst_back")]]
         if plan.get("gift_channel_id"):
             rows.insert(0, [InlineKeyboardButton(
-                "🗑 Remove existing link",
+                "🗑 ʀᴇᴍᴏᴠᴇ ᴇxɪsᴛɪɴɢ ʟɪɴᴋ",
                 callback_data=f"pst_giftclr_{plan_id}",
             )])
 
         return await _edit(
             query,
-            "<b>🎀 Gift Channel — Setup</b>\n\n"
-            f"Plan: {format_plan_line(plan)}{existing}\n\n"
-            "<b>Steps:</b>\n"
-            "1. Add this bot as <b>admin</b> in your channel.\n"
-            "2. Give it the <b>Invite Users via Link</b> permission "
-            "(and <b>Ban Users</b> so it can remove on expiry).\n"
-            "3. Send the channel ID below — it must start with "
+            "<b>🎀 ɢɪғᴛ ᴄʜᴀɴɴᴇʟ — sᴇᴛᴜᴘ</b>\n\n"
+            f"ᴘʟᴀɴ: {format_plan_line(plan)}{existing}\n\n"
+            "<b>sᴛᴇᴘs:</b>\n"
+            "1. ᴀᴅᴅ ᴛʜɪs ʙᴏᴛ ᴀs <b>ᴀᴅᴍɪɴ</b> ɪɴ ʏᴏᴜʀ ᴄʜᴀɴɴᴇʟ.\n"
+            "2. ɢɪᴠᴇ ɪᴛ ᴛʜᴇ <b>ɪɴᴠɪᴛᴇ ᴜsᴇʀs ᴠɪᴀ ʟɪɴᴋ</b> ᴘᴇʀᴍɪssɪᴏɴ "
+            "(ᴀɴᴅ <b>ʙᴀɴ ᴜsᴇʀs</b> sᴏ ɪᴛ ᴄᴀɴ ʀᴇᴍᴏᴠᴇ ᴏɴ ᴇxᴘɪʀʏ).\n"
+            "3. sᴇɴᴅ ᴛʜᴇ ᴄʜᴀɴɴᴇʟ ɪᴅ ʙᴇʟᴏᴡ — ɪᴛ ᴍᴜsᴛ sᴛᴀʀᴛ ᴡɪᴛʜ "
             "<code>-100</code>.\n\n"
-            "<i>Example: <code>-1001234567890</code></i>",
+            "<i>ᴇxᴀᴍᴘʟᴇ: <code>-1001234567890</code></i>",
             InlineKeyboardMarkup(rows),
         )
 
@@ -426,25 +401,26 @@ async def psetting_input(client: Bot, message: Message):
     except Exception:
         pass
 
-    # ── STEP: NAME ───────────────────────────────────────────
+    # ── STEP: NAME → VALUE ───────────────────────────────────
     if step == "name":
         if not raw:
             await _patch(
                 client, chat_id, msg_id,
-                "<b>❌ Name cannot be empty. Try again.</b>",
-                InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
+                "<b>❌ ɴᴀᴍᴇ ᴄᴀɴɴᴏᴛ ʙᴇ ᴇᴍᴘᴛʏ. ᴛʀʏ ᴀɢᴀɪɴ.</b>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="pst_back")]]),
             )
             raise StopPropagation
         if len(raw) > 64:
             raw = raw[:64]
         draft["name"] = raw
-        state["step"] = "tier"
+        state["step"] = "value"
         await _patch(
             client, chat_id, msg_id,
-            f"<b>➕ Add New Plan — Step 2 / 4</b>\n\n"
-            f"Plan: <b>{raw}</b>\n\n"
-            f"Pick a <b>tier</b>:",
-            _tier_markup(),
+            f"<b>➕ ᴀᴅᴅ ɴᴇᴡ ᴘʟᴀɴ — sᴛᴇᴘ 2 / 3</b>\n\n"
+            f"ᴘʟᴀɴ: <b>{raw}</b>\n\n"
+            f"sᴇɴᴅ ᴛʜᴇ <b>ᴅᴜʀᴀᴛɪᴏɴ ᴠᴀʟᴜᴇ</b> ᴀs ᴀ ɴᴜᴍʙᴇʀ.\n"
+            f"<i>ᴇxᴀᴍᴘʟᴇ:  1   |   30   |   12</i>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="pst_back")]]),
         )
         raise StopPropagation
 
@@ -457,19 +433,18 @@ async def psetting_input(client: Bot, message: Message):
         except ValueError:
             await _patch(
                 client, chat_id, msg_id,
-                "<b>❌ Send a positive whole number.</b>",
-                InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
+                "<b>❌ sᴇɴᴅ ᴀ ᴘᴏsɪᴛɪᴠᴇ ᴡʜᴏʟᴇ ɴᴜᴍʙᴇʀ.</b>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="pst_back")]]),
             )
             raise StopPropagation
         draft["duration_value"] = value
         state["step"] = "unit"
         await _patch(
             client, chat_id, msg_id,
-            f"<b>➕ Add New Plan — Step 3 / 4</b>\n\n"
-            f"Plan: <b>{draft['name']}</b>\n"
-            f"Tier: <b>{draft['tier'].capitalize()}</b>\n"
-            f"Duration value: <b>{value}</b>\n\n"
-            f"Pick a <b>duration unit</b>:",
+            f"<b>➕ ᴀᴅᴅ ɴᴇᴡ ᴘʟᴀɴ — sᴛᴇᴘ 2 / 3</b>\n\n"
+            f"ᴘʟᴀɴ: <b>{draft['name']}</b>\n"
+            f"ᴅᴜʀᴀᴛɪᴏɴ ᴠᴀʟᴜᴇ: <b>{value}</b>\n\n"
+            f"ᴘɪᴄᴋ ᴀ <b>ᴅᴜʀᴀᴛɪᴏɴ ᴜɴɪᴛ</b>:",
             _unit_markup(),
         )
         raise StopPropagation
@@ -479,8 +454,8 @@ async def psetting_input(client: Bot, message: Message):
         if not raw:
             await _patch(
                 client, chat_id, msg_id,
-                "<b>❌ Price cannot be empty.</b>",
-                InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
+                "<b>❌ ᴘʀɪᴄᴇ ᴄᴀɴɴᴏᴛ ʙᴇ ᴇᴍᴘᴛʏ.</b>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="pst_back")]]),
             )
             raise StopPropagation
         if len(raw) > 32:
@@ -489,7 +464,7 @@ async def psetting_input(client: Bot, message: Message):
         try:
             new_id = await add_plan(
                 name           = draft["name"],
-                tier           = draft["tier"],
+                tier           = draft.get("tier", "gold"),
                 duration_value = draft["duration_value"],
                 duration_unit  = draft["duration_unit"],
                 price          = draft["price"],
@@ -498,7 +473,7 @@ async def psetting_input(client: Bot, message: Message):
             _pending.pop(uid, None)
             await _patch(
                 client, chat_id, msg_id,
-                f"<b>❌ Could not save plan:</b>\n<code>{e}</code>",
+                f"<b>❌ ᴄᴏᴜʟᴅ ɴᴏᴛ sᴀᴠᴇ ᴘʟᴀɴ:</b>\n<code>{e}</code>",
                 _back_main(),
             )
             raise StopPropagation
@@ -507,11 +482,11 @@ async def psetting_input(client: Bot, message: Message):
         plan = await get_plan(new_id)
         await _patch(
             client, chat_id, msg_id,
-            "<b>✅ Plan saved!</b>\n\n" + format_plan_line(plan, with_id=True),
+            "<b>✅ ᴘʟᴀɴ sᴀᴠᴇᴅ!</b>\n\n" + format_plan_line(plan, with_id=True),
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("➕ Add Another", callback_data="pst_add"),
-                 InlineKeyboardButton("📋 List Plans", callback_data="pst_list")],
-                [InlineKeyboardButton("🔙 Back", callback_data="pst_back")],
+                [InlineKeyboardButton("➕ ᴀᴅᴅ ᴀɴᴏᴛʜᴇʀ", callback_data="pst_add"),
+                 InlineKeyboardButton("📋 ʟɪsᴛ ᴘʟᴀɴs", callback_data="pst_list")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="pst_back")],
             ]),
         )
         raise StopPropagation
@@ -535,30 +510,30 @@ async def psetting_input(client: Bot, message: Message):
         except ValueError:
             await _patch(
                 client, chat_id, msg_id,
-                "<b>❌ Invalid channel ID.</b>\n\n"
-                "Send a numeric channel ID starting with <code>-100</code>.",
-                InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
+                "<b>❌ ɪɴᴠᴀʟɪᴅ ᴄʜᴀɴɴᴇʟ ɪᴅ.</b>\n\n"
+                "sᴇɴᴅ ᴀ ɴᴜᴍᴇʀɪᴄ ᴄʜᴀɴɴᴇʟ ɪᴅ sᴛᴀʀᴛɪɴɢ ᴡɪᴛʜ <code>-100</code>.",
+                InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="pst_back")]]),
             )
             raise StopPropagation
 
         if not str(ch_id).startswith("-100"):
             await _patch(
                 client, chat_id, msg_id,
-                "<b>❌ Channel ID must start with</b> <code>-100</code>.\n\n"
-                "Forward a message from your channel to <b>@username_to_id_bot</b> "
-                "or similar to fetch the correct ID.",
-                InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
+                "<b>❌ ᴄʜᴀɴɴᴇʟ ɪᴅ ᴍᴜsᴛ sᴛᴀʀᴛ ᴡɪᴛʜ</b> <code>-100</code>.\n\n"
+                "ғᴏʀᴡᴀʀᴅ ᴀ ᴍᴇssᴀɢᴇ ғʀᴏᴍ ʏᴏᴜʀ ᴄʜᴀɴɴᴇʟ ᴛᴏ <b>@username_to_id_bot</b> "
+                "ᴏʀ sɪᴍɪʟᴀʀ ᴛᴏ ғᴇᴛᴄʜ ᴛʜᴇ ᴄᴏʀʀᴇᴄᴛ ɪᴅ.",
+                InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="pst_back")]]),
             )
             raise StopPropagation
 
         # show "verifying..." state
         await _patch(
             client, chat_id, msg_id,
-            f"<b>🎀 Gift Channel — Verifying…</b>\n\n"
-            f"Plan: <b>{plan.get('name','—')}</b>\n"
-            f"Channel: <code>{ch_id}</code>\n\n"
-            "Checking bot permissions, please wait…",
-            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
+            f"<b>🎀 ɢɪғᴛ ᴄʜᴀɴɴᴇʟ — ᴠᴇʀɪғʏɪɴɢ…</b>\n\n"
+            f"ᴘʟᴀɴ: <b>{plan.get('name','—')}</b>\n"
+            f"ᴄʜᴀɴɴᴇʟ: <code>{ch_id}</code>\n\n"
+            "ᴄʜᴇᴄᴋɪɴɢ ʙᴏᴛ ᴘᴇʀᴍɪssɪᴏɴs, ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ…",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="pst_back")]]),
         )
 
         # actually verify
@@ -576,18 +551,18 @@ async def psetting_input(client: Bot, message: Message):
         except PermissionError as pe:
             _pending.pop(uid, None)
             reason = (
-                "Bot is not an admin in that channel."
+                "ʙᴏᴛ ɪs ɴᴏᴛ ᴀɴ ᴀᴅᴍɪɴ ɪɴ ᴛʜᴀᴛ ᴄʜᴀɴɴᴇʟ."
                 if str(pe) == "not_admin"
-                else "Bot is admin but lacks the <b>Invite Users via Link</b> permission."
+                else "ʙᴏᴛ ɪs ᴀᴅᴍɪɴ ʙᴜᴛ ʟᴀᴄᴋs ᴛʜᴇ <b>ɪɴᴠɪᴛᴇ ᴜsᴇʀs ᴠɪᴀ ʟɪɴᴋ</b> ᴘᴇʀᴍɪssɪᴏɴ."
             )
             await _patch(
                 client, chat_id, msg_id,
-                "<b>🎀 Gift Channel — Verification Failed</b>\n\n"
+                "<b>🎀 ɢɪғᴛ ᴄʜᴀɴɴᴇʟ — ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ғᴀɪʟᴇᴅ</b>\n\n"
                 f"❌ {reason}\n\n"
-                "Fix it and try again from the Gift menu.",
+                "ғɪx ɪᴛ ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ ғʀᴏᴍ ᴛʜᴇ ɢɪғᴛ ᴍᴇɴᴜ.",
                 InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🔁 Try again", callback_data=f"pst_gift_{plan_id}")],
-                    [InlineKeyboardButton("🔙 Back",     callback_data="pst_back")],
+                    [InlineKeyboardButton("🔁 ᴛʀʏ ᴀɢᴀɪɴ", callback_data=f"pst_gift_{plan_id}")],
+                    [InlineKeyboardButton("🔙 ʙᴀᴄᴋ",     callback_data="pst_back")],
                 ]),
             )
             raise StopPropagation
@@ -595,12 +570,12 @@ async def psetting_input(client: Bot, message: Message):
             _pending.pop(uid, None)
             await _patch(
                 client, chat_id, msg_id,
-                "<b>🎀 Gift Channel — Verification Failed</b>\n\n"
-                f"❌ Could not access channel.\n<code>{str(e)[:200]}</code>\n\n"
-                "Make sure the bot is a member and you sent the correct ID.",
+                "<b>🎀 ɢɪғᴛ ᴄʜᴀɴɴᴇʟ — ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ғᴀɪʟᴇᴅ</b>\n\n"
+                f"❌ ᴄᴏᴜʟᴅ ɴᴏᴛ ᴀᴄᴄᴇss ᴄʜᴀɴɴᴇʟ.\n<code>{str(e)[:200]}</code>\n\n"
+                "ᴍᴀᴋᴇ sᴜʀᴇ ᴛʜᴇ ʙᴏᴛ ɪs ᴀ ᴍᴇᴍʙᴇʀ ᴀɴᴅ ʏᴏᴜ sᴇɴᴛ ᴛʜᴇ ᴄᴏʀʀᴇᴄᴛ ɪᴅ.",
                 InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🔁 Try again", callback_data=f"pst_gift_{plan_id}")],
-                    [InlineKeyboardButton("🔙 Back",     callback_data="pst_back")],
+                    [InlineKeyboardButton("🔁 ᴛʀʏ ᴀɢᴀɪɴ", callback_data=f"pst_gift_{plan_id}")],
+                    [InlineKeyboardButton("🔙 ʙᴀᴄᴋ",     callback_data="pst_back")],
                 ]),
             )
             raise StopPropagation
@@ -612,7 +587,7 @@ async def psetting_input(client: Bot, message: Message):
             _pending.pop(uid, None)
             await _patch(
                 client, chat_id, msg_id,
-                f"<b>❌ Could not save gift channel:</b>\n<code>{e}</code>",
+                f"<b>❌ ᴄᴏᴜʟᴅ ɴᴏᴛ sᴀᴠᴇ ɢɪғᴛ ᴄʜᴀɴɴᴇʟ:</b>\n<code>{e}</code>",
                 _back_main(),
             )
             raise StopPropagation
@@ -620,17 +595,17 @@ async def psetting_input(client: Bot, message: Message):
         _pending.pop(uid, None)
         await _patch(
             client, chat_id, msg_id,
-            "<b>🎀 Gift Channel — Linked!</b>\n\n"
-            f"✅ Plan: <b>{plan.get('name','—')}</b>\n"
-            f"✅ Channel: <b>{channel_title}</b>\n"
+            "<b>🎀 ɢɪғᴛ ᴄʜᴀɴɴᴇʟ — ʟɪɴᴋᴇᴅ!</b>\n\n"
+            f"✅ ᴘʟᴀɴ: <b>{plan.get('name','—')}</b>\n"
+            f"✅ ᴄʜᴀɴɴᴇʟ: <b>{channel_title}</b>\n"
             f"   <code>{ch_id}</code>\n\n"
-            "Buyers of this plan will now receive an invite link "
-            "and be auto-approved into the channel after they click "
-            "<b>Done</b>. They will be removed automatically when "
-            "their premium expires.",
+            "ʙᴜʏᴇʀs ᴏғ ᴛʜɪs ᴘʟᴀɴ ᴡɪʟʟ ɴᴏᴡ ʀᴇᴄᴇɪᴠᴇ ᴀɴ ɪɴᴠɪᴛᴇ ʟɪɴᴋ "
+            "ᴀɴᴅ ʙᴇ ᴀᴜᴛᴏ-ᴀᴘᴘʀᴏᴠᴇᴅ ɪɴᴛᴏ ᴛʜᴇ ᴄʜᴀɴɴᴇʟ ᴀғᴛᴇʀ ᴛʜᴇʏ ᴄʟɪᴄᴋ "
+            "<b>ᴅᴏɴᴇ</b>. ᴛʜᴇʏ ᴡɪʟʟ ʙᴇ ʀᴇᴍᴏᴠᴇᴅ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ᴡʜᴇɴ "
+            "ᴛʜᴇɪʀ ᴘʀᴇᴍɪᴜᴍ ᴇxᴘɪʀᴇs.",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("🎀 Link Another", callback_data="pst_gift_menu"),
-                 InlineKeyboardButton("🔙 Back",        callback_data="pst_back")],
+                [InlineKeyboardButton("🎀 ʟɪɴᴋ ᴀɴᴏᴛʜᴇʀ", callback_data="pst_gift_menu"),
+                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ",         callback_data="pst_back")],
             ]),
         )
         raise StopPropagation
@@ -642,8 +617,8 @@ async def psetting_input(client: Bot, message: Message):
         except ValueError:
             await _patch(
                 client, chat_id, msg_id,
-                "<b>❌ Send a valid numeric user_id.</b>",
-                InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
+                "<b>❌ sᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ɴᴜᴍᴇʀɪᴄ ᴜsᴇʀ_ɪᴅ.</b>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="pst_back")]]),
             )
             raise StopPropagation
 
@@ -652,7 +627,7 @@ async def psetting_input(client: Bot, message: Message):
             _pending.pop(uid, None)
             await _patch(
                 client, chat_id, msg_id,
-                "<b>❌ Plan no longer exists.</b>",
+                "<b>❌ ᴘʟᴀɴ ɴᴏ ʟᴏɴɢᴇʀ ᴇxɪsᴛs.</b>",
                 _back_main(),
             )
             raise StopPropagation
@@ -663,41 +638,70 @@ async def psetting_input(client: Bot, message: Message):
                 plan["duration_unit"],
             )
             expiration_time = await add_premium(
-                target_id, value, unit, plan.get("tier", "gold"),
+                target_id, value, unit, "gold",
             )
         except Exception as e:
             _pending.pop(uid, None)
             await _patch(
                 client, chat_id, msg_id,
-                f"<b>❌ Could not grant plan:</b>\n<code>{e}</code>",
+                f"<b>❌ ᴄᴏᴜʟᴅ ɴᴏᴛ ɢʀᴀɴᴛ ᴘʟᴀɴ:</b>\n<code>{e}</code>",
                 _back_main(),
             )
             raise StopPropagation
 
         _pending.pop(uid, None)
-        tier = plan.get("tier", "gold")
-        emoji = "🥇" if tier == "gold" else "💎"
-        # try to notify the user
+
+        # ── Build full manual receipt (no order_id, no txn_id) ──
+        active_date = datetime.now(timezone("Asia/Kolkata")).strftime("%d %b %Y, %I:%M %p")
+        unit_label  = _UNIT_LABELS_SMALLCAPS.get(plan.get("duration_unit", ""), plan.get("duration_unit", ""))
+        plan_label  = f"{plan.get('name', '—')} · {plan.get('duration_value', '?')} {unit_label}"
+
+        # Try to fetch the target user's name
         try:
-            await client.send_message(
-                target_id,
-                f"{emoji} <b>{tier.capitalize()} Premium Activated!</b>\n\n"
-                f"Plan: <b>{plan.get('name','—')}</b>\n"
-                f"Expires on: <b>{expiration_time}</b>",
+            target_user = await client.get_users(target_id)
+            full_name = (target_user.first_name or "") + (
+                f" {target_user.last_name}" if target_user.last_name else ""
             )
+            full_name = full_name.strip() or str(target_id)
+            if getattr(target_user, "username", None):
+                full_name = f"{full_name} (@{target_user.username})"
+        except Exception:
+            full_name = str(target_id)
+
+        receipt = (
+            "<b>🧾 ᴘʀᴇᴍɪᴜᴍ ʀᴇᴄᴇɪᴘᴛ — ᴍᴀɴᴜᴀʟʟʏ ɢʀᴀɴᴛᴇᴅ</b>\n"
+            "<code>━━━━━━━━━━━━━━━━━━━━━━━</code>\n\n"
+            f"👤 <b>ᴜsᴇʀ ɴᴀᴍᴇ:</b> {full_name}\n"
+            f"🆔 <b>ᴜsᴇʀ ɪᴅ:</b> <code>{target_id}</code>\n"
+            f"🥇 <b>ᴘʟᴀɴ ᴛʏᴘᴇ:</b> {plan_label}\n"
+            f"📅 <b>ᴀᴄᴛɪᴠᴇ ᴅᴀᴛᴇ:</b> <code>{active_date}</code>\n"
+            f"⏳ <b>ᴇxᴘɪʀᴇ ᴅᴀᴛᴇ:</b> <code>{expiration_time}</code>\n"
+            f"🎁 <b>ɢʀᴀɴᴛᴇᴅ ʙʏ:</b> ᴀᴅᴍɪɴ\n\n"
+            "<b>ᴘᴇʀᴋs ᴜɴʟᴏᴄᴋᴇᴅ:</b>\n"
+            "  ✅ ғʀᴇᴇ ʟɪɴᴋ ʙʏᴘᴀss\n"
+            "  ✅ ᴘʀᴏᴛᴇᴄᴛ-ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss\n"
+            "  ✅ ᴜɴʟɪᴍɪᴛᴇᴅ ᴅᴀɪʟʏ ʟɪɴᴋs\n\n"
+            "<code>━━━━━━━━━━━━━━━━━━━━━━━</code>\n"
+            "<i>✨ ᴇɴᴊᴏʏ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss! ᴋᴇᴇᴘ ᴛʜɪs ʀᴇᴄᴇɪᴘᴛ ғᴏʀ ʀᴇғᴇʀᴇɴᴄᴇ.</i>"
+        )
+
+        # Send the receipt to the target user (best-effort)
+        try:
+            await client.send_message(target_id, receipt, disable_web_page_preview=True)
         except Exception:
             pass
 
+        # Confirm to the admin in the wizard window
         await _patch(
             client, chat_id, msg_id,
-            "<b>✅ Plan granted!</b>\n\n"
-            f"User: <code>{target_id}</code>\n"
-            f"Plan: <b>{plan.get('name','—')}</b> "
-            f"({tier.capitalize()})\n"
-            f"Expires on: <b>{expiration_time}</b>",
+            "<b>✅ ᴘʟᴀɴ ɢʀᴀɴᴛᴇᴅ!</b>\n\n"
+            f"ᴜsᴇʀ: <code>{target_id}</code>\n"
+            f"ᴘʟᴀɴ: <b>{plan.get('name','—')}</b>\n"
+            f"ᴇxᴘɪʀᴇs ᴏɴ: <b>{expiration_time}</b>\n\n"
+            "<i>ʀᴇᴄᴇɪᴘᴛ ʜᴀs ʙᴇᴇɴ sᴇɴᴛ ᴛᴏ ᴛʜᴇ ᴜsᴇʀ.</i>",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("🎁 Grant Another", callback_data="pst_grant_menu"),
-                 InlineKeyboardButton("🔙 Back",          callback_data="pst_back")],
+                [InlineKeyboardButton("🎁 ɢʀᴀɴᴛ ᴀɴᴏᴛʜᴇʀ", callback_data="pst_grant_menu"),
+                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ",          callback_data="pst_back")],
             ]),
         )
         raise StopPropagation

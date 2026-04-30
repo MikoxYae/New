@@ -35,7 +35,7 @@ async def start_command(client: Client, message: Message):
         except Exception as ex:
             print(f"add_user failed for {user_id}: {ex}")
 
-    if not await is_subscribed(client, user_id) and tier != "platinum":
+    if not await is_subscribed(client, user_id):
         return await not_joined(client, message)
 
     banned_users = await db.get_ban_users()
@@ -135,7 +135,7 @@ async def start_command(client: Client, message: Message):
 
         yaemiko_msgs = []
         custom_caption = await db.get_custom_caption()
-        protect_content = False if tier in ("gold", "platinum") else await db.get_protect_content()
+        protect_content = False if tier == "gold" else await db.get_protect_content()
         for msg in messages:
             # Skip any message that slipped through as empty / deleted.
             if not msg or getattr(msg, "empty", False):

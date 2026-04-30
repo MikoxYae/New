@@ -25,7 +25,7 @@ ALLOWED_UNITS = {
     "y":   "Years",
 }
 
-ALLOWED_TIERS = ("gold", "platinum")
+ALLOWED_TIERS = ("gold",)
 
 
 def _unit_label(unit: str) -> str:
@@ -33,7 +33,8 @@ def _unit_label(unit: str) -> str:
 
 
 def _tier_emoji(tier: str) -> str:
-    return "🥇" if tier == "gold" else "💎"
+    # Single tier supported (gold). Kept for backward compatibility.
+    return "🥇"
 
 
 # ─────────────────────────────────────────────
@@ -57,10 +58,10 @@ def to_addpremium_unit(value: int, unit: str):
 # ─────────────────────────────────────────────
 async def add_plan(name: str, tier: str, duration_value: int,
                    duration_unit: str, price: str) -> str:
-    tier = tier.lower()
+    tier = "gold"  # only gold tier supported
     duration_unit = duration_unit.lower()
     if tier not in ALLOWED_TIERS:
-        raise ValueError("Invalid tier. Use gold or platinum.")
+        raise ValueError("Invalid tier. Only 'gold' is supported.")
     if duration_unit not in ALLOWED_UNITS:
         raise ValueError("Invalid duration unit.")
     if duration_value <= 0:
