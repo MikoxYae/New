@@ -1,5 +1,6 @@
 import asyncio
 import random
+import re
 import string
 import time
 from datetime import datetime
@@ -19,6 +20,12 @@ from pyrogram.types import (
 from bot import Bot
 from config import DB_URI, DB_NAME, OWNER_ID, PREMIUM_PIC
 from database.db_premium import add_premium
+from database.db_plans import (
+    list_plans,
+    get_plan,
+    to_addpremium_unit,
+    ALLOWED_UNITS,
+)
 from plugins.premium_cdm import monitor_premium_expiry
 
 
@@ -35,14 +42,47 @@ SUPPORT_URL = "https://t.me/Iam_addictive"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-#   Plans  ->  id : (label, amount_inr, time_value, time_unit)
+#   Legacy fallback plans  ->  used ONLY when admin has not yet added any
+#   plans via /psetting (i.e. the premium-plans collection is empty).
+#   id : (label, amount_inr, time_value, time_unit, tier)
 # ═══════════════════════════════════════════════════════════════════════════════
-PLANS = {
-    "1h":  ("1 ʜᴏᴜʀ (ᴛᴇsᴛ)", 1,   1,  "h"),
-    "1d":  ("1 ᴅᴀʏ",         10,  1,  "d"),
-    "7d":  ("7 ᴅᴀʏs",        50,  7,  "d"),
-    "30d": ("30 ᴅᴀʏs",       150, 30, "d"),
+LEGACY_PLANS = {
+    "1h":  ("1 ʜᴏᴜʀ (ᴛᴇsᴛ)", 1,   1,  "h",  "gold"),
+    "1d":  ("1 ᴅᴀʏ",         10,  1,  "d",  "gold"),
+    "7d":  ("7 ᴅᴀʏs",        50,  7,  "d",  "gold"),
+    "30d": ("30 ᴅᴀʏs",       150, 30, "d",  "gold"),
 }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#   Helpers for dynamic plans (loaded from db_plans.premium-plans)
+# ═══════════════════════════════════════════════════════════════════════════════
+def _parse_price_inr(price_str) -> int:
+    """Extract integer rupee amount from a free-form price string.
+       '₹150', '150', 'Rs. 150', '150 INR' -> 150"""
+    if price_str is None:
+        return 0
+    m = re.search(r"\d+", str(price_str))
+    return int(m.group()) if m else 0
+
+
+def _short_unit(unit: str) -> str:
+    """Short label for buttons: 1ʜ / 1ᴅ / 7ᴅ / 30ᴅ / 1ᴡ / 1ᴍᴏɴ ..."""
+    return {
+        "m":   "ᴍ",
+        "h":   "ʜ",
+        "d":   "ᴅ",
+        "w":   "ᴡ",
+        "mon": "ᴍᴏɴ",
+        "y":   "ʏ",
+    }.get(unit.lower(), unit)
+
+
+def _full_unit_label(value: int, unit: str) -> str:
+    base = ALLOWED_UNITS.get(unit.lower(), unit)
+    if value == 1 and base.endswith("s"):
+        base = base[:-1]
+    return base.lower()
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -91,7 +131,7 @@ async def _check_payment(order_id: str) -> dict:
             return await r.json(content_type=None)
 
 
-def _plan_menu_text(first_name: str) -> str:
+def _legacy_menu_text(first_name: str) -> str:
     return (
         f"<b>💎 ʜᴇʟʟᴏ {first_name}, ᴜɴʟᴏᴄᴋ ᴘʀᴇᴍɪᴜᴍ</b>\n\n"
         f"<b>ᴘᴇʀᴋs:</b>\n"
@@ -108,7 +148,7 @@ def _plan_menu_text(first_name: str) -> str:
     )
 
 
-def _plan_menu_kb() -> InlineKeyboardMarkup:
+def _legacy_menu_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton("1ʜ — ₹1 (ᴛᴇsᴛ)", callback_data="pa_plan_1h"),
@@ -124,14 +164,71 @@ def _plan_menu_kb() -> InlineKeyboardMarkup:
     ])
 
 
+def _dynamic_menu_text(first_name: str, plans: list) -> str:
+    lines = [
+        f"<b>💎 ʜᴇʟʟᴏ {first_name}, ᴜɴʟᴏᴄᴋ ᴘʀᴇᴍɪᴜᴍ</b>\n",
+        "<b>ᴘᴇʀᴋs:</b>",
+        "  ✅ ᴜɴʟɪᴍɪᴛᴇᴅ ᴅᴀɪʟʏ ʟɪɴᴋs",
+        "  ✅ ɴᴏ ᴀᴅs / ɴᴏ sʜᴏʀᴛɴᴇʀ ᴛᴏᴋᴇɴ",
+        "  ✅ ғᴏʀᴄᴇ-sᴜʙ ʙʏᴘᴀss",
+        "  ✅ ᴘʀᴏᴛᴇᴄᴛ-ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss\n",
+        "<b>ᴀᴠᴀɪʟᴀʙʟᴇ ᴘʟᴀɴs:</b>",
+    ]
+    for p in plans:
+        amount = _parse_price_inr(p.get("price"))
+        unit_label = _full_unit_label(int(p.get("duration_value", 0)), p.get("duration_unit", ""))
+        tier = (p.get("tier") or "gold").lower()
+        emoji = "🥇" if tier == "gold" else "💎"
+        lines.append(
+            f"  {emoji} <b>{p.get('name', '—')}</b> — "
+            f"<b>₹{amount}</b> · {p.get('duration_value', '?')} {unit_label}"
+        )
+    lines.append("\n<i>ᴘᴀʏᴍᴇɴᴛ ɪs ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ᴠᴇʀɪғɪᴇᴅ — ɴᴏ ᴡᴀɪᴛɪɴɢ ғᴏʀ ᴏᴡɴᴇʀ.</i>")
+    return "\n".join(lines)
+
+
+def _dynamic_menu_kb(plans: list) -> InlineKeyboardMarkup:
+    rows = []
+    buf = []
+    for p in plans:
+        amount = _parse_price_inr(p.get("price"))
+        short = f"{p.get('duration_value', '?')}{_short_unit(p.get('duration_unit', ''))}"
+        label = f"{p.get('name', short)} — ₹{amount}"
+        if len(label) > 32:
+            label = f"{short} — ₹{amount}"
+        buf.append(InlineKeyboardButton(
+            label,
+            callback_data=f"pa_plan_db_{p.get('_id')}",
+        ))
+        if len(buf) == 2:
+            rows.append(buf)
+            buf = []
+    if buf:
+        rows.append(buf)
+    rows.append([InlineKeyboardButton("🔒 ᴄʟᴏsᴇ", callback_data="pa_close")])
+    return InlineKeyboardMarkup(rows)
+
+
+async def _build_menu(first_name: str):
+    """Return (text, keyboard). Uses db plans if any exist, else legacy."""
+    try:
+        plans = await list_plans()
+    except Exception:
+        plans = []
+    # Filter plans whose price parses to > 0
+    plans = [p for p in plans if _parse_price_inr(p.get("price")) > 0]
+    if plans:
+        return _dynamic_menu_text(first_name, plans), _dynamic_menu_kb(plans)
+    return _legacy_menu_text(first_name), _legacy_menu_kb()
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 #   Callback: open premium menu  (entry from "Buy Premium" button in start.py)
 # ═══════════════════════════════════════════════════════════════════════════════
 @Bot.on_callback_query(filters.regex(r"^(premium|buy_premium)$"))
 async def open_premium_menu(client: Bot, query: CallbackQuery):
     await query.answer()
-    text = _plan_menu_text(query.from_user.first_name)
-    kb = _plan_menu_kb()
+    text, kb = await _build_menu(query.from_user.first_name)
     msg = query.message
 
     try:
@@ -154,15 +251,50 @@ async def open_premium_menu(client: Bot, query: CallbackQuery):
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #   Callback: user picks a plan  ->  generate QR + persist order
+#
+#   callback_data formats:
+#     pa_plan_db_<ObjectId>   -> dynamic plan from premium-plans collection
+#     pa_plan_<legacy_id>     -> legacy hardcoded plan (1h/1d/7d/30d)
 # ═══════════════════════════════════════════════════════════════════════════════
-@Bot.on_callback_query(filters.regex(r"^pa_plan_(\w+)$"))
+@Bot.on_callback_query(filters.regex(r"^pa_plan_(.+)$"))
 async def pick_plan(client: Bot, query: CallbackQuery):
-    plan_id = query.data.replace("pa_plan_", "", 1)
-    plan = PLANS.get(plan_id)
-    if not plan:
-        return await query.answer("ɪɴᴠᴀʟɪᴅ ᴘʟᴀɴ.", show_alert=True)
+    raw = query.data.replace("pa_plan_", "", 1)
 
-    label, amount, time_value, time_unit = plan
+    if raw.startswith("db_"):
+        # Dynamic plan from /psetting
+        db_plan_id = raw[3:]
+        plan_doc = await get_plan(db_plan_id)
+        if not plan_doc:
+            return await query.answer(
+                "ᴛʜɪs ᴘʟᴀɴ ɴᴏ ʟᴏɴɢᴇʀ ᴇxɪsᴛs. ʀᴇᴏᴘᴇɴ ᴛʜᴇ ᴍᴇɴᴜ.",
+                show_alert=True,
+            )
+        amount = _parse_price_inr(plan_doc.get("price"))
+        if amount <= 0:
+            return await query.answer(
+                "ᴘʀɪᴄᴇ ɴᴏᴛ sᴇᴛ ᴄᴏʀʀᴇᴄᴛʟʏ ғᴏʀ ᴛʜɪs ᴘʟᴀɴ. ᴄᴏɴᴛᴀᴄᴛ ᴀᴅᴍɪɴ.",
+                show_alert=True,
+            )
+        try:
+            time_value, time_unit = to_addpremium_unit(
+                int(plan_doc.get("duration_value", 0)),
+                plan_doc.get("duration_unit", "d"),
+            )
+        except Exception:
+            return await query.answer("ɪɴᴠᴀʟɪᴅ ᴘʟᴀɴ ᴅᴜʀᴀᴛɪᴏɴ. ᴄᴏɴᴛᴀᴄᴛ ᴀᴅᴍɪɴ.", show_alert=True)
+        tier = (plan_doc.get("tier") or "gold").lower()
+        unit_full = _full_unit_label(int(plan_doc.get("duration_value", 0)),
+                                     plan_doc.get("duration_unit", ""))
+        label = f"{plan_doc.get('name', '—')} — {plan_doc.get('duration_value','?')} {unit_full}"
+        plan_id_for_order = f"db_{db_plan_id}"
+    else:
+        # Legacy hardcoded fallback
+        plan = LEGACY_PLANS.get(raw)
+        if not plan:
+            return await query.answer("ɪɴᴠᴀʟɪᴅ ᴘʟᴀɴ.", show_alert=True)
+        label, amount, time_value, time_unit, tier = plan
+        plan_id_for_order = raw
+
     user_id = query.from_user.id
     order_id = _gen_order_id(amount, user_id)
 
@@ -172,9 +304,10 @@ async def pick_plan(client: Bot, query: CallbackQuery):
         "order_id":   order_id,
         "user_id":    user_id,
         "amount":     amount,
-        "plan_id":    plan_id,
+        "plan_id":    plan_id_for_order,
         "time_value": time_value,
         "time_unit":  time_unit,
+        "tier":       tier,
         "status":     "pending",
         "created_at": datetime.utcnow().isoformat(),
     })
@@ -281,12 +414,13 @@ async def i_have_paid(client: Bot, query: CallbackQuery):
             f"<i>ᴄᴏɴᴛᴀᴄᴛ <a href=\"{SUPPORT_URL}\">sᴜᴘᴘᴏʀᴛ</a> ɪғ ʏᴏᴜ ᴘᴀɪᴅ ᴛʜᴇ ᴄᴏʀʀᴇᴄᴛ ᴀᴍᴏᴜɴᴛ.</i>"
         )
 
-    # ✅ All good — activate premium (gold tier so they get token + protect bypass)
+    # ✅ All good — activate premium with the tier saved on the order
+    tier = (order.get("tier") or "gold").lower()
     expiration_time = await add_premium(
         user_id,
         int(order["time_value"]),
         order["time_unit"],
-        "gold",
+        tier,
     )
 
     await _orders_col.update_one(
