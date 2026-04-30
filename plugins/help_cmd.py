@@ -102,7 +102,28 @@ OWNER_MAIN_TXT = (
     "💎 <b>ᴘʀᴇᴍɪᴜᴍ ᴍɢᴍᴛ</b> — ɢʀᴀɴᴛ / ʀᴇᴠᴏᴋᴇ ᴘʀᴇᴍɪᴜᴍ\n"
     "🔗 <b>ʟɪɴᴋ ɢᴇɴ</b> — ʙᴀᴛᴄʜ, ɢᴇɴʟɪɴᴋ, ᴄᴜsᴛᴏᴍ_ʙᴀᴛᴄʜ\n"
     "📢 <b>ʙʀᴏᴀᴅᴄᴀsᴛs</b> — ᴀʟʟ ʙʀᴏᴀᴅᴄᴀsᴛ ᴠᴀʀɪᴀɴᴛs\n"
+    "🔐 <b>ᴄʀᴇᴅᴇɴᴛɪᴀʟs</b> — ʟɪᴠᴇ ʀᴏᴛᴀᴛᴇ ᴜᴘɪ + sᴇʟʟɢʀᴀᴍ ᴋᴇʏ\n"
     "📊 <b>sᴛᴀᴛs & sᴇᴛᴛɪɴɢs</b> — ᴀɴᴀʟʏᴛɪᴄs + ʙᴏᴛ ᴄᴏɴғɪɢ"
+)
+
+OWNER_CREDS_TXT = (
+    "<b>🔐 ᴄʀᴇᴅᴇɴᴛɪᴀʟs ʀᴏᴛᴀᴛɪᴏɴ</b>  <i>(ᴏᴡɴᴇʀ-ᴏɴʟʏ)</i>\n\n"
+    "🔸 <b>/rotate_upi</b> <code>&lt;new_upi&gt;</code> <code>&lt;new_api_key&gt;</code>\n"
+    "ʟɪᴠᴇ-sᴡᴀᴘ ᴛʜᴇ ᴜᴘɪ ʀᴇᴄᴇɪᴠᴇʀ ᴀɴᴅ sᴇʟʟɢʀᴀᴍ ᴀᴘɪ ᴋᴇʏ ᴡɪᴛʜᴏᴜᴛ ʀᴇsᴛᴀʀᴛɪɴɢ "
+    "ᴛʜᴇ ʙᴏᴛ. ᴄʜᴀɴɢᴇs ᴀʀᴇ ᴡʀɪᴛᴛᴇɴ ᴛᴏ <code>plugins/premium_auto.py</code> "
+    "ᴀɴᴅ <code>plugins/admin_orders.py</code> sᴏ ᴛʜᴇʏ sᴜʀᴠɪᴠᴇ ᴀ ʀᴇsᴛᴀʀᴛ "
+    "ᴛᴏᴏ.\n"
+    "ᴠᴀʟɪᴅᴀᴛɪᴏɴ:\n"
+    "  • ᴜᴘɪ ᴍᴜsᴛ ᴍᴀᴛᴄʜ <code>name@handle</code>\n"
+    "  • ᴀᴘɪ ᴋᴇʏ ᴍᴜsᴛ ʙᴇ 16-128 ᴜʀʟ-sᴀғᴇ ᴀʟᴘʜᴀɴᴜᴍᴇʀɪᴄ\n"
+    "<i>ᴇxᴀᴍᴘʟᴇ:</i>\n"
+    "<code>/rotate_upi paytm.s20gmbu@pty 8Mv3zQgQZNVCdU4iBaAFvtu8</code>\n\n"
+    "🔸 <b>/show_creds</b>\n"
+    "sʜᴏᴡ ᴛʜᴇ ᴄᴜʀʀᴇɴᴛʟʏ-ᴀᴄᴛɪᴠᴇ ᴜᴘɪ + ᴍᴀsᴋᴇᴅ ᴀᴘɪ ᴋᴇʏ. ᴜsᴇғᴜʟ ʀɪɢʜᴛ "
+    "ᴀғᴛᴇʀ <code>/rotate_upi</code> ᴛᴏ ᴠᴇʀɪғʏ ᴛʜᴇ sᴡᴀᴘ ʟᴀɴᴅᴇᴅ.\n"
+    "<i>ᴇxᴀᴍᴘʟᴇ:</i> <code>/show_creds</code>\n\n"
+    "<i>ʙᴏᴛʜ ᴄᴏᴍᴍᴀɴᴅs ᴀʀᴇ ʟᴏᴄᴋᴇᴅ ᴛᴏ <code>OWNER_ID</code> — ᴇᴠᴇɴ ᴅʙ-"
+    "ʀᴇɢɪsᴛᴇʀᴇᴅ ᴀᴅᴍɪɴs ᴄᴀɴɴᴏᴛ ʀᴜɴ ᴛʜᴇᴍ.</i>"
 )
 
 OWNER_ORDERS_TXT = (
@@ -239,6 +260,7 @@ def _owner_main_kb() -> InlineKeyboardMarkup:
             [InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴍɢᴍᴛ", callback_data="hlp_o_prem")],
             [InlineKeyboardButton("🔗 ʟɪɴᴋ ɢᴇɴ", callback_data="hlp_o_link")],
             [InlineKeyboardButton("📢 ʙʀᴏᴀᴅᴄᴀsᴛs", callback_data="hlp_o_bc")],
+            [InlineKeyboardButton("🔐 ᴄʀᴇᴅᴇɴᴛɪᴀʟs", callback_data="hlp_o_creds")],
             [InlineKeyboardButton("📊 sᴛᴀᴛs & sᴇᴛᴛɪɴɢs", callback_data="hlp_o_stat")],
             _back_close_row("hlp_main"),
         ]
@@ -313,6 +335,7 @@ async def help_cb(client: Client, query: CallbackQuery):
         "hlp_o_prem":   OWNER_PREMIUM_TXT,
         "hlp_o_link":   OWNER_LINK_TXT,
         "hlp_o_bc":     OWNER_BC_TXT,
+        "hlp_o_creds":  OWNER_CREDS_TXT,
         "hlp_o_stat":   OWNER_STATS_TXT,
     }
     if data in sub_pages:

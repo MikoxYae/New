@@ -244,6 +244,96 @@ No other files were touched. Existing dependencies in
 
 ## 9. Hotfix log
 
+### v1.8 — `/rotate_upi` + `/show_creds` (live credentials rotation)
+
+**Files added:** `plugins/rotate_creds.py`
+**Files touched:** `plugins/help_cmd.py`, `newadd.md`
+
+#### 9.8.1 Why
+
+After v1.7 rotated the UPI / Sellgram key by hand-editing two `.py`
+files, the obvious follow-up was: do this from Telegram, no SSH,
+no restart. v1.8 ships exactly that as **two owner-only commands**.
+
+#### 9.8.2 New commands
+
+##### `/rotate_upi <new_upi> <new_api_key>`
+
+Owner-only (`filters.user(OWNER_ID)`). Three steps in one shot:
+
+1. **Validate** both arguments
+   - UPI: regex `^[A-Za-z0-9._\-]{2,64}@[A-Za-z0-9._\-]{2,32}$`
+   - Key: regex `^[A-Za-z0-9_\-]{16,128}$`
+2. **Persist to disk** — opens `plugins/premium_auto.py` and
+   `plugins/admin_orders.py`, regex-replaces `UPI_ID = "..."` and
+   `SELLGRAM_API_KEY = "..."` constants. Survives a restart.
+3. **Monkey-patch in-memory** — sets the same module attributes on
+   the already-imported modules (`plugins.premium_auto.UPI_ID = ...`,
+   etc). Because every call site looks up the name fresh on each
+   call (no closures), the next `_sellgram()` invocation uses the
+   new key immediately. **No restart required.**
+
+The reply shows OLD vs NEW values, with the API key masked
+(`8Mv3****Fvtu8`). It also reports persist success/failure per file
+so a partial swap is impossible to miss.
+
+**Usage:**
+```
+/rotate_upi paytm.s20gmbu@pty 8Mv3zQgQZNVCdU4iBaAFvtu8
+```
+
+##### `/show_creds`
+
+Owner-only. Prints the currently-active UPI, payee name, and the
+API key (masked) as seen by both `premium_auto.py` and
+`admin_orders.py`, plus a sync indicator. Use it right after
+`/rotate_upi` to verify the swap landed.
+
+#### 9.8.3 Safety
+
+- Both commands are gated on `filters.user(OWNER_ID)` — DB-registered
+  admins **cannot** run them. Only the configured `OWNER_ID`.
+- `/rotate_upi` snapshots the OLD values **before** patching, so the
+  reply shows what changed even if the file write succeeded.
+- If file-write fails (e.g. read-only filesystem on some PaaS), the
+  in-memory patch still applies and the reply tells the owner to
+  redo the edit by hand for restart-persistence.
+- API key is **always** masked in replies. Full key is never echoed
+  back to the chat.
+- Idempotent — calling with the same values prints `nothing changed`
+  and skips the disk write.
+
+#### 9.8.4 Help-menu integration
+
+`plugins/help_cmd.py` got a new sub-category in OWNER COMMANDS:
+
+```
+⚙️ OWNER COMMANDS
+ ├─ 📋 Admin Orders
+ ├─ 💎 Premium Mgmt
+ ├─ 🔗 Link Gen
+ ├─ 📢 Broadcasts
+ ├─ 🔐 Credentials       ← NEW (hlp_o_creds)
+ └─ 📊 Stats & Settings
+```
+
+The new page documents both commands with full syntax, validation
+rules, and concrete examples — same style as every other page.
+
+#### 9.8.5 How to test
+
+1. `git pull && python3 main.py`
+2. `/show_creds` → confirm the old UPI + masked key are showing
+3. `/rotate_upi paytm.test@ybl 1234567890abcdef1234`
+4. Reply should show OLD vs NEW with both ✅ live + ✅ persisted
+5. `/show_creds` again → new values
+6. Open `plugins/premium_auto.py` on the VPS — `UPI_ID` and
+   `SELLGRAM_API_KEY` constants should now show the new values
+7. Restart the bot — `/show_creds` still shows the new values
+8. (Optional) Roll back: `/rotate_upi paytm.s20gmbu@pty 8Mv3zQgQZNVCdU4iBaAFvtu8`
+
+---
+
 ### v1.7 — UPI / Sellgram credentials rotation
 
 **Files touched:** `plugins/premium_auto.py`, `plugins/admin_orders.py`,
