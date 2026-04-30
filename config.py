@@ -4,17 +4,17 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 #------------------------------------------------------------------------------------------------------------------------------------------------
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8417356865:AAHV1GEeeT7Gq9tVNrANRv-hiFD1OV8gwrA")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8717980062:AAHDlzk2k33i1V5f5udR7kKRAfRcbzW8m_k")
 APP_ID = int(os.environ.get("APP_ID", "28614709")) #Your API ID from my.telegram.org
 API_HASH = os.environ.get("API_HASH", "f36fd2ee6e3d3a17c4d244ff6dc1bac8") #Your API Hash from my.telegram.org
 #------------------------------------------------------------------------------------------------------------------------------------------------
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003249797203")) #Your db channel Id
-OWNER = os.environ.get("OWNER", "Yae_N_Miko") # Owner username without @
-OWNER_ID = int(os.environ.get("OWNER_ID", "8136381258")) # Owner id
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003855391616")) #Your db channel Id
+OWNER = os.environ.get("OWNER", "Anythingbutnew56") # Owner username without @
+OWNER_ID = int(os.environ.get("OWNER_ID", "8229041976")) # Owner id
 #------------------------------------------------------------------------------------------------------------------------------------------------
-DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Angle:Aloksingh@angle.be47a1n.mongodb.net/?appName=Angle")
+DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Payal:Aloksingh@payal.jv2kwch.mongodb.net/?appName=Payal")
 DB_NAME = os.environ.get("DATABASE_NAME", "Angle")
-PORT = os.environ.get("PORT", "4537")
+PORT = os.environ.get("PORT", "4447")
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "200"))
 #------------------------------------------------------------------------------------------------------------------------------------------------
 BAN_SUPPORT = os.environ.get("BAN_SUPPORT", None)
@@ -30,7 +30,7 @@ TUT_VID = os.environ.get("TUT_VID","https://t.me/How_To_Take_Tokens/12")
 ANTI_BYPASS_ENABLED = True if os.environ.get("ANTI_BYPASS_ENABLED", "True") == "True" else False
 ANTI_BYPASS_MIN_WAIT = int(os.environ.get("ANTI_BYPASS_MIN_WAIT", "8"))
 ANTI_BYPASS_BLOCK_SCORE = int(os.environ.get("ANTI_BYPASS_BLOCK_SCORE", "70"))
-WEB_VERIFY_BASE_URL = os.environ.get("WEB_VERIFY_BASE_URL", "https://magnificent-zone-pond-surveillance.trycloudflare.com").rstrip("/")
+WEB_VERIFY_BASE_URL = os.environ.get("WEB_VERIFY_BASE_URL", " https://believes-contacting-assessment-editorial.trycloudflare.com").rstrip("/")
 if not WEB_VERIFY_BASE_URL:
     _public_host = (
         os.environ.get("RENDER_EXTERNAL_HOSTNAME") or
