@@ -3,6 +3,7 @@
 #   By Yae X Miko
 #  ─────────────────────────────────────────────
 
+import asyncio
 import motor.motor_asyncio
 from datetime import datetime
 from pytz import timezone
@@ -12,6 +13,7 @@ from config import DB_URI, DB_NAME
 dbclient = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
 database = dbclient[DB_NAME]
 plans_col = database["premium-plans"]
+gifts_col = database["gift_grants"]
 
 # Allowed duration units and their display labels
 ALLOWED_UNITS = {
@@ -134,3 +136,106 @@ def format_plans_block(plans: list, with_id: bool = False) -> str:
     if not plans:
         return "<b>No premium plans available yet.</b>"
     return "\n\n".join(format_plan_line(p, with_id=with_id) for p in plans)
+
+
+# ─────────────────────────────────────────────
+#  Gift channel — link / unlink a Telegram
+#  channel to a plan so buyers are auto-added.
+# ─────────────────────────────────────────────
+async def set_gift_channel(plan_id: str, channel_id: int, channel_title: str) -> bool:
+    return await update_plan(
+        plan_id,
+        gift_channel_id=int(channel_id),
+        gift_channel_title=str(channel_title),
+    )
+
+
+async def clear_gift_channel(plan_id: str) -> bool:
+    try:
+        res = await plans_col.update_one(
+            {"_id": ObjectId(plan_id)},
+            {"$unset": {"gift_channel_id": "", "gift_channel_title": ""}},
+        )
+        return res.modified_count > 0
+    except Exception:
+        return False
+
+
+# ─────────────────────────────────────────────
+#  Gift grants  —  per-user record of which
+#  gift channels they currently have access to,
+#  and when that access expires (mirrors the
+#  premium expiry).
+# ─────────────────────────────────────────────
+async def grant_gift(user_id: int,
+                     channel_id: int,
+                     channel_title: str,
+                     plan_id: str,
+                     expires_at: str,
+                     order_id: str = None) -> str:
+    ist = timezone("Asia/Kolkata")
+    doc = {
+        "user_id":       int(user_id),
+        "channel_id":    int(channel_id),
+        "channel_title": str(channel_title),
+        "plan_id":       str(plan_id),
+        "order_id":      order_id,
+        "granted_at":    datetime.now(ist).isoformat(),
+        "expires_at":    expires_at,
+        "status":        "active",
+    }
+    res = await gifts_col.insert_one(doc)
+    return str(res.inserted_id)
+
+
+async def list_active_gifts_for_user(user_id: int) -> list:
+    out = []
+    cursor = gifts_col.find({"user_id": int(user_id), "status": "active"})
+    async for g in cursor:
+        out.append(g)
+    return out
+
+
+async def mark_gift_revoked(grant_oid) -> bool:
+    try:
+        res = await gifts_col.update_one(
+            {"_id": grant_oid},
+            {"$set": {"status": "revoked",
+                      "revoked_at": datetime.now(timezone("Asia/Kolkata")).isoformat()}},
+        )
+        return res.modified_count > 0
+    except Exception:
+        return False
+
+
+async def revoke_user_gifts(client, user_id: int) -> int:
+    """
+    Remove `user_id` from every gift channel they currently hold an
+    active grant for, and mark those grants revoked.
+
+    Uses ban -> unban so the user is kicked but can rejoin if they
+    purchase the plan again later. Errors per-channel are swallowed
+    (e.g. user already left, bot lost admin) so one bad channel
+    doesn't block the rest.
+
+    Returns the number of channels the user was removed from.
+    """
+    grants = await list_active_gifts_for_user(user_id)
+    removed = 0
+    for g in grants:
+        ch_id = g.get("channel_id")
+        if not ch_id:
+            await mark_gift_revoked(g["_id"])
+            continue
+        try:
+            await client.ban_chat_member(ch_id, int(user_id))
+            await asyncio.sleep(0.4)
+            try:
+                await client.unban_chat_member(ch_id, int(user_id))
+            except Exception:
+                pass
+            removed += 1
+        except Exception:
+            pass
+        await mark_gift_revoked(g["_id"])
+    return removed

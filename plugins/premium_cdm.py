@@ -4,6 +4,7 @@ from pyrogram.types import Message
 from bot import Bot
 from helper_func import admin
 from database.db_premium import *
+from database.db_plans import revoke_user_gifts
 from pytz import timezone
 from datetime import datetime, timedelta
 
@@ -78,8 +79,20 @@ async def pre_remove_user(client: Client, msg: Message):
         return
     try:
         user_id = int(msg.command[1])
+        # kick from any gift channels first (before grants get orphaned)
+        gift_count = 0
+        try:
+            gift_count = await revoke_user_gifts(client, user_id)
+        except Exception:
+            pass
         await remove_premium(user_id)
-        await msg.reply_text(f"<b>ᴜsᴇʀ</b> <code>{user_id}</code> <b>ʜᴀs ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ ғʀᴏᴍ ᴘʀᴇᴍɪᴜᴍ.</b>")
+        extra = (
+            f"\n<b>ʀᴇᴍᴏᴠᴇᴅ ғʀᴏᴍ:</b> <code>{gift_count}</code> ɢɪғᴛ ᴄʜᴀɴɴᴇʟ(s)."
+            if gift_count else ""
+        )
+        await msg.reply_text(
+            f"<b>ᴜsᴇʀ</b> <code>{user_id}</code> <b>ʜᴀs ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ ғʀᴏᴍ ᴘʀᴇᴍɪᴜᴍ.</b>{extra}"
+        )
     except ValueError:
         await msg.reply_text("<b>ᴜsᴇʀ_ɪᴅ ᴍᴜsᴛ ʙᴇ ᴀɴ ɪɴᴛᴇɢᴇʀ.</b>")
 
@@ -152,12 +165,23 @@ async def monitor_premium_expiry(client, user_id):
 
             # Auto remove on expiry
             if time_remaining.total_seconds() <= 0:
+                # kick from any gift channels first
+                gift_count = 0
+                try:
+                    gift_count = await revoke_user_gifts(client, user_id)
+                except Exception as e:
+                    print(f"Failed revoking gifts for {user_id}: {e}")
                 await remove_premium(user_id)
                 try:
+                    extra = (
+                        f"\n\n🎀 <b>ɢɪғᴛ ᴄʜᴀɴɴᴇʟ(s) ʀᴇᴍᴏᴠᴇᴅ:</b> <code>{gift_count}</code>"
+                        if gift_count else ""
+                    )
                     await client.send_message(
                         user_id,
                         f"{tier_emoji} <b>{tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ ᴇxᴘɪʀᴇᴅ!</b>\n\n"
-                        "ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss ʜᴀs ʙᴇᴇɴ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ʀᴇᴍᴏᴠᴇᴅ.\n\n"
+                        "ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss ʜᴀs ʙᴇᴇɴ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ʀᴇᴍᴏᴠᴇᴅ."
+                        f"{extra}\n\n"
                         "ʀᴇɴᴇᴡ ᴘʀᴇᴍɪᴜᴍ ᴛᴏ ᴄᴏɴᴛɪɴᴜᴇ ᴇɴᴊᴏʏɪɴɢ ʏᴏᴜʀ ᴘᴇʀᴋs."
                     )
                 except Exception:

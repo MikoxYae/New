@@ -17,6 +17,7 @@ from database.db_plans import (
     add_plan, list_plans, delete_plan, get_plan,
     format_plan_line, format_plans_block,
     ALLOWED_UNITS, ALLOWED_TIERS, to_addpremium_unit,
+    set_gift_channel, clear_gift_channel,
 )
 from database.db_premium import add_premium
 
@@ -39,6 +40,9 @@ def _main_markup():
         [
             InlineKeyboardButton("🗑 Delete Plan", callback_data="pst_del_menu"),
             InlineKeyboardButton("🎁 Grant",       callback_data="pst_grant_menu"),
+        ],
+        [
+            InlineKeyboardButton("🎀 Gift Channel", callback_data="pst_gift_menu"),
         ],
         [InlineKeyboardButton("❌ Close", callback_data="pst_close")],
     ])
@@ -98,7 +102,9 @@ def _main_caption() -> str:
         "<b>📋 List Plans</b> — see all configured plans\n"
         "<b>➕ Add Plan</b> — create a new plan (name, tier, duration, price)\n"
         "<b>🗑 Delete Plan</b> — remove an existing plan\n"
-        "<b>🎁 Grant</b> — apply a plan to a specific user\n\n"
+        "<b>🎁 Grant</b> — apply a plan to a specific user\n"
+        "<b>🎀 Gift Channel</b> — link a Telegram channel to a plan;\n"
+        "    buyers are auto-added on payment, removed on expiry\n\n"
         "<i>Tip: users can run /plans to see your available offers.</i>"
     )
 
@@ -308,6 +314,91 @@ async def psetting_cb(client: Bot, query: CallbackQuery):
             InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
         )
 
+    # ── GIFT CHANNEL — pick a plan ───────────────────────────
+    if data == "pst_gift_menu":
+        plans = await list_plans()
+        if not plans:
+            return await _edit(
+                query,
+                "<b>🎀 Gift Channel</b>\n\nNo plans configured. Add a plan first.",
+                _back_main(),
+            )
+        rows = []
+        for p in plans:
+            label = (
+                f"🎀 {p.get('name','—')} "
+                f"({p.get('tier','gold').capitalize()})"
+            )
+            if p.get("gift_channel_id"):
+                label += "  ✓"
+            rows.append([InlineKeyboardButton(label, callback_data=f"pst_gift_{p['_id']}")])
+        rows.append([InlineKeyboardButton("🔙 Back", callback_data="pst_back")])
+        return await _edit(
+            query,
+            "<b>🎀 Gift Channel</b>\n\n"
+            "Pick a plan to attach a gift channel to.\n"
+            "Plans already linked are marked with <b>✓</b>.",
+            InlineKeyboardMarkup(rows),
+        )
+
+    # ── GIFT CHANNEL — clear an existing link ────────────────
+    if data.startswith("pst_giftclr_"):
+        plan_id = data.split("_", 2)[2]
+        await clear_gift_channel(plan_id)
+        plan = await get_plan(plan_id)
+        return await _edit(
+            query,
+            "<b>🎀 Gift Channel</b>\n\n"
+            "✅ Gift channel removed from this plan.\n\n"
+            f"Plan: {format_plan_line(plan) if plan else '—'}",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 Back to Gift menu", callback_data="pst_gift_menu")],
+            ]),
+        )
+
+    # ── GIFT CHANNEL — selected a specific plan ──────────────
+    if data.startswith("pst_gift_"):
+        plan_id = data.split("_", 2)[2]
+        plan = await get_plan(plan_id)
+        if not plan:
+            return await _edit(query, "<b>❌ Plan not found.</b>", _back_main())
+
+        existing = ""
+        if plan.get("gift_channel_id"):
+            existing = (
+                f"\n\n<b>Currently linked:</b> "
+                f"{plan.get('gift_channel_title','—')} "
+                f"(<code>{plan['gift_channel_id']}</code>)"
+            )
+
+        _pending[uid] = {
+            "step":    "gift_channel",
+            "draft":   {"plan_id": plan_id},
+            "msg_id":   query.message.id,
+            "chat_id":  query.message.chat.id,
+        }
+
+        rows = [[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]
+        if plan.get("gift_channel_id"):
+            rows.insert(0, [InlineKeyboardButton(
+                "🗑 Remove existing link",
+                callback_data=f"pst_giftclr_{plan_id}",
+            )])
+
+        return await _edit(
+            query,
+            "<b>🎀 Gift Channel — Setup</b>\n\n"
+            f"Plan: {format_plan_line(plan)}{existing}\n\n"
+            "<b>Steps:</b>\n"
+            "1. Add this bot as <b>admin</b> in your channel.\n"
+            "2. Give it the <b>Invite Users via Link</b> permission "
+            "(and <b>Ban Users</b> so it can remove on expiry).\n"
+            "3. Send the channel ID below — it must start with "
+            "<code>-100</code>.\n\n"
+            "<i>Example: <code>-1001234567890</code></i>",
+            InlineKeyboardMarkup(rows),
+        )
+
 
 # ═══════════════════════════════════════════════════════════════
 #  TEXT INPUT HANDLER  (multi-step add wizard + grant flow)
@@ -421,6 +512,125 @@ async def psetting_input(client: Bot, message: Message):
                 [InlineKeyboardButton("➕ Add Another", callback_data="pst_add"),
                  InlineKeyboardButton("📋 List Plans", callback_data="pst_list")],
                 [InlineKeyboardButton("🔙 Back", callback_data="pst_back")],
+            ]),
+        )
+        raise StopPropagation
+
+    # ── STEP: GIFT CHANNEL — receive channel id, verify bot is admin ─
+    if step == "gift_channel":
+        plan_id = draft.get("plan_id")
+        plan = await get_plan(plan_id)
+        if not plan:
+            _pending.pop(uid, None)
+            await _patch(
+                client, chat_id, msg_id,
+                "<b>❌ Plan no longer exists.</b>",
+                _back_main(),
+            )
+            raise StopPropagation
+
+        # parse channel id
+        try:
+            ch_id = int(raw)
+        except ValueError:
+            await _patch(
+                client, chat_id, msg_id,
+                "<b>❌ Invalid channel ID.</b>\n\n"
+                "Send a numeric channel ID starting with <code>-100</code>.",
+                InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
+            )
+            raise StopPropagation
+
+        if not str(ch_id).startswith("-100"):
+            await _patch(
+                client, chat_id, msg_id,
+                "<b>❌ Channel ID must start with</b> <code>-100</code>.\n\n"
+                "Forward a message from your channel to <b>@username_to_id_bot</b> "
+                "or similar to fetch the correct ID.",
+                InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
+            )
+            raise StopPropagation
+
+        # show "verifying..." state
+        await _patch(
+            client, chat_id, msg_id,
+            f"<b>🎀 Gift Channel — Verifying…</b>\n\n"
+            f"Plan: <b>{plan.get('name','—')}</b>\n"
+            f"Channel: <code>{ch_id}</code>\n\n"
+            "Checking bot permissions, please wait…",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="pst_back")]]),
+        )
+
+        # actually verify
+        try:
+            chat = await client.get_chat(ch_id)
+            channel_title = chat.title or str(ch_id)
+            me = await client.get_me()
+            member = await client.get_chat_member(ch_id, me.id)
+            status = str(getattr(member, "status", "")).lower()
+            if "administrator" not in status and "owner" not in status and "creator" not in status:
+                raise PermissionError("not_admin")
+            privs = getattr(member, "privileges", None)
+            if not privs or not getattr(privs, "can_invite_users", False):
+                raise PermissionError("no_invite")
+        except PermissionError as pe:
+            _pending.pop(uid, None)
+            reason = (
+                "Bot is not an admin in that channel."
+                if str(pe) == "not_admin"
+                else "Bot is admin but lacks the <b>Invite Users via Link</b> permission."
+            )
+            await _patch(
+                client, chat_id, msg_id,
+                "<b>🎀 Gift Channel — Verification Failed</b>\n\n"
+                f"❌ {reason}\n\n"
+                "Fix it and try again from the Gift menu.",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔁 Try again", callback_data=f"pst_gift_{plan_id}")],
+                    [InlineKeyboardButton("🔙 Back",     callback_data="pst_back")],
+                ]),
+            )
+            raise StopPropagation
+        except Exception as e:
+            _pending.pop(uid, None)
+            await _patch(
+                client, chat_id, msg_id,
+                "<b>🎀 Gift Channel — Verification Failed</b>\n\n"
+                f"❌ Could not access channel.\n<code>{str(e)[:200]}</code>\n\n"
+                "Make sure the bot is a member and you sent the correct ID.",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔁 Try again", callback_data=f"pst_gift_{plan_id}")],
+                    [InlineKeyboardButton("🔙 Back",     callback_data="pst_back")],
+                ]),
+            )
+            raise StopPropagation
+
+        # all good — save to plan
+        try:
+            await set_gift_channel(plan_id, ch_id, channel_title)
+        except Exception as e:
+            _pending.pop(uid, None)
+            await _patch(
+                client, chat_id, msg_id,
+                f"<b>❌ Could not save gift channel:</b>\n<code>{e}</code>",
+                _back_main(),
+            )
+            raise StopPropagation
+
+        _pending.pop(uid, None)
+        await _patch(
+            client, chat_id, msg_id,
+            "<b>🎀 Gift Channel — Linked!</b>\n\n"
+            f"✅ Plan: <b>{plan.get('name','—')}</b>\n"
+            f"✅ Channel: <b>{channel_title}</b>\n"
+            f"   <code>{ch_id}</code>\n\n"
+            "Buyers of this plan will now receive an invite link "
+            "and be auto-approved into the channel after they click "
+            "<b>Done</b>. They will be removed automatically when "
+            "their premium expires.",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("🎀 Link Another", callback_data="pst_gift_menu"),
+                 InlineKeyboardButton("🔙 Back",        callback_data="pst_back")],
             ]),
         )
         raise StopPropagation

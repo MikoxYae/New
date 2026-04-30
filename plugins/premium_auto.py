@@ -19,12 +19,13 @@ from pyrogram.types import (
 
 from bot import Bot
 from config import DB_URI, DB_NAME, OWNER_ID, PREMIUM_PIC
-from database.db_premium import add_premium
+from database.db_premium import add_premium, collection as _premium_col
 from database.db_plans import (
     list_plans,
     get_plan,
     to_addpremium_unit,
     ALLOWED_UNITS,
+    grant_gift,
 )
 from plugins.premium_cdm import monitor_premium_expiry
 
@@ -287,6 +288,8 @@ async def pick_plan(client: Bot, query: CallbackQuery):
                                      plan_doc.get("duration_unit", ""))
         label = f"{plan_doc.get('name', '—')} — {plan_doc.get('duration_value','?')} {unit_full}"
         plan_id_for_order = f"db_{db_plan_id}"
+        gift_channel_id    = plan_doc.get("gift_channel_id")
+        gift_channel_title = plan_doc.get("gift_channel_title")
     else:
         # Legacy hardcoded fallback
         plan = LEGACY_PLANS.get(raw)
@@ -294,13 +297,15 @@ async def pick_plan(client: Bot, query: CallbackQuery):
             return await query.answer("ɪɴᴠᴀʟɪᴅ ᴘʟᴀɴ.", show_alert=True)
         label, amount, time_value, time_unit, tier = plan
         plan_id_for_order = raw
+        gift_channel_id    = None
+        gift_channel_title = None
 
     user_id = query.from_user.id
     order_id = _gen_order_id(amount, user_id)
 
     await query.answer("ɢᴇɴᴇʀᴀᴛɪɴɢ ǫʀ…")
 
-    await _orders_col.insert_one({
+    order_doc = {
         "order_id":   order_id,
         "user_id":    user_id,
         "amount":     amount,
@@ -310,15 +315,27 @@ async def pick_plan(client: Bot, query: CallbackQuery):
         "tier":       tier,
         "status":     "pending",
         "created_at": datetime.utcnow().isoformat(),
-    })
+    }
+    if gift_channel_id:
+        order_doc["gift_channel_id"]    = int(gift_channel_id)
+        order_doc["gift_channel_title"] = gift_channel_title or str(gift_channel_id)
+    await _orders_col.insert_one(order_doc)
 
     qr_img = _make_qr(amount, order_id)
+
+    gift_line = ""
+    if gift_channel_id:
+        gift_line = (
+            f"<b>🎀 ɢɪғᴛ ᴀᴅᴅᴇᴅ:</b> <b>{gift_channel_title}</b>\n"
+            f"<i>(ʏᴏᴜ ᴡɪʟʟ ʙᴇ ɪɴᴠɪᴛᴇᴅ ᴀғᴛᴇʀ ᴘᴀʏᴍᴇɴᴛ)</i>\n\n"
+        )
 
     caption = (
         f"<b>💳 ᴄᴏᴍᴘʟᴇᴛᴇ ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ</b>\n\n"
         f"<b>ᴘʟᴀɴ:</b> {label}\n"
         f"<b>ᴀᴍᴏᴜɴᴛ:</b> <b>₹{amount}</b>\n"
         f"<b>ᴏʀᴅᴇʀ ɪᴅ:</b> <code>{order_id}</code>\n\n"
+        f"{gift_line}"
         f"<b>📱 ɪɴsᴛʀᴜᴄᴛɪᴏɴs:</b>\n"
         f"<b>1.</b> ᴏᴘᴇɴ ᴀɴʏ ᴜᴘɪ ᴀᴘᴘ — ᴘᴀʏᴛᴍ / ɢᴘᴀʏ / ᴘʜᴏɴᴇᴘᴇ.\n"
         f"<b>2.</b> sᴄᴀɴ ᴛʜᴇ ǫʀ ᴄᴏᴅᴇ ᴀʙᴏᴠᴇ.\n"
@@ -443,6 +460,10 @@ async def i_have_paid(client: Bot, query: CallbackQuery):
         f"<i>ᴇɴᴊᴏʏ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss! 🎉</i>"
     )
 
+    # ── GIFT CHANNEL DELIVERY ────────────────────────────────────
+    if order.get("gift_channel_id"):
+        await _deliver_gift(client, query, order, expiration_time)
+
     # Notify owner
     try:
         await client.send_message(
@@ -458,6 +479,145 @@ async def i_have_paid(client: Bot, query: CallbackQuery):
         )
     except Exception:
         pass
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#   GIFT CHANNEL  —  helpers + callback
+# ═══════════════════════════════════════════════════════════════════════════════
+async def _deliver_gift(client: Bot, query: CallbackQuery, order: dict, expiration_time):
+    """
+    After a successful payment, if the plan has a gift channel attached:
+      1. Generate a one-time invite link that requires admin approval.
+      2. Send the buyer an "Open Channel" + "Done" button pair.
+      3. Record the grant so we can kick the user when their premium expires.
+    """
+    user_id    = order["user_id"]
+    channel_id = int(order["gift_channel_id"])
+    title      = order.get("gift_channel_title") or str(channel_id)
+    order_id   = order["order_id"]
+
+    # 1. Create invite link (require admin approval to give us full control)
+    invite_url = None
+    try:
+        link = await client.create_chat_invite_link(
+            chat_id=channel_id,
+            name=f"PremiumGift-{order_id[-8:]}",
+            creates_join_request=True,
+        )
+        invite_url = getattr(link, "invite_link", None) or str(link)
+    except Exception as e:
+        # fall back to a plain invite link if join-requests aren't available
+        try:
+            link = await client.create_chat_invite_link(
+                chat_id=channel_id,
+                name=f"PremiumGift-{order_id[-8:]}",
+                member_limit=1,
+            )
+            invite_url = getattr(link, "invite_link", None) or str(link)
+        except Exception:
+            try:
+                await query.message.reply(
+                    "<b>⚠️ ᴄᴏᴜʟᴅ ɴᴏᴛ ɢᴇɴᴇʀᴀᴛᴇ ɢɪғᴛ ɪɴᴠɪᴛᴇ ʟɪɴᴋ.</b>\n"
+                    f"<code>{e}</code>\n\n"
+                    "ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ — ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ɪs sᴛɪʟʟ ᴀᴄᴛɪᴠᴇ."
+                )
+            except Exception:
+                pass
+            return
+
+    # 2. Record the grant so /remove_premium and expiry can revoke it
+    try:
+        if isinstance(expiration_time, datetime):
+            expires_iso = expiration_time.isoformat()
+        else:
+            expires_iso = str(expiration_time)
+        # most reliable: pull from premium collection (already in IST iso)
+        prem = await _premium_col.find_one({"user_id": int(user_id)})
+        if prem and prem.get("expiration_timestamp"):
+            expires_iso = prem["expiration_timestamp"]
+
+        await grant_gift(
+            user_id       = int(user_id),
+            channel_id    = channel_id,
+            channel_title = title,
+            plan_id       = str(order.get("plan_id", "")),
+            expires_at    = expires_iso,
+            order_id      = order_id,
+        )
+    except Exception:
+        pass
+
+    # 3. Send the buyer their Open Channel + Done buttons
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("📨 ᴏᴘᴇɴ ᴄʜᴀɴɴᴇʟ", url=invite_url)],
+        [InlineKeyboardButton("✅ ᴅᴏɴᴇ — ᴀᴅᴅ ᴍᴇ", callback_data=f"pa_giftdone_{order_id}")],
+    ])
+    try:
+        await query.message.reply(
+            f"<b>🎀 ʏᴏᴜʀ ɢɪғᴛ ᴄʜᴀɴɴᴇʟ ɪs ʀᴇᴀᴅʏ</b>\n\n"
+            f"<b>ᴄʜᴀɴɴᴇʟ:</b> <b>{title}</b>\n\n"
+            f"<b>ʜᴏᴡ ᴛᴏ ᴊᴏɪɴ:</b>\n"
+            f"<b>1.</b> ᴛᴀᴘ <b>ᴏᴘᴇɴ ᴄʜᴀɴɴᴇʟ</b> ʙᴇʟᴏᴡ.\n"
+            f"<b>2.</b> ᴛᴀᴘ <b>ʀᴇǫᴜᴇsᴛ ᴛᴏ ᴊᴏɪɴ</b> ɪɴ ᴛᴇʟᴇɢʀᴀᴍ.\n"
+            f"<b>3.</b> ᴄᴏᴍᴇ ʙᴀᴄᴋ ʜᴇʀᴇ ᴀɴᴅ ᴛᴀᴘ <b>ᴅᴏɴᴇ</b>.\n\n"
+            f"ᴛʜᴇ ʙᴏᴛ ᴡɪʟʟ ᴀᴘᴘʀᴏᴠᴇ ʏᴏᴜ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ.\n"
+            f"<i>ᴀᴄᴄᴇss ᴇɴᴅs ᴡʜᴇɴ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴇxᴘɪʀᴇs.</i>",
+            reply_markup=kb,
+        )
+    except Exception:
+        pass
+
+
+@Bot.on_callback_query(filters.regex(r"^pa_giftdone_(.+)$"))
+async def gift_done(client: Bot, query: CallbackQuery):
+    order_id = query.data.replace("pa_giftdone_", "", 1)
+    user_id  = query.from_user.id
+
+    order = await _orders_col.find_one({"order_id": order_id})
+    if not order:
+        return await query.answer("ᴏʀᴅᴇʀ ɴᴏᴛ ғᴏᴜɴᴅ.", show_alert=True)
+    if order["user_id"] != user_id:
+        return await query.answer("ᴛʜɪs ɢɪғᴛ ɪs ɴᴏᴛ ғᴏʀ ʏᴏᴜ.", show_alert=True)
+    ch_id = order.get("gift_channel_id")
+    if not ch_id:
+        return await query.answer("ɴᴏ ɢɪғᴛ ᴄʜᴀɴɴᴇʟ ᴀᴛᴛᴀᴄʜᴇᴅ ᴛᴏ ᴛʜɪs ᴏʀᴅᴇʀ.", show_alert=True)
+
+    await query.answer("ᴀᴘᴘʀᴏᴠɪɴɢ ʏᴏᴜʀ ᴊᴏɪɴ ʀᴇǫᴜᴇsᴛ…")
+
+    try:
+        await client.approve_chat_join_request(chat_id=int(ch_id), user_id=user_id)
+    except Exception as e:
+        emsg = str(e).lower()
+        # Most common: user hasn't tapped "Request to Join" yet
+        if "user_not_participant" in emsg or "hide_requester" in emsg or "not found" in emsg:
+            return await query.answer(
+                "ᴏᴘᴇɴ ᴛʜᴇ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ᴛᴀᴘ ʀᴇǫᴜᴇsᴛ ᴛᴏ ᴊᴏɪɴ ғɪʀsᴛ, ᴛʜᴇɴ ᴘʀᴇss ᴅᴏɴᴇ.",
+                show_alert=True,
+            )
+        try:
+            await query.message.reply(
+                f"<b>⚠️ ᴀᴘᴘʀᴏᴠᴀʟ ғᴀɪʟᴇᴅ.</b>\n<code>{str(e)[:200]}</code>\n\n"
+                "ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ ɪғ ᴛʜɪs ᴋᴇᴇᴘs ʜᴀᴘᴘᴇɴɪɴɢ."
+            )
+        except Exception:
+            pass
+        return
+
+    title = order.get("gift_channel_title") or str(ch_id)
+    try:
+        await query.message.edit_text(
+            f"<b>🎀 ɢɪғᴛ ᴄʜᴀɴɴᴇʟ — ᴀᴅᴅᴇᴅ!</b>\n\n"
+            f"✅ ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴀᴘᴘʀᴏᴠᴇᴅ ɪɴᴛᴏ <b>{title}</b>.\n\n"
+            "<i>ᴀᴄᴄᴇss ᴇɴᴅs ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ᴡʜᴇɴ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴇxᴘɪʀᴇs.</i>",
+        )
+    except Exception:
+        try:
+            await query.message.reply(
+                f"<b>🎀 ɢɪғᴛ ᴄʜᴀɴɴᴇʟ — ᴀᴅᴅᴇᴅ!</b>\n\n"
+                f"✅ ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴀᴘᴘʀᴏᴠᴇᴅ ɪɴᴛᴏ <b>{title}</b>."
+            )
+        except Exception:
+            pass
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
