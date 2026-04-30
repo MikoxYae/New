@@ -10,7 +10,12 @@ from pyrogram.enums import ChatMemberStatus, ChatType
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from bot import Bot
 from config import OWNER_ID
-from helper_func import get_readable_time, normalize_support_link, get_support_url
+from helper_func import (
+    get_readable_time,
+    normalize_support_link,
+    get_support_url,
+    normalize_button_url,
+)
 from database.database import db
 
 
@@ -52,8 +57,23 @@ def _main_markup():
             InlineKeyboardButton("🔧 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ", callback_data="stg_maintenance")
         ],
         [
-            InlineKeyboardButton("🆘 sᴜᴘᴘᴏʀᴛ",     callback_data="stg_support")
+            InlineKeyboardButton("🆘 sᴜᴘᴘᴏʀᴛ",       callback_data="stg_support"),
+            InlineKeyboardButton("🔘 ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴs", callback_data="stg_mbtn")
         ]
+    ])
+
+
+def _mbtn_markup():
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("➕ ᴀᴅᴅ",    callback_data="stg_mbtn_add"),
+            InlineKeyboardButton("✏️ ᴇᴅɪᴛ",   callback_data="stg_mbtn_edit"),
+        ],
+        [
+            InlineKeyboardButton("➖ ʀᴇᴍᴏᴠᴇ", callback_data="stg_mbtn_remove"),
+            InlineKeyboardButton("📋 ʟɪsᴛ",   callback_data="stg_mbtn_list"),
+        ],
+        [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
     ])
 
 
@@ -728,6 +748,190 @@ async def settings_cb(client: Bot, query: CallbackQuery):
             InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_support")]])
         )
 
+    # ══════════════════════════════════════════════════════════
+    #  MEDIA BUTTONS PANEL
+    # ══════════════════════════════════════════════════════════
+    #  Manage the inline buttons that get attached to every file the
+    #  bot delivers via /start <encoded_link> (covers /genlink, /batch
+    #  and /custom_batch). Unlimited buttons; 1 button per row.
+
+    elif data == "stg_mbtn":
+        _pending.pop(uid, None)
+        buttons = await db.get_media_buttons()
+        count = len(buttons)
+        await _edit(query,
+            "<b>🔘 ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴs</b>\n\n"
+            f"<b>ᴄᴏɴғɪɢᴜʀᴇᴅ:</b> <code>{count}</code> ʙᴜᴛᴛᴏɴ(s)\n\n"
+            "<i>ᴛʜᴇsᴇ ʙᴜᴛᴛᴏɴs ᴀʀᴇ ᴀᴛᴛᴀᴄʜᴇᴅ ᴛᴏ ᴇᴠᴇʀʏ ғɪʟᴇ ᴅᴇʟɪᴠᴇʀᴇᴅ ᴠɪᴀ "
+            "<code>/genlink</code>, <code>/batch</code> ᴀɴᴅ <code>/custom_batch</code> "
+            "ᴇɴᴄᴏᴅᴇᴅ ʟɪɴᴋs.</i>\n\n"
+            "<b>ᴀᴅᴅ</b> — ᴄʀᴇᴀᴛᴇ ᴀ ɴᴇᴡ ʙᴜᴛᴛᴏɴ (ɴᴀᴍᴇ + ᴜʀʟ)\n"
+            "<b>ᴇᴅɪᴛ</b> — ᴄʜᴀɴɢᴇ ᴀɴ ᴇxɪsᴛɪɴɢ ʙᴜᴛᴛᴏɴ\n"
+            "<b>ʀᴇᴍᴏᴠᴇ</b> — ᴅᴇʟᴇᴛᴇ ᴀ ʙᴜᴛᴛᴏɴ\n"
+            "<b>ʟɪsᴛ</b> — sʜᴏᴡ ᴀʟʟ ʙᴜᴛᴛᴏɴs",
+            _mbtn_markup()
+        )
+
+    # ── ADD ─────────────────────────────────────────────────────
+    elif data == "stg_mbtn_add":
+        _pending[uid] = {
+            "action": "mbtn_add",
+            "step": "name",
+            "msg_id": query.message.id,
+            "chat_id": query.message.chat.id,
+        }
+        await _edit(query,
+            "<b>➕ ᴀᴅᴅ ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴ — sᴛᴇᴘ 1/2</b>\n\n"
+            "📤 sᴇɴᴅ ᴛʜᴇ <b>ʙᴜᴛᴛᴏɴ ɴᴀᴍᴇ</b> (ᴛʜᴇ ᴛᴇxᴛ sʜᴏᴡɴ ᴏɴ ᴛʜᴇ ʙᴜᴛᴛᴏɴ).\n\n"
+            "<i>ᴇxᴀᴍᴘʟᴇ:</i> <code>ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="stg_mbtn")]])
+        )
+
+    # ── LIST ────────────────────────────────────────────────────
+    elif data == "stg_mbtn_list":
+        _pending.pop(uid, None)
+        buttons = await db.get_media_buttons()
+        if not buttons:
+            await _edit(query,
+                "<b>📋 ɴᴏ ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴs ᴄᴏɴғɪɢᴜʀᴇᴅ.</b>",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("➕ ᴀᴅᴅ ᴏɴᴇ", callback_data="stg_mbtn_add")],
+                    [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")]
+                ])
+            )
+            return
+        lines = ["<b>📋 ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴs ʟɪsᴛ</b>\n"]
+        for i, b in enumerate(buttons, start=1):
+            name = (b.get("name") or "").strip() or "—"
+            url  = (b.get("url")  or "").strip() or "—"
+            lines.append(f"<b>{i}.</b> <code>{name}</code>\n   ↳ <a href=\"{url}\">{url}</a>")
+        await _edit(query,
+            "\n".join(lines),
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")]])
+        )
+
+    # ── REMOVE (pick which one) ────────────────────────────────
+    elif data == "stg_mbtn_remove":
+        _pending.pop(uid, None)
+        buttons = await db.get_media_buttons()
+        if not buttons:
+            await _edit(query,
+                "<b>📋 ɴᴏ ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴs ᴛᴏ ʀᴇᴍᴏᴠᴇ.</b>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")]])
+            )
+            return
+        rows = []
+        for i, b in enumerate(buttons):
+            label = f"❌ {i+1}. {(b.get('name') or '—')[:30]}"
+            rows.append([InlineKeyboardButton(label, callback_data=f"stg_mbtn_del_{i}")])
+        rows.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")])
+        await _edit(query,
+            "<b>➖ ʀᴇᴍᴏᴠᴇ ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴ</b>\n\nᴛᴀᴘ ᴀ ʙᴜᴛᴛᴏɴ ᴛᴏ ᴅᴇʟᴇᴛᴇ ɪᴛ:",
+            InlineKeyboardMarkup(rows)
+        )
+
+    elif data.startswith("stg_mbtn_del_"):
+        _pending.pop(uid, None)
+        try:
+            idx = int(data.replace("stg_mbtn_del_", ""))
+        except ValueError:
+            return
+        ok = await db.remove_media_button(idx)
+        msg = (f"<b>✅ ʙᴜᴛᴛᴏɴ #{idx+1} ʀᴇᴍᴏᴠᴇᴅ.</b>"
+               if ok else "<b>❌ ɪɴᴠᴀʟɪᴅ ɪɴᴅᴇx — ʙᴜᴛᴛᴏɴ ɴᴏᴛ ғᴏᴜɴᴅ.</b>")
+        await _edit(query, msg,
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("➖ ʀᴇᴍᴏᴠᴇ ᴀɴᴏᴛʜᴇʀ", callback_data="stg_mbtn_remove")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")]
+            ])
+        )
+
+    # ── EDIT (pick which one) ──────────────────────────────────
+    elif data == "stg_mbtn_edit":
+        _pending.pop(uid, None)
+        buttons = await db.get_media_buttons()
+        if not buttons:
+            await _edit(query,
+                "<b>📋 ɴᴏ ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴs ᴛᴏ ᴇᴅɪᴛ.</b>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")]])
+            )
+            return
+        rows = []
+        for i, b in enumerate(buttons):
+            label = f"✏️ {i+1}. {(b.get('name') or '—')[:30]}"
+            rows.append([InlineKeyboardButton(label, callback_data=f"stg_mbtn_edt_{i}")])
+        rows.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")])
+        await _edit(query,
+            "<b>✏️ ᴇᴅɪᴛ ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴ</b>\n\nᴛᴀᴘ ᴀ ʙᴜᴛᴛᴏɴ ᴛᴏ ᴇᴅɪᴛ ɪᴛ:",
+            InlineKeyboardMarkup(rows)
+        )
+
+    elif data.startswith("stg_mbtn_edt_"):
+        try:
+            idx = int(data.replace("stg_mbtn_edt_", ""))
+        except ValueError:
+            return
+        buttons = await db.get_media_buttons()
+        if idx < 0 or idx >= len(buttons):
+            await _edit(query,
+                "<b>❌ ʙᴜᴛᴛᴏɴ ɴᴏᴛ ғᴏᴜɴᴅ.</b>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")]])
+            )
+            return
+        cur = buttons[idx]
+        await _edit(query,
+            f"<b>✏️ ᴇᴅɪᴛ ʙᴜᴛᴛᴏɴ #{idx+1}</b>\n\n"
+            f"<b>ɴᴀᴍᴇ:</b> <code>{cur.get('name','—')}</code>\n"
+            f"<b>ᴜʀʟ:</b> <a href=\"{cur.get('url','')}\">{cur.get('url','—')}</a>\n\n"
+            "ᴄʜᴏᴏsᴇ ᴡʜᴀᴛ ᴛᴏ ᴜᴘᴅᴀᴛᴇ:",
+            InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("📝 ᴇᴅɪᴛ ɴᴀᴍᴇ", callback_data=f"stg_mbtn_edn_{idx}"),
+                    InlineKeyboardButton("🔗 ᴇᴅɪᴛ ᴜʀʟ",  callback_data=f"stg_mbtn_edu_{idx}"),
+                ],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn_edit")]
+            ])
+        )
+
+    elif data.startswith("stg_mbtn_edn_"):
+        try:
+            idx = int(data.replace("stg_mbtn_edn_", ""))
+        except ValueError:
+            return
+        _pending[uid] = {
+            "action": "mbtn_edit_name",
+            "index": idx,
+            "msg_id": query.message.id,
+            "chat_id": query.message.chat.id,
+        }
+        await _edit(query,
+            f"<b>📝 ᴇᴅɪᴛ ɴᴀᴍᴇ — ʙᴜᴛᴛᴏɴ #{idx+1}</b>\n\n"
+            "📤 sᴇɴᴅ ᴛʜᴇ ɴᴇᴡ <b>ʙᴜᴛᴛᴏɴ ɴᴀᴍᴇ</b>:",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data=f"stg_mbtn_edt_{idx}")]])
+        )
+
+    elif data.startswith("stg_mbtn_edu_"):
+        try:
+            idx = int(data.replace("stg_mbtn_edu_", ""))
+        except ValueError:
+            return
+        _pending[uid] = {
+            "action": "mbtn_edit_url",
+            "index": idx,
+            "msg_id": query.message.id,
+            "chat_id": query.message.chat.id,
+        }
+        await _edit(query,
+            f"<b>🔗 ᴇᴅɪᴛ ᴜʀʟ — ʙᴜᴛᴛᴏɴ #{idx+1}</b>\n\n"
+            "📤 sᴇɴᴅ ᴛʜᴇ ɴᴇᴡ <b>ᴜʀʟ</b>.\n\n"
+            "<b>ᴀᴄᴄᴇᴘᴛᴇᴅ ғᴏʀᴍᴀᴛs:</b>\n"
+            "• <code>https://t.me/your_channel</code>\n"
+            "• <code>https://example.com</code>\n"
+            "• <code>tg://resolve?domain=…</code>\n"
+            "• <code>t.me/your_channel</code> (sᴄʜᴇᴍᴇ ᴀᴜᴛᴏ-ᴀᴅᴅᴇᴅ)",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data=f"stg_mbtn_edt_{idx}")]])
+        )
+
     raise StopPropagation
 
 
@@ -924,6 +1128,114 @@ async def handle_settings_input(client: Bot, message: Message):
             InlineKeyboardMarkup([
                 [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ", callback_data="stg_support_set"),
                  InlineKeyboardButton("🔙 ʙᴀᴄᴋ",   callback_data="stg_support")]
+            ])
+        )
+
+    # ── MEDIA BUTTON ADD (2-step: name → url) ────────────────
+    elif action == "mbtn_add":
+        step = state.get("step", "name")
+
+        if step == "name":
+            name = raw[:64]
+            if not name:
+                await patch(
+                    "<b>❌ ɴᴀᴍᴇ ᴄᴀɴɴᴏᴛ ʙᴇ ᴇᴍᴘᴛʏ.</b>",
+                    InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")]])
+                )
+                raise StopPropagation
+            # Save name and ask for URL.
+            _pending[uid] = {
+                "action": "mbtn_add",
+                "step": "url",
+                "name": name,
+                "msg_id": msg_id,
+                "chat_id": chat_id,
+            }
+            await patch(
+                "<b>➕ ᴀᴅᴅ ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴ — sᴛᴇᴘ 2/2</b>\n\n"
+                f"<b>ɴᴀᴍᴇ:</b> <code>{name}</code>\n\n"
+                "📤 ɴᴏᴡ sᴇɴᴅ ᴛʜᴇ <b>ʙᴜᴛᴛᴏɴ ᴜʀʟ</b>.\n\n"
+                "<b>ᴀᴄᴄᴇᴘᴛᴇᴅ ғᴏʀᴍᴀᴛs:</b>\n"
+                "• <code>https://t.me/your_invite</code>\n"
+                "• <code>https://example.com</code>\n"
+                "• <code>tg://resolve?domain=…</code>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="stg_mbtn")]])
+            )
+
+        elif step == "url":
+            name = state.get("name", "")
+            url  = normalize_button_url(raw)
+            if not url:
+                await patch(
+                    "<b>❌ ɪɴᴠᴀʟɪᴅ ᴜʀʟ.</b>\n\n"
+                    "ᴜʀʟ ᴍᴜsᴛ sᴛᴀʀᴛ ᴡɪᴛʜ <code>https://</code>, <code>http://</code>, "
+                    "<code>tg://</code> ᴏʀ ʙᴇ ᴀ <code>t.me/...</code> ʟɪɴᴋ.",
+                    InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")]])
+                )
+                raise StopPropagation
+
+            total = await db.add_media_button(name, url)
+            await patch(
+                f"<b>✅ ʙᴜᴛᴛᴏɴ ᴀᴅᴅᴇᴅ.</b>\n\n"
+                f"<b>#{total}</b>  <code>{name}</code>\n"
+                f"   ↳ <a href=\"{url}\">{url}</a>",
+                InlineKeyboardMarkup([
+                    [InlineKeyboardButton("➕ ᴀᴅᴅ ᴀɴᴏᴛʜᴇʀ", callback_data="stg_mbtn_add")],
+                    [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")]
+                ])
+            )
+
+    # ── MEDIA BUTTON EDIT NAME ───────────────────────────────
+    elif action == "mbtn_edit_name":
+        idx  = state.get("index", -1)
+        name = raw[:64]
+        if not name:
+            await patch(
+                "<b>❌ ɴᴀᴍᴇ ᴄᴀɴɴᴏᴛ ʙᴇ ᴇᴍᴘᴛʏ.</b>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data=f"stg_mbtn_edt_{idx}")]])
+            )
+            raise StopPropagation
+        ok = await db.edit_media_button(idx, name=name)
+        if not ok:
+            await patch(
+                "<b>❌ ʙᴜᴛᴛᴏɴ ɴᴏᴛ ғᴏᴜɴᴅ.</b>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")]])
+            )
+            raise StopPropagation
+        await patch(
+            f"<b>✅ ɴᴀᴍᴇ ᴜᴘᴅᴀᴛᴇᴅ — ʙᴜᴛᴛᴏɴ #{idx+1}</b>\n\n"
+            f"<b>ɴᴇᴡ ɴᴀᴍᴇ:</b> <code>{name}</code>",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("✏️ ᴇᴅɪᴛ ᴀɢᴀɪɴ", callback_data=f"stg_mbtn_edt_{idx}")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")]
+            ])
+        )
+
+    # ── MEDIA BUTTON EDIT URL ────────────────────────────────
+    elif action == "mbtn_edit_url":
+        idx = state.get("index", -1)
+        url = normalize_button_url(raw)
+        if not url:
+            await patch(
+                "<b>❌ ɪɴᴠᴀʟɪᴅ ᴜʀʟ.</b>\n\n"
+                "ᴜʀʟ ᴍᴜsᴛ sᴛᴀʀᴛ ᴡɪᴛʜ <code>https://</code>, <code>http://</code>, "
+                "<code>tg://</code> ᴏʀ ʙᴇ ᴀ <code>t.me/...</code> ʟɪɴᴋ.",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data=f"stg_mbtn_edt_{idx}")]])
+            )
+            raise StopPropagation
+        ok = await db.edit_media_button(idx, url=url)
+        if not ok:
+            await patch(
+                "<b>❌ ʙᴜᴛᴛᴏɴ ɴᴏᴛ ғᴏᴜɴᴅ.</b>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")]])
+            )
+            raise StopPropagation
+        await patch(
+            f"<b>✅ ᴜʀʟ ᴜᴘᴅᴀᴛᴇᴅ — ʙᴜᴛᴛᴏɴ #{idx+1}</b>\n\n"
+            f"<b>ɴᴇᴡ ᴜʀʟ:</b> <a href=\"{url}\">{url}</a>",
+            InlineKeyboardMarkup([
+                [InlineKeyboardButton("✏️ ᴇᴅɪᴛ ᴀɢᴀɪɴ", callback_data=f"stg_mbtn_edt_{idx}")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_mbtn")]
             ])
         )
 

@@ -5,6 +5,115 @@ replaces the previous manual Gold / Platinum screenshot-based flow.
 
 ---
 
+## 🔘 v1.13 — Media Buttons + Branding Removed From Receipts
+
+Two changes in v1.13: every receipt PNG no longer carries the
+**"MIKO PREMIUM"** brand mark, and a brand-new **Media Buttons** system
+lets the owner attach unlimited inline buttons (1 button per row) to
+**every file the bot delivers** via `/start <encoded_link>` —
+covering `/genlink`, `/batch` and `/custom_batch` because they all
+flow through the same delivery path in `plugins/start.py`.
+
+### 1. "MIKO PREMIUM" branding removed from receipts
+
+`plugins/premium_system/receipt_image.py`:
+
+- The `brand` parameter of `build_receipt_image()` now defaults to
+  `""` (was `"MIKO PREMIUM"`).
+- The renderer skips drawing the bottom-right brand text when `brand`
+  is empty, so the new receipt PNG has a clean footer with no extra
+  branding.
+- All four receipt call-sites (`premium_auto.py`, `premium_cdm.py`,
+  `psetting.py`, `admin_orders.py`) keep working unchanged because
+  none of them pass a `brand=` argument.
+
+### 2. New "Media Buttons" feature
+
+#### Owner UX
+
+Open `/settings` → tap **🔘 ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴs**. A panel appears with
+four actions (and the live total of configured buttons):
+
+| Action | Flow |
+| --- | --- |
+| **➕ ᴀᴅᴅ** | bot asks for the **button name** → then the **button URL** → saves |
+| **✏️ ᴇᴅɪᴛ** | pick a button → choose **Edit Name** or **Edit URL** → send the new value |
+| **➖ ʀᴇᴍᴏᴠᴇ** | pick a button from the list to delete it |
+| **📋 ʟɪsᴛ** | shows every configured button (name + clickable URL) |
+
+There is **no upper limit** on how many buttons can be added.
+
+#### URL validation
+
+A new helper `normalize_button_url()` in `helper_func.py` accepts:
+
+- `https://t.me/Iam_addictive` (and any other `https://`/`http://` URL)
+- `tg://resolve?domain=…`
+- bare `t.me/Iam_addictive` (scheme is auto-prepended → `https://...`)
+
+Anything else (e.g. just a username with no scheme, or random text)
+is rejected with a clear error, and the admin can retry without
+losing their state.
+
+#### Delivery integration
+
+`plugins/start.py` now calls `build_media_buttons_markup()` once per
+`/start` invocation and merges it with the original channel-button
+markup (when `DISABLE_CHANNEL_BUTTON` is on) using the new
+`merge_inline_markups()` helper, so:
+
+- If the channel post had inline buttons **and** `DISABLE_CHANNEL_BUTTON`
+  is on, the original buttons stay on top and the admin's media
+  buttons stack below them.
+- Otherwise only the admin's media buttons are attached.
+- If no media buttons are configured, the file is sent exactly as
+  before (no behaviour change).
+
+The same delivery loop handles single-file (`/genlink`), batch
+(`/batch`) and custom batch (`/custom_batch`) decoded links, so the
+buttons appear automatically on **all three** link types.
+
+#### Database layer
+
+A new MongoDB collection `media_buttons` stores a single document:
+
+```json
+{ "_id": "media_buttons",
+  "buttons": [
+    { "name": "ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", "url": "https://t.me/your_invite" }
+  ] }
+```
+
+Indexes are 0-based and match the array position. Four async helpers
+on `db` cover all CRUD:
+
+```text
+db.get_media_buttons()                        -> list[dict]
+db.add_media_button(name, url)                -> int (new total)
+db.remove_media_button(index)                 -> bool
+db.edit_media_button(index, name=…, url=…)    -> bool
+```
+
+### Files changed
+
+| File | What |
+| --- | --- |
+| `plugins/premium_system/receipt_image.py` | brand default = `""`; skip drawing when empty |
+| `helper_func.py` | `normalize_button_url`, `build_media_buttons_markup`, `merge_inline_markups` |
+| `database/database.py` | new `media_buttons_data` collection + 4 CRUD helpers |
+| `plugins/settings_panel_cb.py` | new **🔘 ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴs** entry, panel, add/edit/remove/list flows + 2-step text input handler |
+| `plugins/start.py` | merge `media_buttons_markup` into every delivered file |
+| `README.md` | new **Media Buttons** section under *Bot Settings Panel* |
+
+### Migration notes
+
+No env-var changes, no schema migration script needed. The
+`media_buttons` collection is created lazily on the first **➕ Add**.
+Existing receipts continue to render — they simply lose the "MIKO
+PREMIUM" mark in the corner.
+
+---
+
 ## 🖼️ v1.12 — PNG Image Receipts + Configurable Support Link
 
 Two big changes in v1.12: every payment receipt is now a **PNG image

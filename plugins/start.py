@@ -138,6 +138,10 @@ async def start_command(client: Client, message: Message):
         yaemiko_msgs = []
         custom_caption = await db.get_custom_caption()
         protect_content = False if tier == "gold" else await db.get_protect_content()
+        # Admin-configured inline buttons (1 per row) attached to every
+        # delivered file. Works for /genlink, /batch and /custom_batch
+        # because they all flow through this same delivery path.
+        media_buttons_markup = await build_media_buttons_markup()
         for msg in messages:
             # Skip any message that slipped through as empty / deleted.
             if not msg or getattr(msg, "empty", False):
@@ -147,7 +151,10 @@ async def start_command(client: Client, message: Message):
                                              filename=msg.document.file_name) if bool(custom_caption) and bool(msg.document)
                        else ("" if not msg.caption else msg.caption.html))
 
-            reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+            channel_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+            # Stack channel buttons (if preserved) on top of admin's
+            # media buttons; either side may be None.
+            reply_markup = merge_inline_markups(channel_markup, media_buttons_markup)
 
             try:
                 copied_msg = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML, 

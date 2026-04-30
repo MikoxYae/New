@@ -114,7 +114,7 @@ def build_receipt_image(
     expire_date: str = "—",
     granted_by: Optional[str] = None,
     footer: str = "Enjoy your Premium Access. Keep this receipt for your records.",
-    brand: str = "MIKO PREMIUM",
+    brand: str = "",
 ) -> BytesIO:
     """Render a receipt PNG and return it as a named BytesIO."""
 
@@ -208,9 +208,10 @@ def build_receipt_image(
         draw.text(((W - lw) / 2, y), ln, font=f_small, fill=GREY)
         y += 28
 
-    # Brand bottom-right
-    bw = _measure(draw, brand, f_brand)
-    draw.text((W - bw - pad - 40, H - pad - 60), brand, font=f_brand, fill=GOLD_DIM)
+    # Brand bottom-right (skip drawing when brand is empty)
+    if brand:
+        bw = _measure(draw, brand, f_brand)
+        draw.text((W - bw - pad - 40, H - pad - 60), brand, font=f_brand, fill=GOLD_DIM)
 
     out = BytesIO()
     out.name = "receipt.png"

@@ -36,6 +36,7 @@ class Rohit:
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
         self.maintenance_data = self.database['maintenance']
+        self.media_buttons_data = self.database['media_buttons']
         
 
 
@@ -313,6 +314,66 @@ class Rohit:
         else:
             new_daily = {'date': today, 'count': int(daily.get('count', 0)) + 1}
         await self.user_data.update_one({'_id': user_id}, {'$set': {'daily_links': new_daily}})
+
+
+    # ──────────────────────────────────────────────────────────────────
+    # MEDIA BUTTONS
+    # ──────────────────────────────────────────────────────────────────
+    # Inline buttons (1 button per row) attached to every file/media that
+    # the bot delivers via /start <encoded_link> — this covers /genlink,
+    # /batch and /custom_batch links because they all flow through the
+    # same delivery path in plugins/start.py.
+    #
+    # Stored as a single document with an ordered `buttons` array:
+    #   { _id: 'media_buttons', buttons: [ {name: 'Join', url: 'https://t.me/x'}, ... ] }
+    # Indexes are 0-based and match the array position.
+
+    async def get_media_buttons(self) -> list:
+        """Return the ordered list of media buttons. Empty list if none."""
+        doc = await self.media_buttons_data.find_one({'_id': 'media_buttons'})
+        if not doc:
+            return []
+        return list(doc.get('buttons', []) or [])
+
+    async def add_media_button(self, name: str, url: str) -> int:
+        """Append a new button. Returns the new total count."""
+        buttons = await self.get_media_buttons()
+        buttons.append({'name': str(name), 'url': str(url)})
+        await self.media_buttons_data.update_one(
+            {'_id': 'media_buttons'},
+            {'$set': {'buttons': buttons}},
+            upsert=True
+        )
+        return len(buttons)
+
+    async def remove_media_button(self, index: int) -> bool:
+        """Remove the button at the given 0-based index. Returns True on success."""
+        buttons = await self.get_media_buttons()
+        if index < 0 or index >= len(buttons):
+            return False
+        buttons.pop(index)
+        await self.media_buttons_data.update_one(
+            {'_id': 'media_buttons'},
+            {'$set': {'buttons': buttons}},
+            upsert=True
+        )
+        return True
+
+    async def edit_media_button(self, index: int, name: str = None, url: str = None) -> bool:
+        """Update name and/or url for the button at the given index."""
+        buttons = await self.get_media_buttons()
+        if index < 0 or index >= len(buttons):
+            return False
+        if name is not None:
+            buttons[index]['name'] = str(name)
+        if url is not None:
+            buttons[index]['url'] = str(url)
+        await self.media_buttons_data.update_one(
+            {'_id': 'media_buttons'},
+            {'$set': {'buttons': buttons}},
+            upsert=True
+        )
+        return True
 
 
 db = Rohit(DB_URI, DB_NAME)

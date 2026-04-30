@@ -230,3 +230,84 @@ async def get_support_url(default: str = "https://t.me/Iam_addictive") -> str:
     if url and isinstance(url, str) and url.strip():
         return url.strip()
     return default
+
+
+# ──────────────────────────────────────────────────────────────────
+#  MEDIA BUTTONS HELPERS
+# ──────────────────────────────────────────────────────────────────
+#
+#  Admin can configure unlimited inline buttons from /settings → Media
+#  Buttons. Every button is rendered on its own row (1 button per row)
+#  and attached to every file the bot delivers via /start <encoded>
+#  (covers /genlink, /batch and /custom_batch — they all flow through
+#  the same delivery path in plugins/start.py).
+
+# Loose URL validation — accepts http(s), tg://, and bare t.me links.
+_URL_RE = re.compile(
+    r'^(?:https?://|tg://)\S+$|^(?:t\.me|telegram\.me|telegram\.dog)/\S+$',
+    re.IGNORECASE,
+)
+
+
+def normalize_button_url(raw: str):
+    """Validate and canonicalise a button URL.
+
+    Returns the cleaned URL string, or None if the input is unusable.
+    Bare ``t.me/...`` links get an ``https://`` scheme prepended so
+    Telegram accepts them as inline-button URLs.
+    """
+    if not raw:
+        return None
+    s = str(raw).strip()
+    if not s:
+        return None
+    if not _URL_RE.match(s):
+        return None
+    if s.lower().startswith(("http://", "https://", "tg://")):
+        return s
+    # bare t.me/... → add scheme
+    return "https://" + s
+
+
+async def build_media_buttons_markup():
+    """Return an InlineKeyboardMarkup of admin-configured media buttons,
+    or None when no buttons are configured. One button per row.
+    """
+    try:
+        from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+        buttons = await db.get_media_buttons()
+    except Exception as e:
+        print(f"[!] build_media_buttons_markup error: {e}")
+        return None
+    if not buttons:
+        return None
+    rows = []
+    for b in buttons:
+        name = (b.get("name") or "").strip()
+        url = (b.get("url") or "").strip()
+        if not name or not url:
+            continue
+        rows.append([InlineKeyboardButton(name, url=url)])
+    if not rows:
+        return None
+    return InlineKeyboardMarkup(rows)
+
+
+def merge_inline_markups(*markups):
+    """Combine several InlineKeyboardMarkup objects into one (rows stacked).
+
+    None entries are ignored. Returns None if everything was None.
+    """
+    from pyrogram.types import InlineKeyboardMarkup
+    rows = []
+    for mk in markups:
+        if mk is None:
+            continue
+        try:
+            for row in mk.inline_keyboard:
+                rows.append(list(row))
+        except Exception:
+            continue
+    if not rows:
+        return None
+    return InlineKeyboardMarkup(rows)

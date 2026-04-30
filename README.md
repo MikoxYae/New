@@ -68,6 +68,19 @@
   • Maintenance mode — block all non-admin users instantly
   • Toggle protect content from `/settings`
   • <b>Free Link panel</b> — ON/OFF toggle + set daily free link limit (5/10/15/20/Custom)
+  • <b>Support link</b> — owner-configurable link used by every "Support" button across the bot
+  • <b>Custom caption</b> — set / clear a custom caption template for every delivered file
+
+  <b>🔘 Media Buttons (attached to every delivered file):</b>
+
+  • Add **unlimited inline buttons** (1 button per row) shown beneath every file the bot sends via `/start <encoded_link>` — works for `/genlink`, `/batch` and `/custom_batch` automatically
+  • Manage from <b>/settings → 🔘 ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴs</b>
+    - <b>➕ ᴀᴅᴅ</b> — bot asks for the button name, then the URL, then saves
+    - <b>✏️ ᴇᴅɪᴛ</b> — pick a button and update its name and/or URL
+    - <b>➖ ʀᴇᴍᴏᴠᴇ</b> — delete a button from the list
+    - <b>📋 ʟɪsᴛ</b> — show all buttons with their URLs
+  • URL validation accepts `https://`, `http://`, `tg://` and bare `t.me/...` (scheme auto-prepended)
+  • Stored in MongoDB collection `media_buttons` — no env vars, no migration needed
 
   <b>💎 Premium Plan Manager (`/psetting`):</b>
 
