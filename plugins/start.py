@@ -64,7 +64,10 @@ async def start_command(client: Client, message: Message):
         is_admin = await db.admin_exist(id)
 
         # ── Access gate: free daily link count → premium after limit ─────────────
-        if tier is None and id != OWNER_ID and not is_admin:
+        # If the Free Link system is OFF, skip the gate entirely — everyone
+        # gets unrestricted access to content.
+        free_link_enabled = await db.get_free_link_enabled()
+        if free_link_enabled and tier is None and id != OWNER_ID and not is_admin:
             free_limit = await db.get_free_link_limit()
             daily_count = await db.get_user_daily_links(id)
 

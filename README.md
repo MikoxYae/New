@@ -22,11 +22,12 @@
   • <b>Multi Force Subscription:</b> Add, delete, and manage multiple Force Sub channels
   • <b>Admin Control:</b> Add or remove admins with `/add_admin`, `/deladmin`, view list via `/admins`
 
-  <b>🆓 Free Link System:</b>
+  <b>🆓 Free Link System (ON / OFF Toggle):</b>
 
-  • <b>Daily Free Links:</b> Every user gets N free file links per day (default 5, configurable from Settings)
-  • <b>After Free Limit:</b> User is prompted to buy Premium for unlimited access
-  • <b>Bypass:</b> Admins, Owner, and Premium users skip the daily limit entirely
+  • <b>ON Mode (default):</b> Every user gets N free file links per day (default 5). After the limit they are prompted to buy Premium.
+  • <b>OFF Mode:</b> No restriction at all — every user can fetch unlimited content with zero gates.
+  • <b>Toggle:</b> Switch ON/OFF live from <b>/settings → 🆓 ғʀᴇᴇ ʟɪɴᴋ → 🔴/🟢 ᴛᴜʀɴ ᴏɴ/ᴏғғ</b>
+  • <b>Bypass:</b> Admins, Owner, and Premium users skip the daily limit entirely (even in ON mode).
   • <b>Auto Reset:</b> Daily count resets automatically — no cron job needed
   • <b>Presets:</b> 5 / 10 / 15 / 20 / Custom — configurable from Settings panel
 
@@ -66,7 +67,7 @@
 
   • Maintenance mode — block all non-admin users instantly
   • Toggle protect content from `/settings`
-  • <b>Free Link panel</b> — set daily free link limit (5/10/15/20/Custom)
+  • <b>Free Link panel</b> — ON/OFF toggle + set daily free link limit (5/10/15/20/Custom)
 
   <b>💎 Premium Plan Manager (`/psetting`):</b>
 
@@ -221,6 +222,7 @@
 
   Full changelog with code snippets and rationale lives in **[`newadd.md`](./newadd.md)**. Highlights:
 
+  - **v1.9** — Free Link system now has ON/OFF toggle: OFF = unlimited free access for everyone, ON = original daily-limit-then-premium flow
   - **v1.8** — Token / Shortner / Anti-Bypass system fully removed — bot is now free-links → premium only
   - **v1.7** — UPI / Sellgram credentials rotated to `paytm.s20gmbu@pty` + new API key
   - **v1.6** — New `/help` command: button-driven, paginated, every command documented with examples

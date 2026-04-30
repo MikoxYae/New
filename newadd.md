@@ -5,6 +5,42 @@ replaces the previous manual Gold / Platinum screenshot-based flow.
 
 ---
 
+## 🔥 v1.9 — Free Link System ON / OFF Toggle
+
+The **🆓 Free Link** system now has a live ON/OFF switch that the owner
+can flip from `/settings → 🆓 ғʀᴇᴇ ʟɪɴᴋ`. This gives the bot two clean
+operating modes without any code change or redeploy.
+
+### Behavior
+
+| Mode | What happens |
+|------|--------------|
+| **🟢 ON** (default) | Original flow — every non-premium user gets N free file links per day (default 5). After the limit they get the "buy premium" prompt. Admins, owner and premium users always bypass the limit. |
+| **🔴 OFF** | The daily-limit gate is **completely skipped**. Every user — premium or not — can fetch unlimited content with zero restriction. Useful for promo days, public-channel mode, or running the bot purely as a file-share tool. |
+
+### Files changed
+
+| File | What was added |
+|------|----------------|
+| `database/database.py` | New methods `get_free_link_enabled()` (default `True`) and `set_free_link_enabled(enabled)`, persisted in `bot_settings_data` under `_id='free_link_enabled'`. |
+| `plugins/start.py` | The free-link gate in `start_command` is now wrapped in `if free_link_enabled and tier is None and id != OWNER_ID and not is_admin:`. When the toggle is OFF the entire daily-count check is skipped and the user goes straight to file delivery. |
+| `plugins/settings_panel_cb.py` | New `_freelink_panel(limit, enabled)` helper renders the panel for both states. New callback `stg_fl_toggle` flips the state and re-renders. The status line shows `🟢 ᴏɴ` / `🔴 ᴏғғ` and the mode line switches between "ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs, ᴘʀᴇᴍɪᴜᴍ ʀᴇǫᴜɪʀᴇᴅ" and "ᴜɴʟɪᴍɪᴛᴇᴅ ᴀᴄᴄᴇss — ɴᴏ ᴅᴀɪʟʏ ʟɪᴍɪᴛ". The custom-limit text-message handler also re-uses the toggle state in its confirmation message. |
+| `README.md` | "🆓 Free Link System" section rewritten as "ON / OFF Toggle" with the two modes explained. Settings-panel section updated. v1.9 highlight added to "Recent Updates". |
+
+### Owner UX
+
+1. Open `/settings → 🆓 ғʀᴇᴇ ʟɪɴᴋ`
+2. See current status (🟢 ᴏɴ / 🔴 ᴏғғ), daily limit, and active mode line
+3. Tap **🔴 ᴛᴜʀɴ ᴏғғ** to disable all gates, or **🟢 ᴛᴜʀɴ ᴏɴ** to re-enable the daily-limit flow
+4. Limit presets (5/10/15/20/Custom) still work — they're just irrelevant while the system is OFF
+
+### Default & migration
+
+- Default value is **ON** so behavior is unchanged for existing deployments until the owner explicitly turns it off.
+- No schema migration needed — the toggle key is created lazily on first read/write via `bot_settings_data`.
+
+---
+
 ## 🔥 v1.8 — Token / Shortner / Anti-Bypass System Fully Removed
 
 The bot now runs in a clean **free-link → premium-only** mode. Every

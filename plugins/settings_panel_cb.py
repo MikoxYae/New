@@ -54,6 +54,38 @@ def _main_markup():
     ])
 
 
+def _freelink_panel(limit: int, enabled: bool):
+    """Render the Free Link settings panel (text + markup) for a given state."""
+    if enabled:
+        status_line = "<b>sᴛᴀᴛᴜs:</b> 🟢 ᴏɴ\n"
+        mode_line   = "<b>ᴍᴏᴅᴇ:</b> ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs, ᴘʀᴇᴍɪᴜᴍ ʀᴇǫᴜɪʀᴇᴅ\n"
+        toggle_btn  = InlineKeyboardButton("🔴 ᴛᴜʀɴ ᴏғғ", callback_data="stg_fl_toggle")
+    else:
+        status_line = "<b>sᴛᴀᴛᴜs:</b> 🔴 ᴏғғ\n"
+        mode_line   = "<b>ᴍᴏᴅᴇ:</b> ᴜɴʟɪᴍɪᴛᴇᴅ ᴀᴄᴄᴇss — ɴᴏ ᴅᴀɪʟʏ ʟɪᴍɪᴛ\n"
+        toggle_btn  = InlineKeyboardButton("🟢 ᴛᴜʀɴ ᴏɴ",  callback_data="stg_fl_toggle")
+
+    text = (
+        "<b>🆓 ғʀᴇᴇ ʟɪɴᴋ sᴇᴛᴛɪɴɢs</b>\n\n"
+        f"{status_line}"
+        f"<b>ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋs:</b> <code>{limit}</code> ᴘᴇʀ ᴜsᴇʀ\n"
+        f"{mode_line}\n"
+        "<i>ᴛᴏɢɢʟᴇ ᴛʜᴇ sʏsᴛᴇᴍ ᴏʀ sᴇʟᴇᴄᴛ ᴛʜᴇ ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ ʙᴇʟᴏᴡ:</i>"
+    )
+    markup = InlineKeyboardMarkup([
+        [toggle_btn],
+        [
+            InlineKeyboardButton("5"  if limit != 5  else "✅ 5",  callback_data="stg_fl_5"),
+            InlineKeyboardButton("10" if limit != 10 else "✅ 10", callback_data="stg_fl_10"),
+            InlineKeyboardButton("15" if limit != 15 else "✅ 15", callback_data="stg_fl_15"),
+            InlineKeyboardButton("20" if limit != 20 else "✅ 20", callback_data="stg_fl_20"),
+        ],
+        [InlineKeyboardButton("✏️ ᴄᴜsᴛᴏᴍ", callback_data="stg_fl_custom")],
+        [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
+    ])
+    return text, markup
+
+
 def _admin_markup():
     return InlineKeyboardMarkup([
         [
@@ -526,25 +558,24 @@ async def settings_cb(client: Bot, query: CallbackQuery):
 
     elif data == "stg_freelink":
         _pending.pop(uid, None)
-        limit = await db.get_free_link_limit()
-        await _edit(query,
-            f"<b>🆓 ғʀᴇᴇ ʟɪɴᴋ sᴇᴛᴛɪɴɢs</b>\n\n"
-            f"<b>ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋs:</b> <code>{limit}</code> ᴘᴇʀ ᴜsᴇʀ\n"
-            f"<b>ᴍᴏᴅᴇ:</b> ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs, ᴘʀᴇᴍɪᴜᴍ ʀᴇǫᴜɪʀᴇᴅ\n\n"
-            "<i>sᴇʟᴇᴄᴛ ᴛʜᴇ ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ ʙᴇʟᴏᴡ:</i>",
-            InlineKeyboardMarkup([
-                [
-                    InlineKeyboardButton("5"  if limit != 5  else "✅ 5",  callback_data="stg_fl_5"),
-                    InlineKeyboardButton("10" if limit != 10 else "✅ 10", callback_data="stg_fl_10"),
-                    InlineKeyboardButton("15" if limit != 15 else "✅ 15", callback_data="stg_fl_15"),
-                    InlineKeyboardButton("20" if limit != 20 else "✅ 20", callback_data="stg_fl_20"),
-                ],
-                [InlineKeyboardButton("✏️ ᴄᴜsᴛᴏᴍ", callback_data="stg_fl_custom")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
-            ])
-        )
+        limit   = await db.get_free_link_limit()
+        enabled = await db.get_free_link_enabled()
+        text, markup = _freelink_panel(limit, enabled)
+        await _edit(query, text, markup)
 
-    elif data.startswith("stg_fl_") and data != "stg_fl_custom":
+    elif data == "stg_fl_toggle":
+        _pending.pop(uid, None)
+        new_state = not (await db.get_free_link_enabled())
+        await db.set_free_link_enabled(new_state)
+        await query.answer(
+            f"✅ ғʀᴇᴇ ʟɪɴᴋ sʏsᴛᴇᴍ ᴛᴜʀɴᴇᴅ {'ᴏɴ' if new_state else 'ᴏғғ'}",
+            show_alert=True
+        )
+        limit = await db.get_free_link_limit()
+        text, markup = _freelink_panel(limit, new_state)
+        await _edit(query, text, markup)
+
+    elif data.startswith("stg_fl_") and data != "stg_fl_custom" and data != "stg_fl_toggle":
         _pending.pop(uid, None)
         try:
             new_limit = int(data.replace("stg_fl_", ""))
@@ -553,22 +584,9 @@ async def settings_cb(client: Bot, query: CallbackQuery):
             return
         await db.set_free_link_limit(new_limit)
         await query.answer(f"✅ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ sᴇᴛ ᴛᴏ {new_limit}/ᴅᴀʏ", show_alert=True)
-        await _edit(query,
-            f"<b>🆓 ғʀᴇᴇ ʟɪɴᴋ sᴇᴛᴛɪɴɢs</b>\n\n"
-            f"<b>ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋs:</b> <code>{new_limit}</code> ᴘᴇʀ ᴜsᴇʀ\n"
-            f"<b>ᴍᴏᴅᴇ:</b> ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs, ᴘʀᴇᴍɪᴜᴍ ʀᴇǫᴜɪʀᴇᴅ\n\n"
-            "<i>sᴇʟᴇᴄᴛ ᴛʜᴇ ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ ʙᴇʟᴏᴡ:</i>",
-            InlineKeyboardMarkup([
-                [
-                    InlineKeyboardButton("5"  if new_limit != 5  else "✅ 5",  callback_data="stg_fl_5"),
-                    InlineKeyboardButton("10" if new_limit != 10 else "✅ 10", callback_data="stg_fl_10"),
-                    InlineKeyboardButton("15" if new_limit != 15 else "✅ 15", callback_data="stg_fl_15"),
-                    InlineKeyboardButton("20" if new_limit != 20 else "✅ 20", callback_data="stg_fl_20"),
-                ],
-                [InlineKeyboardButton("✏️ ᴄᴜsᴛᴏᴍ", callback_data="stg_fl_custom")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
-            ])
-        )
+        enabled = await db.get_free_link_enabled()
+        text, markup = _freelink_panel(new_limit, enabled)
+        await _edit(query, text, markup)
 
     elif data == "stg_fl_custom":
         _pending[uid] = {"action": "freelink_custom", "msg_id": query.message.id, "chat_id": query.message.chat.id}
@@ -852,9 +870,13 @@ async def handle_settings_input(client: Bot, message: Message):
             raise StopPropagation
 
         await db.set_free_link_limit(new_limit)
+        enabled = await db.get_free_link_enabled()
+        mode_txt = ("ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs, ᴘʀᴇᴍɪᴜᴍ ʀᴇǫᴜɪʀᴇᴅ"
+                    if enabled else "ᴜɴʟɪᴍɪᴛᴇᴅ ᴀᴄᴄᴇss — ɴᴏ ᴅᴀɪʟʏ ʟɪᴍɪᴛ")
         await patch(
             f"<b>✅ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ sᴇᴛ ᴛᴏ <code>{new_limit}</code>/ᴅᴀʏ.</b>\n\n"
-            f"<b>ᴍᴏᴅᴇ:</b> ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs, ᴘʀᴇᴍɪᴜᴍ ʀᴇǫᴜɪʀᴇᴅ",
+            f"<b>sᴛᴀᴛᴜs:</b> {'🟢 ᴏɴ' if enabled else '🔴 ᴏғғ'}\n"
+            f"<b>ᴍᴏᴅᴇ:</b> {mode_txt}",
             InlineKeyboardMarkup([
                 [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_freelink")]
             ])

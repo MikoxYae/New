@@ -263,6 +263,20 @@ class Rohit:
             upsert=True
         )
 
+    # FREE LINK ON/OFF TOGGLE
+    # ON  -> daily limit is enforced; after limit user must buy premium
+    # OFF -> no limit at all; everyone can fetch content freely
+    async def get_free_link_enabled(self):
+        doc = await self.bot_settings_data.find_one({'_id': 'free_link_enabled'})
+        return bool(doc.get('value', True)) if doc else True
+
+    async def set_free_link_enabled(self, enabled: bool):
+        await self.bot_settings_data.update_one(
+            {'_id': 'free_link_enabled'},
+            {'$set': {'value': bool(enabled)}},
+            upsert=True
+        )
+
     # USER DAILY LINK COUNT
     async def get_user_daily_links(self, user_id: int):
         today = datetime.now().strftime('%Y-%m-%d')
