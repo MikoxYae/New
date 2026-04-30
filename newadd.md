@@ -756,3 +756,100 @@ After pulling this fix, `python3 main.py` starts cleanly.
 5. After ~10 s, tap **I Have Paid**.
 6. Bot should reply with **✅ Payment verified — premium activated!**
    and the user gets 1 hour of gold premium.
+
+---
+
+## 11. April 30, 2026 — Bug fixes + Hindi → English translation + Small-caps Unicode UI pass
+
+A full sweep through the repo to (a) fix latent bugs, (b) translate every Hindi
+word/comment to English, and (c) re-render every user-facing string in
+`<b>...</b>`-wrapped small-caps Unicode so the bot reads consistently across
+all panels. Done in three groups:
+
+### A. Surgical bug fixes
+
+| File | Fix |
+|------|-----|
+| `bot.py` | Cast `PORT = int(os.environ.get("PORT", 8080))` so `aiohttp.TCPSite` doesn't crash on string port. Replaced deprecated `asyncio.get_event_loop()` (Python 3.12+ raises `DeprecationWarning` / fails when no loop) with a try-`get_running_loop()`/fallback to `new_event_loop()`. Narrowed bare `except:` → `except Exception:` in two places. |
+| `config.py` | `WEB_VERIFY_BASE_URL = os.environ.get("WEB_VERIFY_BASE_URL", "").strip().rstrip("/")` — strips accidental whitespace before the rstrip, otherwise URLs with trailing spaces silently break verify links. |
+| `helper_func.py` | Translated two Hindi inline comments to English. Replaced legacy `e.x` (Pyrogram 1.x flood-wait API) with `e.value` for current pyrofork. Narrowed bare `except:` → `except Exception:`. Added missing raw-string prefix to a regex that escaped `\d` (was a SyntaxWarning under 3.12). Added a `return 0` guard at the end of one helper that previously fell through to `None`. |
+| `plugins/broadcast.py` | `e.x` → `e.value` in the `FloodWait` handler so the sleep duration is correct on pyrofork. Narrowed bare excepts. |
+| `plugins/channel_post.py` | Same `e.x` → `e.value` and narrowed excepts. |
+| `plugins/start.py` | Removed `import string as rohit` and renamed every `rohit.` reference back to `string.` (the alias was confusing and unused outside this file). Added `BAN_SUPPORT or "None"` fallback so the ban-message template doesn't raise `TypeError: 'NoneType' is not subscriptable`. Narrowed bare excepts. `e.x` → `e.value`. |
+
+### B. Hindi → English translation
+
+All Hindi-language inline comments (mostly in `helper_func.py`, `plugins/start.py`,
+`plugins/premium_cdm.py`, `plugins/admin_orders.py`, `plugins/premium_auto.py`)
+were translated to English while preserving intent. No user-facing copy was
+changed during this pass — that is handled by group C below.
+
+### C. Small-caps Unicode UI pass (`<b>...</b>`-wrapped)
+
+A custom Node tokenizer (`/tmp/scan/converter.js`) was built that:
+1. Walks every Python source file and tokenises strings safely (skips raw `r"..."`
+   and byte `b"..."` literals).
+2. Preserves HTML tags, `<code>...</code>` blocks, `{placeholders}`, Python
+   escapes, URLs, and emoji.
+3. Triggers on any string that already contains `<b>` / `<i>` OR is the first
+   positional argument of `InlineKeyboardButton(...)`, then propagates across
+   adjacent implicit-concat string groups.
+4. Rewrites every ASCII letter `a–z A–Z` to its Unicode small-caps equivalent
+   (a→ᴀ, b→ʙ, c→ᴄ, d→ᴅ, e→ᴇ, f→ғ, g→ɢ, h→ʜ, i→ɪ, j→ᴊ, k→ᴋ, l→ʟ, m→ᴍ, n→ɴ,
+   o→ᴏ, p→ᴘ, q→ǫ, r→ʀ, s→s, t→ᴛ, u→ᴜ, v→ᴠ, w→ᴡ, x→x, y→ʏ, z→ᴢ).
+
+Files re-rendered by the converter (UI strings + button labels):
+
+- `plugins/settings.py`
+- `plugins/settings_panel_cb.py`
+- `plugins/shortner.py`
+- `plugins/help_cmd.py`
+- `plugins/admin_orders.py`
+- `plugins/premium_auto.py`
+- `plugins/premium_cdm.py`
+- `plugins/stats_tracker.py`
+- `plugins/start.py`
+- `plugins/cbb.py`
+- `plugins/flood.py`
+- `plugins/request_fsub.py`
+- `plugins/rotate_creds.py`
+- `database/db_premium.py`
+
+Hand-finished cases (strings the heuristic skipped because they had no `<b>`
+and weren't button labels — manually wrapped in `<b>` and converted, with
+commands/identifiers kept inside `<code>...</code>` so users can still copy
+them verbatim):
+
+- `plugins/premium_cdm.py`: `Invalid tier`, full `/addpremium` Usage block,
+  `Invalid input`, `An error occurred`, `Usage: /remove_premium ...`,
+  `User ... has been removed`, `user_id must be an integer`, `No active
+  premium users found`, premium-users list rows, `Started monitoring ...`,
+  `perks` strings interpolated into the activation message.
+- `plugins/premium_auto.py`: every `query.answer(...)` callback alert
+  (`Invalid plan.`, `Generating QR…`, `Order not found.`, `This order does
+  not belong to you.`, `Premium already activated for this order.`,
+  `Verifying payment…`).
+- `plugins/settings_panel_cb.py`: every `query.answer(...)` alert
+  (`No channels added yet!`, `Removed!`, `Toggled → ...`, `Only Owner...`,
+  `Shortner turned ON/OFF`, `Free Link limit set to ...`, `Invalid!`),
+  the `Turn ON` / `Turn OFF` toggle label and the three `mode_txt`
+  status sentences shown in the Free-Link panel.
+- `plugins/shortner.py`: the two owner-only / "nothing to save" alerts.
+- `plugins/help_cmd.py`: the `Owner-only.` alert.
+- `database/db_premium.py`: `list_premium_users()` row formatting and the
+  two `check_user_plan` return strings (`Your premium plan has expired.` and
+  `You do not have a premium plan.`).
+
+The converter is idempotent: small-caps Unicode characters fall outside the
+ASCII range it scans for, so re-running the pass is a no-op.
+
+### What was deliberately *not* touched
+
+- Hardcoded secrets / values in `config.py`, `plugins/premium_auto.py`, and
+  `plugins/admin_orders.py` (UPI ID, payee name, KEN gateway URL, etc.) —
+  per project policy these stay literal.
+- HTTP-route response text in `plugins/route.py` (those are web-page
+  responses, not Telegram messages).
+- `InlineKeyboardButton` labels were converted to small-caps but **not**
+  wrapped in `<b>` — Telegram does not render HTML inside button text.
+

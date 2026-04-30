@@ -20,15 +20,15 @@ async def check_plan(client: Client, message: Message):
 async def add_premium_user_command(client, msg):
     if len(msg.command) not in (4, 5):
         await msg.reply_text(
-            "<b>Usage:</b> /addpremium user_id time_value time_unit tier\n\n"
-            "<b>Tiers:</b>\n"
-            "🥇 gold — Token bypass + Protect Content bypass\n"
-            "💎 platinum — Token bypass + Protect Content bypass + Force Sub bypass\n\n"
-            "<b>Time Units:</b> s | m | h | d | y\n\n"
-            "<b>Examples:</b>\n"
-            "/addpremium 123456789 1 d gold\n"
-            "/addpremium 123456789 1 d platinum\n"
-            "(Default tier is gold if not specified)"
+            "<b>ᴜsᴀɢᴇ:</b> /ᴀᴅᴅᴘʀᴇᴍɪᴜᴍ ᴜsᴇʀ_ɪᴅ ᴛɪᴍᴇ_ᴠᴀʟᴜᴇ ᴛɪᴍᴇ_ᴜɴɪᴛ ᴛɪᴇʀ\n\n"
+            "<b>ᴛɪᴇʀs:</b>\n"
+            "🥇 ɢᴏʟᴅ — ᴛᴏᴋᴇɴ ʙʏᴘᴀss + ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss\n"
+            "💎 ᴘʟᴀᴛɪɴᴜᴍ — ᴛᴏᴋᴇɴ ʙʏᴘᴀss + ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss + ғᴏʀᴄᴇ sᴜʙ ʙʏᴘᴀss\n\n"
+            "<b>ᴛɪᴍᴇ ᴜɴɪᴛs:</b> s | ᴍ | ʜ | ᴅ | ʏ\n\n"
+            "<b>ᴇxᴀᴍᴘʟᴇs:</b>\n"
+            "/ᴀᴅᴅᴘʀᴇᴍɪᴜᴍ 123456789 1 ᴅ ɢᴏʟᴅ\n"
+            "/ᴀᴅᴅᴘʀᴇᴍɪᴜᴍ 123456789 1 ᴅ ᴘʟᴀᴛɪɴᴜᴍ\n"
+            "(ᴅᴇғᴀᴜʟᴛ ᴛɪᴇʀ ɪs ɢᴏʟᴅ ɪғ ɴᴏᴛ sᴘᴇᴄɪғɪᴇᴅ)"
         )
         return
 
@@ -39,57 +39,56 @@ async def add_premium_user_command(client, msg):
         tier = msg.command[4].lower() if len(msg.command) == 5 else "gold"
 
         if tier not in ("gold", "platinum"):
-            return await msg.reply_text("Invalid tier. Use: gold or platinum")
+            return await msg.reply_text("<b>ɪɴᴠᴀʟɪᴅ ᴛɪᴇʀ. ᴜsᴇ:</b> <code>gold</code> <b>ᴏʀ</b> <code>platinum</code>")
 
         expiration_time = await add_premium(user_id, time_value, time_unit, tier)
         tier_emoji = "🥇" if tier == "gold" else "💎"
         perks = (
-            "Token bypass\nProtect Content bypass"
+            "ᴛᴏᴋᴇɴ ʙʏᴘᴀss\nᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss"
             if tier == "gold"
-            else "Token bypass\nProtect Content bypass\nForce Subscribe bypass"
+            else "ᴛᴏᴋᴇɴ ʙʏᴘᴀss\nᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ʙʏᴘᴀss\nғᴏʀᴄᴇ sᴜʙsᴄʀɪʙᴇ ʙʏᴘᴀss"
         )
 
         await msg.reply_text(
-            f"User {user_id} added as {tier_emoji} {tier.capitalize()} Premium for {time_value}{time_unit}.\n"
-            f"Expiration: {expiration_time}"
+            f"<b>ᴜsᴇʀ</b> <code>{user_id}</code> <b>ᴀᴅᴅᴇᴅ ᴀs</b> {tier_emoji} <b>{tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ ғᴏʀ</b> <code>{time_value}{time_unit}</code><b>.\nᴇxᴘɪʀᴀᴛɪᴏɴ:</b> <code>{expiration_time}</code>"
         )
 
         await client.send_message(
             chat_id=user_id,
             text=(
-                f"{tier_emoji} <b>{tier.capitalize()} Premium Activated!</b>\n\n"
-                f"Duration: <b>{time_value}{time_unit}</b>\n"
-                f"Expires on: <b>{expiration_time}</b>\n\n"
-                f"<b>Your perks:</b>\n{perks}"
+                f"{tier_emoji} <b>{tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ!</b>\n\n"
+                f"ᴅᴜʀᴀᴛɪᴏɴ: <b>{time_value}{time_unit}</b>\n"
+                f"ᴇxᴘɪʀᴇs ᴏɴ: <b>{expiration_time}</b>\n\n"
+                f"<b>ʏᴏᴜʀ ᴘᴇʀᴋs:</b>\n{perks}"
             ),
         )
 
         asyncio.create_task(monitor_premium_expiry(client, user_id))
 
     except ValueError:
-        await msg.reply_text("Invalid input. Ensure user ID and time value are numbers.")
+        await msg.reply_text("<b>ɪɴᴠᴀʟɪᴅ ɪɴᴘᴜᴛ. ᴇɴsᴜʀᴇ ᴜsᴇʀ ɪᴅ ᴀɴᴅ ᴛɪᴍᴇ ᴠᴀʟᴜᴇ ᴀʀᴇ ɴᴜᴍʙᴇʀs.</b>")
     except Exception as e:
-        await msg.reply_text(f"An error occurred: {str(e)}")
+        await msg.reply_text(f"<b>ᴀɴ ᴇʀʀᴏʀ ᴏᴄᴄᴜʀʀᴇᴅ:</b> <code>{str(e)}</code>")
 
 
 @Bot.on_message(filters.command('remove_premium') & filters.private & admin)
 async def pre_remove_user(client: Client, msg: Message):
     if len(msg.command) != 2:
-        await msg.reply_text("Usage: /remove_premium user_id")
+        await msg.reply_text("<b>ᴜsᴀɢᴇ:</b> <code>/remove_premium user_id</code>")
         return
     try:
         user_id = int(msg.command[1])
         await remove_premium(user_id)
-        await msg.reply_text(f"User {user_id} has been removed from premium.")
+        await msg.reply_text(f"<b>ᴜsᴇʀ</b> <code>{user_id}</code> <b>ʜᴀs ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ ғʀᴏᴍ ᴘʀᴇᴍɪᴜᴍ.</b>")
     except ValueError:
-        await msg.reply_text("user_id must be an integer.")
+        await msg.reply_text("<b>ᴜsᴇʀ_ɪᴅ ᴍᴜsᴛ ʙᴇ ᴀɴ ɪɴᴛᴇɢᴇʀ.</b>")
 
 
 @Bot.on_message(filters.command('premium_users') & filters.private & admin)
 async def list_premium_users_command(client, message):
     ist = timezone("Asia/Kolkata")
     premium_users_cursor = collection.find({})
-    premium_user_list = ["<b>Active Premium Users:</b>"]
+    premium_user_list = ["<b>ᴀᴄᴛɪᴠᴇ ᴘʀᴇᴍɪᴜᴍ ᴜsᴇʀs:</b>"]
     current_time = datetime.now(ist)
 
     async for user in premium_users_cursor:
@@ -107,7 +106,7 @@ async def list_premium_users_command(client, message):
                 continue
 
             user_info = await client.get_users(user_id)
-            username = user_info.username if user_info.username else "No Username"
+            username = user_info.username if user_info.username else "ɴᴏ ᴜsᴇʀɴᴀᴍᴇ"
             mention = user_info.mention
             days, hours, minutes, seconds = (
                 remaining_time.days,
@@ -119,17 +118,17 @@ async def list_premium_users_command(client, message):
 
             premium_user_list.append(
                 f"{tier_emoji} <b>{tier.capitalize()}</b>\n"
-                f"UserID: <code>{user_id}</code>\n"
-                f"User: @{username} | {mention}\n"
-                f"Expiry: {expiry_info}"
+                f"ᴜsᴇʀɪᴅ: <code>{user_id}</code>\n"
+                f"ᴜsᴇʀ: @{username} | {mention}\n"
+                f"ᴇxᴘɪʀʏ: {expiry_info}"
             )
         except Exception as e:
             premium_user_list.append(
-                f"UserID: <code>{user_id}</code> | Error: {str(e)}"
+                f"<b>ᴜsᴇʀɪᴅ:</b> <code>{user_id}</code> | <b>ᴇʀʀᴏʀ:</b> <code>{str(e)}</code>"
             )
 
     if len(premium_user_list) == 1:
-        await message.reply_text("No active premium users found.")
+        await message.reply_text("<b>ɴᴏ ᴀᴄᴛɪᴠᴇ ᴘʀᴇᴍɪᴜᴍ ᴜsᴇʀs ғᴏᴜɴᴅ.</b>")
     else:
         await message.reply_text("\n\n".join(premium_user_list))
 
@@ -157,9 +156,9 @@ async def monitor_premium_expiry(client, user_id):
                 try:
                     await client.send_message(
                         user_id,
-                        f"{tier_emoji} <b>{tier.capitalize()} Premium Expired!</b>\n\n"
-                        "Your premium access has been automatically removed.\n\n"
-                        "Renew premium to continue enjoying your perks."
+                        f"{tier_emoji} <b>{tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ ᴇxᴘɪʀᴇᴅ!</b>\n\n"
+                        "ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss ʜᴀs ʙᴇᴇɴ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ʀᴇᴍᴏᴠᴇᴅ.\n\n"
+                        "ʀᴇɴᴇᴡ ᴘʀᴇᴍɪᴜᴍ ᴛᴏ ᴄᴏɴᴛɪɴᴜᴇ ᴇɴᴊᴏʏɪɴɢ ʏᴏᴜʀ ᴘᴇʀᴋs."
                     )
                 except Exception:
                     pass
@@ -171,10 +170,10 @@ async def monitor_premium_expiry(client, user_id):
                 try:
                     await client.send_message(
                         user_id,
-                        f"<b>⏰ {tier_emoji} {tier.capitalize()} Premium Expiry Reminder</b>\n\n"
-                        f"Your premium expires in less than 24 hours!\n"
-                        f"<b>Expires on:</b> {formatted_time}\n\n"
-                        "Renew now to keep your perks."
+                        f"<b>⏰ {tier_emoji} {tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ ᴇxᴘɪʀʏ ʀᴇᴍɪɴᴅᴇʀ</b>\n\n"
+                        f"ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴇxᴘɪʀᴇs ɪɴ ʟᴇss ᴛʜᴀɴ 24 ʜᴏᴜʀs!\n"
+                        f"<b>ᴇxᴘɪʀᴇs ᴏɴ:</b> {formatted_time}\n\n"
+                        "ʀᴇɴᴇᴡ ɴᴏᴡ ᴛᴏ ᴋᴇᴇᴘ ʏᴏᴜʀ ᴘᴇʀᴋs."
                     )
                     reminder_24h_sent = True
                 except Exception as e:
@@ -186,10 +185,10 @@ async def monitor_premium_expiry(client, user_id):
                 try:
                     await client.send_message(
                         user_id,
-                        f"<b>🚨 {tier_emoji} Final Reminder — {tier.capitalize()} Premium</b>\n\n"
-                        f"Your premium expires in less than 1 hour!\n"
-                        f"<b>Expires at:</b> {formatted_time}\n\n"
-                        "This is your last reminder. Renew now!"
+                        f"<b>🚨 {tier_emoji} ғɪɴᴀʟ ʀᴇᴍɪɴᴅᴇʀ — {tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ</b>\n\n"
+                        f"ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴇxᴘɪʀᴇs ɪɴ ʟᴇss ᴛʜᴀɴ 1 ʜᴏᴜʀ!\n"
+                        f"<b>ᴇxᴘɪʀᴇs ᴀᴛ:</b> {formatted_time}\n\n"
+                        "ᴛʜɪs ɪs ʏᴏᴜʀ ʟᴀsᴛ ʀᴇᴍɪɴᴅᴇʀ. ʀᴇɴᴇᴡ ɴᴏᴡ!"
                     )
                     final_reminder_sent = True
                 except Exception as e:
@@ -234,4 +233,4 @@ async def auto_start_monitoring(client):
 @Bot.on_message(filters.command('start_premium_monitoring') & filters.private & admin)
 async def start_monitoring_existing_users(client: Client, message: Message):
     await auto_start_monitoring(client)
-    await message.reply("Started monitoring all existing premium users for expiry reminders.")
+    await message.reply("<b>sᴛᴀʀᴛᴇᴅ ᴍᴏɴɪᴛᴏʀɪɴɢ ᴀʟʟ ᴇxɪsᴛɪɴɢ ᴘʀᴇᴍɪᴜᴍ ᴜsᴇʀs ғᴏʀ ᴇxᴘɪʀʏ ʀᴇᴍɪɴᴅᴇʀs.</b>")

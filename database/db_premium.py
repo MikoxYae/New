@@ -65,7 +65,7 @@ async def list_premium_users():
             formatted_expiry_time = expiration_time.strftime('%Y-%m-%d %H:%M:%S %p IST')
             tier = user.get("tier", "gold")
             premium_user_list.append(
-                f"UserID: {user_id} | Tier: {tier.capitalize()} - Expiry: {expiry_info} (Expires at {formatted_expiry_time})"
+                f"<b>ᴜsᴇʀɪᴅ:</b> <code>{user_id}</code> | <b>ᴛɪᴇʀ:</b> {tier.capitalize()} - <b>ᴇxᴘɪʀʏ:</b> {expiry_info} (<b>ᴇxᴘɪʀᴇs ᴀᴛ</b> {formatted_expiry_time})"
             )
     return premium_user_list
 
@@ -125,13 +125,13 @@ async def check_user_plan(user_id):
             tier = user.get("tier", "gold")
             tier_emoji = "🥇" if tier == "gold" else "💎"
             return (
-                f"{tier_emoji} <b>{tier.capitalize()} Premium Active</b>\n"
-                f"Time left: <b>{days}d {hours}h {minutes}m {seconds}s</b>"
+                f"{tier_emoji} <b>{tier.capitalize()} ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴇ</b>\n"
+                f"ᴛɪᴍᴇ ʟᴇғᴛ: <b>{days}ᴅ {hours}ʜ {minutes}ᴍ {seconds}s</b>"
             )
         else:
-            return "Your premium plan has expired."
+            return "<b>ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴ ʜᴀs ᴇxᴘɪʀᴇᴅ.</b>"
     else:
-        return "You do not have a premium plan."
+        return "<b>ʏᴏᴜ ᴅᴏ ɴᴏᴛ ʜᴀᴠᴇ ᴀ ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴ.</b>"
 
 # Get users expiring in 24 hours who haven't received 24h reminder
 async def get_users_expiring_24h():

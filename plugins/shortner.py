@@ -22,30 +22,30 @@ def _is_owner(user_id: int) -> bool:
 def _shortner_markup():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("🌐 Add Shortner", callback_data="srt_url"),
-            InlineKeyboardButton("🔑 Api",           callback_data="srt_api")
+            InlineKeyboardButton("🌐 ᴀᴅᴅ sʜᴏʀᴛɴᴇʀ", callback_data="srt_url"),
+            InlineKeyboardButton("🔑 ᴀᴘɪ",           callback_data="srt_api")
         ],
         [
-            InlineKeyboardButton("🎬 Tutorial Video", callback_data="srt_tut"),
-            InlineKeyboardButton("⏱ Token Expire",   callback_data="srt_expire")
+            InlineKeyboardButton("🎬 ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ", callback_data="srt_tut"),
+            InlineKeyboardButton("⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ",   callback_data="srt_expire")
         ],
-        [InlineKeyboardButton("💾 Save Change",      callback_data="srt_save")],
-        [InlineKeyboardButton("🔙 Back",             callback_data="stg_back")]
+        [InlineKeyboardButton("💾 sᴀᴠᴇ ᴄʜᴀɴɢᴇ",      callback_data="srt_save")],
+        [InlineKeyboardButton("🔙 ʙᴀᴄᴋ",             callback_data="stg_back")]
     ])
 
 
 def _build_panel_text(draft: dict) -> str:
-    url    = draft.get("url")    or "<i>not set</i>"
-    api    = draft.get("api")    or "<i>not set</i>"
-    expire = draft.get("expire") or "<i>not set</i>"
-    tut    = draft.get("tut_vid") or "<i>not set</i>"
+    url    = draft.get("url")    or "<i>ɴᴏᴛ sᴇᴛ</i>"
+    api    = draft.get("api")    or "<i>ɴᴏᴛ sᴇᴛ</i>"
+    expire = draft.get("expire") or "<i>ɴᴏᴛ sᴇᴛ</i>"
+    tut    = draft.get("tut_vid") or "<i>ɴᴏᴛ sᴇᴛ</i>"
     return (
-        "<b>🔗 Shortner Settings</b>\n\n"
-        f"<b>🌐 URL:</b> <code>{url}</code>\n"
-        f"<b>🔑 API:</b> <code>{api}</code>\n"
-        f"<b>⏱ Token Expire:</b> <code>{expire}</code> seconds\n"
-        f"<b>🎬 Tutorial Video:</b> <code>{tut}</code>\n\n"
-        "<i>Edit a field then press <b>Save Change</b> to apply.</i>"
+        "<b>🔗 sʜᴏʀᴛɴᴇʀ sᴇᴛᴛɪɴɢs</b>\n\n"
+        f"<b>🌐 ᴜʀʟ:</b> <code>{url}</code>\n"
+        f"<b>🔑 ᴀᴘɪ:</b> <code>{api}</code>\n"
+        f"<b>⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ:</b> <code>{expire}</code> sᴇᴄᴏɴᴅs\n"
+        f"<b>🎬 ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ:</b> <code>{tut}</code>\n\n"
+        "<i>ᴇᴅɪᴛ ᴀ ғɪᴇʟᴅ ᴛʜᴇɴ ᴘʀᴇss <b>sᴀᴠᴇ ᴄʜᴀɴɢᴇ</b> ᴛᴏ ᴀᴘᴘʟʏ.</i>"
     )
 
 
@@ -80,7 +80,7 @@ async def shortner_cb(client: Bot, query: CallbackQuery):
     data = query.data
 
     if not _is_owner(uid):
-        await query.answer("⛔ Only Owner can manage Shortner settings!", show_alert=True)
+        await query.answer("⛔ ᴏɴʟʏ ᴏᴡɴᴇʀ ᴄᴀɴ ᴍᴀɴᴀɢᴇ sʜᴏʀᴛɴᴇʀ sᴇᴛᴛɪɴɢs!", show_alert=True)
         return
 
     await query.answer()
@@ -96,19 +96,19 @@ async def shortner_cb(client: Bot, query: CallbackQuery):
         try:
             await query.message.edit_caption(
                 caption=(
-                    "<b>🌐 Enter Shortner Website URL</b>\n\n"
-                    "<i>Example:</i> <code>linkshortify.com</code>"
+                    "<b>🌐 ᴇɴᴛᴇʀ sʜᴏʀᴛɴᴇʀ ᴡᴇʙsɪᴛᴇ ᴜʀʟ</b>\n\n"
+                    "<i>ᴇxᴀᴍᴘʟᴇ:</i> <code>linkshortify.com</code>"
                 ),
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("❌ Cancel", callback_data="srt_show")
+                    InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="srt_show")
                 ]])
             )
         except Exception:
             await query.message.edit_text(
-                "<b>🌐 Enter Shortner Website URL</b>\n\n"
-                "<i>Example:</i> <code>linkshortify.com</code>",
+                "<b>🌐 ᴇɴᴛᴇʀ sʜᴏʀᴛɴᴇʀ ᴡᴇʙsɪᴛᴇ ᴜʀʟ</b>\n\n"
+                "<i>ᴇxᴀᴍᴘʟᴇ:</i> <code>linkshortify.com</code>",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("❌ Cancel", callback_data="srt_show")
+                    InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="srt_show")
                 ]])
             )
 
@@ -118,16 +118,16 @@ async def shortner_cb(client: Bot, query: CallbackQuery):
         _shortner_msg[uid] = query.message
         try:
             await query.message.edit_caption(
-                caption="<b>🔑 Enter Shortner API Key:</b>",
+                caption="<b>🔑 ᴇɴᴛᴇʀ sʜᴏʀᴛɴᴇʀ ᴀᴘɪ ᴋᴇʏ:</b>",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("❌ Cancel", callback_data="srt_show")
+                    InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="srt_show")
                 ]])
             )
         except Exception:
             await query.message.edit_text(
-                "<b>🔑 Enter Shortner API Key:</b>",
+                "<b>🔑 ᴇɴᴛᴇʀ sʜᴏʀᴛɴᴇʀ ᴀᴘɪ ᴋᴇʏ:</b>",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("❌ Cancel", callback_data="srt_show")
+                    InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="srt_show")
                 ]])
             )
 
@@ -138,19 +138,19 @@ async def shortner_cb(client: Bot, query: CallbackQuery):
         try:
             await query.message.edit_caption(
                 caption=(
-                    "<b>🎬 Enter Tutorial Video Link</b>\n\n"
-                    "<i>Example:</i> <code>https://t.me/channel/12</code>"
+                    "<b>🎬 ᴇɴᴛᴇʀ ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ ʟɪɴᴋ</b>\n\n"
+                    "<i>ᴇxᴀᴍᴘʟᴇ:</i> <code>https://t.me/channel/12</code>"
                 ),
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("❌ Cancel", callback_data="srt_show")
+                    InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="srt_show")
                 ]])
             )
         except Exception:
             await query.message.edit_text(
-                "<b>🎬 Enter Tutorial Video Link</b>\n\n"
-                "<i>Example:</i> <code>https://t.me/channel/12</code>",
+                "<b>🎬 ᴇɴᴛᴇʀ ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ ʟɪɴᴋ</b>\n\n"
+                "<i>ᴇxᴀᴍᴘʟᴇ:</i> <code>https://t.me/channel/12</code>",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("❌ Cancel", callback_data="srt_show")
+                    InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="srt_show")
                 ]])
             )
 
@@ -161,19 +161,19 @@ async def shortner_cb(client: Bot, query: CallbackQuery):
         try:
             await query.message.edit_caption(
                 caption=(
-                    "<b>⏱ Enter Token Expire Time (in seconds)</b>\n\n"
-                    "<i>Example:</i> <code>60</code> = 60 seconds"
+                    "<b>⏱ ᴇɴᴛᴇʀ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ ᴛɪᴍᴇ (ɪɴ sᴇᴄᴏɴᴅs)</b>\n\n"
+                    "<i>ᴇxᴀᴍᴘʟᴇ:</i> <code>60</code> = 60 sᴇᴄᴏɴᴅs"
                 ),
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("❌ Cancel", callback_data="srt_show")
+                    InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="srt_show")
                 ]])
             )
         except Exception:
             await query.message.edit_text(
-                "<b>⏱ Enter Token Expire Time (in seconds)</b>\n\n"
-                "<i>Example:</i> <code>60</code> = 60 seconds",
+                "<b>⏱ ᴇɴᴛᴇʀ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ ᴛɪᴍᴇ (ɪɴ sᴇᴄᴏɴᴅs)</b>\n\n"
+                "<i>ᴇxᴀᴍᴘʟᴇ:</i> <code>60</code> = 60 sᴇᴄᴏɴᴅs",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("❌ Cancel", callback_data="srt_show")
+                    InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="srt_show")
                 ]])
             )
 
@@ -181,7 +181,7 @@ async def shortner_cb(client: Bot, query: CallbackQuery):
     elif data == "srt_save":
         draft = _shortner_draft.get(uid)
         if not draft:
-            await query.answer("⚠️ Nothing to save. Open settings first.", show_alert=True)
+            await query.answer("⚠️ ɴᴏᴛʜɪɴɢ ᴛᴏ sᴀᴠᴇ. ᴏᴘᴇɴ sᴇᴛᴛɪɴɢs ғɪʀsᴛ.", show_alert=True)
             return
 
         await db.save_shortner_settings(draft)
@@ -205,21 +205,21 @@ async def shortner_cb(client: Bot, query: CallbackQuery):
         try:
             await query.message.edit_caption(
                 caption=(
-                    "<b>✅ Shortner Settings Saved Successfully!</b>\n\n"
-                    f"<b>🌐 URL:</b> <code>{draft.get('url') or 'not set'}</code>\n"
-                    f"<b>🔑 API:</b> <code>{draft.get('api') or 'not set'}</code>\n"
-                    f"<b>⏱ Token Expire:</b> <code>{draft.get('expire', '60')}</code> seconds\n"
-                    f"<b>🎬 Tutorial:</b> <code>{draft.get('tut_vid') or 'not set'}</code>"
+                    "<b>✅ sʜᴏʀᴛɴᴇʀ sᴇᴛᴛɪɴɢs sᴀᴠᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ!</b>\n\n"
+                    f"<b>🌐 ᴜʀʟ:</b> <code>{draft.get('url') or 'not set'}</code>\n"
+                    f"<b>🔑 ᴀᴘɪ:</b> <code>{draft.get('api') or 'not set'}</code>\n"
+                    f"<b>⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ:</b> <code>{draft.get('expire', '60')}</code> sᴇᴄᴏɴᴅs\n"
+                    f"<b>🎬 ᴛᴜᴛᴏʀɪᴀʟ:</b> <code>{draft.get('tut_vid') or 'not set'}</code>"
                 ),
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Back", callback_data="stg_back")
+                    InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")
                 ]])
             )
         except Exception:
             await query.message.edit_text(
-                "<b>✅ Shortner Settings Saved Successfully!</b>",
+                "<b>✅ sʜᴏʀᴛɴᴇʀ sᴇᴛᴛɪɴɢs sᴀᴠᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ!</b>",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Back", callback_data="stg_back")
+                    InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")
                 ]])
             )
 
@@ -269,9 +269,9 @@ async def shortner_text_handler(client: Bot, message: Message):
         except ValueError:
             _shortner_pending[uid] = action  # restore pending
             await message.reply(
-                "<b>❌ Invalid! Please enter a number (seconds).</b>",
+                "<b>❌ ɪɴᴠᴀʟɪᴅ! ᴘʟᴇᴀsᴇ ᴇɴᴛᴇʀ ᴀ ɴᴜᴍʙᴇʀ (sᴇᴄᴏɴᴅs).</b>",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("❌ Cancel", callback_data="srt_show")
+                    InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="srt_show")
                 ]])
             )
             raise StopPropagation

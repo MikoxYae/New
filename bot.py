@@ -120,10 +120,12 @@ class Bot(Client):
 
         app = web.AppRunner(await web_server())
         await app.setup()
-        await web.TCPSite(app, "0.0.0.0", PORT).start()
+        await web.TCPSite(app, "0.0.0.0", int(PORT)).start()
 
-        try: await self.send_message(OWNER_ID, text = f"<b>𝗠𝗔𝗦𝗧𝗘𝗥 𝗬𝗢𝗨𝗥 𝗕𝗢𝗧 𝗜𝗦 𝗕𝗔𝗖𝗞 𝗢𝗡𝗟𝗜𝗡𝗘.</b>")
-        except: pass
+        try:
+            await self.send_message(OWNER_ID, text = f"<b>𝗠𝗔𝗦𝗧𝗘𝗥 𝗬𝗢𝗨𝗥 𝗕𝗢𝗧 𝗜𝗦 𝗕𝗔𝗖𝗞 𝗢𝗡𝗟𝗜𝗡𝗘.</b>")
+        except Exception:
+            pass
 
     async def stop(self, *args):
         await super().stop()
@@ -131,7 +133,13 @@ class Bot(Client):
 
     def run(self):
         """Run the bot."""
-        loop = asyncio.get_event_loop()
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_closed():
+                raise RuntimeError("event loop is closed")
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
         loop.run_until_complete(self.start())
         self.LOGGER(__name__).info("Bot is now running.")
         try:

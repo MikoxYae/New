@@ -110,7 +110,7 @@ async def channel_post(client: Client, message: Message):
             chat_id=client.db_channel.id, disable_notification=True
         )
     except FloodWait as e:
-        await asyncio.sleep(e.x)
+        await asyncio.sleep(e.value)
         post_message = await message.copy(
             chat_id=client.db_channel.id, disable_notification=True
         )
@@ -276,7 +276,7 @@ async def custom_batch(client: Client, message: Message):
                 )
                 collected.append(sent.id)
             except FloodWait as e:
-                await asyncio.sleep(e.x)
+                await asyncio.sleep(e.value)
                 try:
                     sent = await user_msg.copy(
                         client.db_channel.id, disable_notification=True

@@ -3,8 +3,7 @@ import os
 import random
 import sys
 import re
-import string 
-import string as rohit
+import string
 import time
 from datetime import datetime
 from pyrogram import Client, filters, __version__
@@ -19,7 +18,12 @@ from database.database import *
 from database.db_premium import *
 import config as _cfg
 
-BAN_SUPPORT = f"{BAN_SUPPORT}"
+# Fallback: if BAN_SUPPORT is not configured, point to OWNER's profile so the
+# "Contact Support" button is always a valid URL.
+if not BAN_SUPPORT or str(BAN_SUPPORT).strip().lower() in ("none", ""):
+    BAN_SUPPORT = f"https://t.me/{OWNER}" if OWNER else "https://t.me/"
+else:
+    BAN_SUPPORT = str(BAN_SUPPORT)
 
 
 @Bot.on_message(filters.command('start') & filters.private)
@@ -31,8 +35,8 @@ async def start_command(client: Client, message: Message):
     if not await db.present_user(user_id):
         try:
             await db.add_user(user_id)
-        except:
-            pass
+        except Exception as ex:
+            print(f"add_user failed for {user_id}: {ex}")
 
     if not await is_subscribed(client, user_id) and tier != "platinum":
         return await not_joined(client, message)
@@ -40,10 +44,10 @@ async def start_command(client: Client, message: Message):
     banned_users = await db.get_ban_users()
     if user_id in banned_users:
         return await message.reply_text(
-            "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>\n\n"
-            "<i>Contact support if you think this is a mistake.</i>",
+            "<b>⛔️ ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ғʀᴏᴍ ᴜsɪɴɢ ᴛʜɪs ʙᴏᴛ.</b>\n\n"
+            "<i>ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ ɪғ ʏᴏᴜ ᴛʜɪɴᴋ ᴛʜɪs ɪs ᴀ ᴍɪsᴛᴀᴋᴇ.</i>",
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
+                [[InlineKeyboardButton("ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ", url=BAN_SUPPORT)]]
             )
         )
 
@@ -52,8 +56,8 @@ async def start_command(client: Client, message: Message):
         admins = await db.get_all_admins()
         if user_id not in admins and user_id != OWNER_ID:
             return await message.reply_text(
-                "<b>🔧 Bot is currently under maintenance.</b>\n\n"
-                "<i>Please try again later.</i>"
+                "<b>🔧 ʙᴏᴛ ɪs ᴄᴜʀʀᴇɴᴛʟʏ ᴜɴᴅᴇʀ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ.</b>\n\n"
+                "<i>ᴘʟᴇᴀsᴇ ᴛʀʏ ᴀɢᴀɪɴ ʟᴀᴛᴇʀ.</i>"
             )
 
     FILE_AUTO_DELETE = await db.get_del_timer()
@@ -75,20 +79,20 @@ async def start_command(client: Client, message: Message):
                 if verify_status['verify_token'] != token:
                     return await message.reply_photo(
                         photo=PREMIUM_PIC,
-                        caption="<b>⚠️ 𝖨𝗇𝗏𝖺𝗅𝗂𝖽 𝗍𝗈𝗄𝖾𝗇. 𝖯𝗅𝖾𝖺𝗌𝖾 /start 𝖺𝗀𝖺𝗂𝗇.</b>"
+                        caption="<b>⚠️ 𝖨𝗇𝗏𝖺𝗅𝗂𝖽 𝗍𝗈𝗄𝖾𝗇. 𝖯𝗅𝖾𝖺𝗌𝖾 /sᴛᴀʀᴛ 𝖺𝗀𝖺𝗂𝗇.</b>"
                     )
                 # Security: web human verification must be completed before token is accepted
                 if not verify_status.get('web_passed'):
                     return await message.reply_photo(
                         photo=PREMIUM_PIC,
-                        caption="<b>⚠️ Please open the verification link and complete human verification first.</b>"
+                        caption="<b>⚠️ ᴘʟᴇᴀsᴇ ᴏᴘᴇɴ ᴛʜᴇ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ʟɪɴᴋ ᴀɴᴅ ᴄᴏᴍᴘʟᴇᴛᴇ ʜᴜᴍᴀɴ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ғɪʀsᴛ.</b>"
                     )
                 await db.update_verify_status(id, is_verified=True, verified_time=time.time())
                 current = await db.get_verify_count(id)
                 await db.set_verify_count(id, current + 1)
                 return await message.reply_photo(
                     photo=PREMIUM_PIC,
-                    caption=f"<b>✅ 𝗧𝗼𝗸𝗲𝗻 𝘃𝗲𝗿𝗶𝗳𝗶𝗲𝗱! Vᴀʟɪᴅ ғᴏʀ {get_exp_time(_cfg.VERIFY_EXPIRE)}</b>"
+                    caption=f"<b>✅ 𝗧𝗼𝗸𝗲𝗻 𝘃𝗲𝗿𝗶𝗳𝗶𝗲𝗱! ᴠᴀʟɪᴅ ғᴏʀ {get_exp_time(_cfg.VERIFY_EXPIRE)}</b>"
                 )
 
         # ── Access gate: free link count → token or premium ──────────────────────
@@ -104,7 +108,7 @@ async def start_command(client: Client, message: Message):
                 if shortner_enabled and (_cfg.SHORTLINK_URL or _cfg.SHORTLINK_API):
                     # Mode: Shortner ON — require token after free limit
                     if not verify_status['is_verified']:
-                        token = ''.join(random.choices(rohit.ascii_letters + rohit.digits, k=10))
+                        token = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
                         direct_tg_link = f'https://telegram.dog/{client.username}?start=verify_{token}'
                         shortlink = await get_shortlink(_cfg.SHORTLINK_URL, _cfg.SHORTLINK_API, direct_tg_link)
                         await db.update_verify_status(id, verify_token=token, link=shortlink, created_at=time.time())
@@ -120,11 +124,11 @@ async def start_command(client: Client, message: Message):
                         return await message.reply_photo(
                             photo=PREMIUM_PIC,
                             caption=(
-                                f"<b>🔒 Your {free_limit} free daily links have been used!</b>\n\n"
-                                f"<b>Please refresh your token to continue using the bot.</b>\n\n"
-                                f"<b>Token Timeout:</b> {get_exp_time(_cfg.VERIFY_EXPIRE)}\n\n"
-                                f"<b>This is an ads token. Passing one ad allows you to use the bot until the next day.</b>\n\n"
-                                f"<blockquote><b>To skip the token, get our Premium for unlimited access.</b></blockquote>"
+                                f"<b>🔒 ʏᴏᴜʀ {free_limit} ғʀᴇᴇ ᴅᴀɪʟʏ ʟɪɴᴋs ʜᴀᴠᴇ ʙᴇᴇɴ ᴜsᴇᴅ!</b>\n\n"
+                                f"<b>ᴘʟᴇᴀsᴇ ʀᴇғʀᴇsʜ ʏᴏᴜʀ ᴛᴏᴋᴇɴ ᴛᴏ ᴄᴏɴᴛɪɴᴜᴇ ᴜsɪɴɢ ᴛʜᴇ ʙᴏᴛ.</b>\n\n"
+                                f"<b>ᴛᴏᴋᴇɴ ᴛɪᴍᴇᴏᴜᴛ:</b> {get_exp_time(_cfg.VERIFY_EXPIRE)}\n\n"
+                                f"<b>ᴛʜɪs ɪs ᴀɴ ᴀᴅs ᴛᴏᴋᴇɴ. ᴘᴀssɪɴɢ ᴏɴᴇ ᴀᴅ ᴀʟʟᴏᴡs ʏᴏᴜ ᴛᴏ ᴜsᴇ ᴛʜᴇ ʙᴏᴛ ᴜɴᴛɪʟ ᴛʜᴇ ɴᴇxᴛ ᴅᴀʏ.</b>\n\n"
+                                f"<blockquote><b>ᴛᴏ sᴋɪᴘ ᴛʜᴇ ᴛᴏᴋᴇɴ, ɢᴇᴛ ᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ғᴏʀ ᴜɴʟɪᴍɪᴛᴇᴅ ᴀᴄᴄᴇss.</b></blockquote>"
                             ),
                             reply_markup=InlineKeyboardMarkup(btn)
                         )
@@ -133,9 +137,9 @@ async def start_command(client: Client, message: Message):
                     return await message.reply_photo(
                         photo=PREMIUM_PIC,
                         caption=(
-                            f"<b>🔒 Your {free_limit} free daily links have been used!</b>\n\n"
-                            f"<b>Daily limit reached. Come back tomorrow for {free_limit} more free links.</b>\n\n"
-                            f"<b>Get Premium for unlimited access with no daily restrictions!</b>"
+                            f"<b>🔒 ʏᴏᴜʀ {free_limit} ғʀᴇᴇ ᴅᴀɪʟʏ ʟɪɴᴋs ʜᴀᴠᴇ ʙᴇᴇɴ ᴜsᴇᴅ!</b>\n\n"
+                            f"<b>ᴅᴀɪʟʏ ʟɪᴍɪᴛ ʀᴇᴀᴄʜᴇᴅ. ᴄᴏᴍᴇ ʙᴀᴄᴋ ᴛᴏᴍᴏʀʀᴏᴡ ғᴏʀ {free_limit} ᴍᴏʀᴇ ғʀᴇᴇ ʟɪɴᴋs.</b>\n\n"
+                            f"<b>ɢᴇᴛ ᴘʀᴇᴍɪᴜᴍ ғᴏʀ ᴜɴʟɪᴍɪᴛᴇᴅ ᴀᴄᴄᴇss ᴡɪᴛʜ ɴᴏ ᴅᴀɪʟʏ ʀᴇsᴛʀɪᴄᴛɪᴏɴs!</b>"
                         ),
                         reply_markup=InlineKeyboardMarkup([
                             [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
@@ -192,7 +196,7 @@ async def start_command(client: Client, message: Message):
                                             reply_markup=reply_markup, protect_content=protect_content)
                 yaemiko_msgs.append(copied_msg)
             except FloodWait as e:
-                await asyncio.sleep(e.x)
+                await asyncio.sleep(e.value)
                 copied_msg = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML, 
                                             reply_markup=reply_markup, protect_content=protect_content)
                 yaemiko_msgs.append(copied_msg)
@@ -202,7 +206,7 @@ async def start_command(client: Client, message: Message):
 
         if FILE_AUTO_DELETE > 0:
             notification_msg = await message.reply(
-                f"<b>Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ.</b>"
+                f"<b>ᴛʜɪs ғɪʟᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. ᴘʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs ᴅᴇʟᴇᴛᴇᴅ.</b>"
             )
 
             await asyncio.sleep(FILE_AUTO_DELETE)
@@ -302,7 +306,7 @@ async def not_joined(client: Client, message: Message):
                         else:
                             try:
                                 link = data.invite_link or await client.export_chat_invite_link(chat_id)
-                            except:
+                            except Exception:
                                 invite = await client.create_chat_invite_link(chat_id=chat_id)
                                 link = invite.invite_link
 
@@ -313,14 +317,14 @@ async def not_joined(client: Client, message: Message):
                 except Exception as e:
                     print(f"Error with chat {chat_id}: {e}")
                     return await temp.edit(
-                        f"<b><i>! Eʀʀᴏʀ, Cᴏɴᴛᴀᴄᴛ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ ɪssᴜᴇs @rohit_1888</i></b>\n"
-                        f"<blockquote expandable><b>Rᴇᴀsᴏɴ:</b> {e}</blockquote>"
+                        f"<b><i>! ᴇʀʀᴏʀ, ᴄᴏɴᴛᴀᴄᴛ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ ɪssᴜᴇs @ʀᴏʜɪᴛ_1888</i></b>\n"
+                        f"<blockquote expandable><b>ʀᴇᴀsᴏɴ:</b> {e}</blockquote>"
                     )
 
         try:
             buttons.append([
                 InlineKeyboardButton(
-                    text='♻️ Tʀʏ Aɢᴀɪɴ',
+                    text='♻️ ᴛʀʏ ᴀɢᴀɪɴ',
                     url=f"https://t.me/{client.username}?start={message.command[1]}"
                 )
             ])

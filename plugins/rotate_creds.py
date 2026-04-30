@@ -236,8 +236,8 @@ async def show_creds_cmd(client: Client, message: Message):
         "<b>🔐 ᴄᴜʀʀᴇɴᴛ ᴄʀᴇᴅᴇɴᴛɪᴀʟs</b>\n\n"
         f"<b>ᴜᴘɪ:</b> <code>{cur_upi}</code>\n"
         f"<b>ᴘᴀʏᴇᴇ:</b> <code>{payee}</code>\n\n"
-        f"<b>ᴀᴘɪ ᴋᴇʏ (premium_auto):</b> <code>{_mask_key(cur_key_pa)}</code>\n"
-        f"<b>ᴀᴘɪ ᴋᴇʏ (admin_orders):</b> <code>{_mask_key(cur_key_ao)}</code>\n"
+        f"<b>ᴀᴘɪ ᴋᴇʏ (ᴘʀᴇᴍɪᴜᴍ_ᴀᴜᴛᴏ):</b> <code>{_mask_key(cur_key_pa)}</code>\n"
+        f"<b>ᴀᴘɪ ᴋᴇʏ (ᴀᴅᴍɪɴ_ᴏʀᴅᴇʀs):</b> <code>{_mask_key(cur_key_ao)}</code>\n"
         f"<b>sʏɴᴄ:</b> {sync}\n\n"
         "<i>ᴜsᴇ <code>/rotate_upi &lt;upi&gt; &lt;key&gt;</code> ᴛᴏ ᴄʜᴀɴɢᴇ.</i>"
     )

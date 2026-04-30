@@ -31,21 +31,21 @@ async def track_activity(client: Bot, message: Message):
 async def peak_hours_today(client: Bot, message: Message):
     hourly = await get_peak_hours_today()
     if not hourly:
-        return await message.reply('<b>No activity data for today yet.</b>')
+        return await message.reply('<b>ɴᴏ ᴀᴄᴛɪᴠɪᴛʏ ᴅᴀᴛᴀ ғᴏʀ ᴛᴏᴅᴀʏ ʏᴇᴛ.</b>')
 
     max_count = max(hourly.values())
     peak_hour = max(hourly, key=hourly.get)
     total = sum(hourly.values())
 
-    lines = ['<b>📊 Peak Hours — Today (IST)</b>', '']
+    lines = ['<b>📊 ᴘᴇᴀᴋ ʜᴏᴜʀs — ᴛᴏᴅᴀʏ (ɪsᴛ)</b>', '']
     for h in range(24):
         count = hourly.get(h, 0)
         bar = make_bar(count, max_count)
         marker = ' 🔥' if h == peak_hour else ''
         lines.append(f'<code>{h:02d}:00</code> {bar} {count}{marker}')
 
-    lines += ['', f'<b>Total interactions:</b> {total}',
-              f'<b>Peak hour:</b> {peak_hour:02d}:00 — {hourly[peak_hour]} interactions']
+    lines += ['', f'<b>ᴛᴏᴛᴀʟ ɪɴᴛᴇʀᴀᴄᴛɪᴏɴs:</b> {total}',
+              f'<b>ᴘᴇᴀᴋ ʜᴏᴜʀ:</b> {peak_hour:02d}:00 — {hourly[peak_hour]} ɪɴᴛᴇʀᴀᴄᴛɪᴏɴs']
     await message.reply('\n'.join(lines))
 
 
@@ -56,7 +56,7 @@ async def weekly_report(client: Bot, message: Message):
     daily  = await get_daily_breakdown_week()
 
     if not hourly and not daily:
-        return await message.reply('<b>No activity data for the past 7 days yet.</b>')
+        return await message.reply('<b>ɴᴏ ᴀᴄᴛɪᴠɪᴛʏ ᴅᴀᴛᴀ ғᴏʀ ᴛʜᴇ ᴘᴀsᴛ 7 ᴅᴀʏs ʏᴇᴛ.</b>')
 
     total = sum(hourly.values())
     max_h = max(hourly.values()) if hourly else 1
@@ -65,14 +65,14 @@ async def weekly_report(client: Bot, message: Message):
     max_d = max(daily.values()) if daily else 1
     peak_day = max(daily, key=daily.get) if daily else None
 
-    lines = ['<b>📊 Weekly Report — Last 7 Days (IST)</b>', '', '<b>Hourly Breakdown:</b>']
+    lines = ['<b>📊 ᴡᴇᴇᴋʟʏ ʀᴇᴘᴏʀᴛ — ʟᴀsᴛ 7 ᴅᴀʏs (ɪsᴛ)</b>', '', '<b>ʜᴏᴜʀʟʏ ʙʀᴇᴀᴋᴅᴏᴡɴ:</b>']
     for h in range(24):
         count = hourly.get(h, 0)
         bar = make_bar(count, max_h)
         marker = ' 🔥' if h == peak_hour else ''
         lines.append(f'<code>{h:02d}:00</code> {bar} {count}{marker}')
 
-    lines += ['', '<b>Daily Breakdown:</b>']
+    lines += ['', '<b>ᴅᴀɪʟʏ ʙʀᴇᴀᴋᴅᴏᴡɴ:</b>']
     for d in range(7):
         count = daily.get(d, 0)
         bar = make_bar(count, max_d)
@@ -81,9 +81,9 @@ async def weekly_report(client: Bot, message: Message):
 
     lines += [
         '',
-        f'<b>Total interactions (7d):</b> {total}',
-        f'<b>Peak hour:</b> {peak_hour:02d}:00 IST' if peak_hour is not None else '',
-        f'<b>Busiest day:</b> {DAYS[peak_day]}' if peak_day is not None else '',
+        f'<b>ᴛᴏᴛᴀʟ ɪɴᴛᴇʀᴀᴄᴛɪᴏɴs (7ᴅ):</b> {total}',
+        f'<b>ᴘᴇᴀᴋ ʜᴏᴜʀ:</b> {peak_hour:02d}:00 ɪsᴛ' if peak_hour is not None else '',
+        f'<b>ʙᴜsɪᴇsᴛ ᴅᴀʏ:</b> {DAYS[peak_day]}' if peak_day is not None else '',
     ]
     await message.reply('\n'.join(l for l in lines if l is not None))
 
@@ -92,4 +92,4 @@ async def weekly_report(client: Bot, message: Message):
 @Bot.on_message(filters.command('cleanstats') & filters.private & admin)
 async def clean_stats(client: Bot, message: Message):
     deleted = await cleanup_old_logs(days=30)
-    await message.reply(f'<b>🗑 Cleaned {deleted} old activity log entries.</b>')
+    await message.reply(f'<b>🗑 ᴄʟᴇᴀɴᴇᴅ {deleted} ᴏʟᴅ ᴀᴄᴛɪᴠɪᴛʏ ʟᴏɢ ᴇɴᴛʀɪᴇs.</b>')

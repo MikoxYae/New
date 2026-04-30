@@ -176,9 +176,9 @@ async def _render_id_page(client, src, d, page, edit):
             plan_lbl = PLAN_LABELS.get(o.get("plan_id", ""), o.get("plan_id", "-"))
             lines.append(
                 f"\n{i}. <code>{o.get('order_id', '?')}</code>\n"
-                f"   <b>USER:</b> <code>{o.get('user_id', '?')}</code>  •  "
-                f"Gold {plan_lbl}  •  ₹{o.get('amount', 0)}  •  {_fmt_time_ist(o.get('paid_at'))}\n"
-                f"   <b>TXN:</b> <code>{o.get('txn_id') or '—'}</code>"
+                f"   <b>ᴜsᴇʀ:</b> <code>{o.get('user_id', '?')}</code>  •  "
+                f"ɢᴏʟᴅ {plan_lbl}  •  ₹{o.get('amount', 0)}  •  {_fmt_time_ist(o.get('paid_at'))}\n"
+                f"   <b>ᴛxɴ:</b> <code>{o.get('txn_id') or '—'}</code>"
             )
         text = head + "".join(lines)
 
@@ -342,13 +342,13 @@ async def checkorder_cmd(client, message: Message):
         lines.append("  <i>ɴᴏᴛ ғᴏᴜɴᴅ.</i>")
     else:
         lines += [
-            f"  <b>status:</b>  <code>{db_doc.get('status')}</code>",
-            f"  <b>user_id:</b> <code>{db_doc.get('user_id')}</code>",
-            f"  <b>amount:</b>  <code>₹{db_doc.get('amount')}</code>",
-            f"  <b>plan:</b>    <code>{db_doc.get('plan_id')}</code>",
-            f"  <b>created:</b> <code>{db_doc.get('created_at')}</code>",
-            f"  <b>paid_at:</b> <code>{db_doc.get('paid_at') or '—'}</code>",
-            f"  <b>txn_id:</b>  <code>{db_doc.get('txn_id') or '—'}</code>",
+            f"  <b>sᴛᴀᴛᴜs:</b>  <code>{db_doc.get('status')}</code>",
+            f"  <b>ᴜsᴇʀ_ɪᴅ:</b> <code>{db_doc.get('user_id')}</code>",
+            f"  <b>ᴀᴍᴏᴜɴᴛ:</b>  <code>₹{db_doc.get('amount')}</code>",
+            f"  <b>ᴘʟᴀɴ:</b>    <code>{db_doc.get('plan_id')}</code>",
+            f"  <b>ᴄʀᴇᴀᴛᴇᴅ:</b> <code>{db_doc.get('created_at')}</code>",
+            f"  <b>ᴘᴀɪᴅ_ᴀᴛ:</b> <code>{db_doc.get('paid_at') or '—'}</code>",
+            f"  <b>ᴛxɴ_ɪᴅ:</b>  <code>{db_doc.get('txn_id') or '—'}</code>",
         ]
 
     lines += ["", "<b>sᴇʟʟɢʀᴀᴍ:</b>"]
@@ -357,12 +357,12 @@ async def checkorder_cmd(client, message: Message):
     elif api_resp and api_resp.get("success"):
         d = api_resp.get("data") or {}
         lines += [
-            f"  <b>status:</b>  <code>{d.get('status')}</code>",
-            f"  <b>amount:</b>  <code>₹{d.get('amount')}</code>",
-            f"  <b>txn_id:</b>  <code>{d.get('txn_id')}</code>",
-            f"  <b>bank:</b>    <code>{d.get('bank_txn_id')}</code>",
-            f"  <b>mode:</b>    <code>{d.get('payment_mode')}</code>",
-            f"  <b>paid_on:</b> <code>{d.get('txn_date')}</code>",
+            f"  <b>sᴛᴀᴛᴜs:</b>  <code>{d.get('status')}</code>",
+            f"  <b>ᴀᴍᴏᴜɴᴛ:</b>  <code>₹{d.get('amount')}</code>",
+            f"  <b>ᴛxɴ_ɪᴅ:</b>  <code>{d.get('txn_id')}</code>",
+            f"  <b>ʙᴀɴᴋ:</b>    <code>{d.get('bank_txn_id')}</code>",
+            f"  <b>ᴍᴏᴅᴇ:</b>    <code>{d.get('payment_mode')}</code>",
+            f"  <b>ᴘᴀɪᴅ_ᴏɴ:</b> <code>{d.get('txn_date')}</code>",
         ]
     else:
         msg = (api_resp or {}).get("message") or "ᴜɴᴋɴᴏᴡɴ"
@@ -467,10 +467,10 @@ async def forceverify_cmd(client, message: Message):
         f"✅ sᴇʟʟɢʀᴀᴍ ᴄᴏɴғɪʀᴍs sᴜᴄᴄᴇss\n"
         f"✅ ᴀᴍᴏᴜɴᴛ ᴍᴀᴛᴄʜᴇs (₹{order['amount']})\n"
         f"✅ ᴅʙ ᴜᴘᴅᴀᴛᴇᴅ → <code>paid</code>\n"
-        f"✅ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ (gold, {order['time_value']}{order['time_unit']})\n"
+        f"✅ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ (ɢᴏʟᴅ, {order['time_value']}{order['time_unit']})\n"
         f"{'✅' if user_notified else '⚠️'} ʀᴇᴄᴇɪᴘᴛ "
         f"{'sᴇɴᴛ' if user_notified else 'ʙʟᴏᴄᴋᴇᴅ'} ᴛᴏ <code>{user_id}</code>\n"
-        f"✅ ᴀᴘᴘᴇᴀʀs ɪɴ /id, /ord, /amount"
+        f"✅ ᴀᴘᴘᴇᴀʀs ɪɴ /ɪᴅ, /ᴏʀᴅ, /ᴀᴍᴏᴜɴᴛ"
     )
 
 

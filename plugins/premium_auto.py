@@ -160,13 +160,13 @@ async def pick_plan(client: Bot, query: CallbackQuery):
     plan_id = query.data.replace("pa_plan_", "", 1)
     plan = PLANS.get(plan_id)
     if not plan:
-        return await query.answer("Invalid plan.", show_alert=True)
+        return await query.answer("ɪɴᴠᴀʟɪᴅ ᴘʟᴀɴ.", show_alert=True)
 
     label, amount, time_value, time_unit = plan
     user_id = query.from_user.id
     order_id = _gen_order_id(amount, user_id)
 
-    await query.answer("Generating QR…")
+    await query.answer("ɢᴇɴᴇʀᴀᴛɪɴɢ ǫʀ…")
 
     await _orders_col.insert_one({
         "order_id":   order_id,
@@ -187,7 +187,7 @@ async def pick_plan(client: Bot, query: CallbackQuery):
         f"<b>ᴀᴍᴏᴜɴᴛ:</b> <b>₹{amount}</b>\n"
         f"<b>ᴏʀᴅᴇʀ ɪᴅ:</b> <code>{order_id}</code>\n\n"
         f"<b>📱 ɪɴsᴛʀᴜᴄᴛɪᴏɴs:</b>\n"
-        f"<b>1.</b> ᴏᴘᴇɴ ᴀɴʏ ᴜᴘɪ ᴀᴘᴘ — Pᴀʏᴛᴍ / GPᴀʏ / PʜᴏɴᴇPᴇ.\n"
+        f"<b>1.</b> ᴏᴘᴇɴ ᴀɴʏ ᴜᴘɪ ᴀᴘᴘ — ᴘᴀʏᴛᴍ / ɢᴘᴀʏ / ᴘʜᴏɴᴇᴘᴇ.\n"
         f"<b>2.</b> sᴄᴀɴ ᴛʜᴇ ǫʀ ᴄᴏᴅᴇ ᴀʙᴏᴠᴇ.\n"
         f"<b>3.</b> ᴘᴀʏ ᴛʜᴇ ᴇxᴀᴄᴛ ᴀᴍᴏᴜɴᴛ <b>₹{amount}</b>.\n"
         f"<b>4.</b> ᴀғᴛᴇʀ ᴘᴀʏᴍᴇɴᴛ, ᴄʟɪᴄᴋ <b>ɪ ʜᴀᴠᴇ ᴘᴀɪᴅ</b>.\n"
@@ -230,15 +230,15 @@ async def i_have_paid(client: Bot, query: CallbackQuery):
 
     order = await _orders_col.find_one({"order_id": order_id})
     if not order:
-        return await query.answer("Order not found. Generate a new one.", show_alert=True)
+        return await query.answer("ᴏʀᴅᴇʀ ɴᴏᴛ ғᴏᴜɴᴅ. ɢᴇɴᴇʀᴀᴛᴇ ᴀ ɴᴇᴡ ᴏɴᴇ.", show_alert=True)
 
     if order["user_id"] != user_id:
-        return await query.answer("This order does not belong to you.", show_alert=True)
+        return await query.answer("ᴛʜɪs ᴏʀᴅᴇʀ ᴅᴏᴇs ɴᴏᴛ ʙᴇʟᴏɴɢ ᴛᴏ ʏᴏᴜ.", show_alert=True)
 
     if order.get("status") == "paid":
-        return await query.answer("Premium already activated for this order.", show_alert=True)
+        return await query.answer("ᴘʀᴇᴍɪᴜᴍ ᴀʟʀᴇᴀᴅʏ ᴀᴄᴛɪᴠᴀᴛᴇᴅ ғᴏʀ ᴛʜɪs ᴏʀᴅᴇʀ.", show_alert=True)
 
-    await query.answer("🔍 Verifying payment…")
+    await query.answer("🔍 ᴠᴇʀɪғʏɪɴɢ ᴘᴀʏᴍᴇɴᴛ…")
 
     try:
         resp = await _check_payment(order_id)

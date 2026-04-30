@@ -43,7 +43,7 @@ async def send_pin_text(client: Bot, message: Message):
                 await client.pin_chat_message(chat_id=chat_id, message_id=sent_msg.id, both_sides=True)
                 successful += 1
             except FloodWait as e:
-                await asyncio.sleep(e.x)
+                await asyncio.sleep(e.value)
                 sent_msg = await broadcast_msg.copy(chat_id)
                 await client.pin_chat_message(chat_id=chat_id, message_id=sent_msg.id, both_sides=True)
                 successful += 1
@@ -90,7 +90,7 @@ async def send_text(client: Bot, message: Message):
                 await broadcast_msg.copy(chat_id)
                 successful += 1
             except FloodWait as e:
-                await asyncio.sleep(e.x)
+                await asyncio.sleep(e.value)
                 await broadcast_msg.copy(chat_id)
                 successful += 1
             except UserIsBlocked:
@@ -99,7 +99,8 @@ async def send_text(client: Bot, message: Message):
             except InputUserDeactivated:
                 await db.del_user(chat_id)
                 deleted += 1
-            except:
+            except Exception as ex:
+                print(f"broadcast send error to {chat_id}: {ex}")
                 unsuccessful += 1
             total += 1
 
@@ -126,7 +127,7 @@ async def delete_broadcast(client: Bot, message: Message):
         except (IndexError, ValueError):
             await message.reply(
                 f"<b>ᴘʟᴇᴀsᴇ ᴜsᴇ ᴀ ᴠᴀʟɪᴅ ᴅᴜʀᴀᴛɪᴏɴ ɪɴ sᴇᴄᴏɴᴅs.</b>\n"
-                f"<b>ᴜsᴀɢᴇ:</b> /dbroadcast {{duration}}"
+                f"<b>ᴜsᴀɢᴇ:</b> /ᴅʙʀᴏᴀᴅᴄᴀsᴛ {{duration}}"
             )
             return
 
@@ -146,7 +147,7 @@ async def delete_broadcast(client: Bot, message: Message):
                 await sent_msg.delete()
                 successful += 1
             except FloodWait as e:
-                await asyncio.sleep(e.x)
+                await asyncio.sleep(e.value)
                 sent_msg = await broadcast_msg.copy(chat_id)
                 await asyncio.sleep(duration)
                 await sent_msg.delete()
@@ -157,7 +158,8 @@ async def delete_broadcast(client: Bot, message: Message):
             except InputUserDeactivated:
                 await db.del_user(chat_id)
                 deleted += 1
-            except:
+            except Exception as ex:
+                print(f"dbroadcast send error to {chat_id}: {ex}")
                 unsuccessful += 1
             total += 1
 

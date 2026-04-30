@@ -28,35 +28,35 @@ _pending: dict = {}   # user_id -> { action, msg_id, chat_id }
 def _main_markup():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("👑 Admin",      callback_data="stg_admin"),
-            InlineKeyboardButton("🚫 Ban Users",  callback_data="stg_ban")
+            InlineKeyboardButton("👑 ᴀᴅᴍɪɴ",      callback_data="stg_admin"),
+            InlineKeyboardButton("🚫 ʙᴀɴ ᴜsᴇʀs",  callback_data="stg_ban")
         ],
         [
-            InlineKeyboardButton("👥 Users",      callback_data="stg_users"),
-            InlineKeyboardButton("📊 Stats",      callback_data="stg_stats")
+            InlineKeyboardButton("👥 ᴜsᴇʀs",      callback_data="stg_users"),
+            InlineKeyboardButton("📊 sᴛᴀᴛs",      callback_data="stg_stats")
         ],
         [
-            InlineKeyboardButton("🔢 Count",      callback_data="stg_count"),
-            InlineKeyboardButton("🧹 DelReq",     callback_data="stg_delreq")
+            InlineKeyboardButton("🔢 ᴄᴏᴜɴᴛ",      callback_data="stg_count"),
+            InlineKeyboardButton("🧹 ᴅᴇʟʀᴇǫ",     callback_data="stg_delreq")
         ],
         [
-            InlineKeyboardButton("📢 Force Sub",  callback_data="stg_fsub"),
-            InlineKeyboardButton("🔄 Request Mode", callback_data="stg_reqmode")
+            InlineKeyboardButton("📢 ғᴏʀᴄᴇ sᴜʙ",  callback_data="stg_fsub"),
+            InlineKeyboardButton("🔄 ʀᴇǫᴜᴇsᴛ ᴍᴏᴅᴇ", callback_data="stg_reqmode")
         ],
         [
-            InlineKeyboardButton("⏱ Auto Delete", callback_data="stg_autodel"),
-            InlineKeyboardButton("🔗 Shortner",    callback_data="stg_shortner")
+            InlineKeyboardButton("⏱ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="stg_autodel"),
+            InlineKeyboardButton("🔗 sʜᴏʀᴛɴᴇʀ",    callback_data="stg_shortner")
         ],
         [
-            InlineKeyboardButton("🆓 Free Link",   callback_data="stg_freelink"),
-            InlineKeyboardButton("🔐 Protect",     callback_data="stg_protect")
+            InlineKeyboardButton("🆓 ғʀᴇᴇ ʟɪɴᴋ",   callback_data="stg_freelink"),
+            InlineKeyboardButton("🔐 ᴘʀᴏᴛᴇᴄᴛ",     callback_data="stg_protect")
         ],
         [
-            InlineKeyboardButton("📝 Caption",     callback_data="stg_caption"),
-            InlineKeyboardButton("🛡 Anti Bypass", callback_data="stg_antibypass")
+            InlineKeyboardButton("📝 ᴄᴀᴘᴛɪᴏɴ",     callback_data="stg_caption"),
+            InlineKeyboardButton("🛡 ᴀɴᴛɪ ʙʏᴘᴀss", callback_data="stg_antibypass")
         ],
         [
-            InlineKeyboardButton("🔧 Maintenance", callback_data="stg_maintenance")
+            InlineKeyboardButton("🔧 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ", callback_data="stg_maintenance")
         ]
     ])
 
@@ -64,33 +64,33 @@ def _main_markup():
 def _admin_markup():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("➕ Add",    callback_data="stg_admin_add"),
-            InlineKeyboardButton("➖ Remove", callback_data="stg_admin_remove"),
-            InlineKeyboardButton("📋 List",   callback_data="stg_admin_list")
+            InlineKeyboardButton("➕ ᴀᴅᴅ",    callback_data="stg_admin_add"),
+            InlineKeyboardButton("➖ ʀᴇᴍᴏᴠᴇ", callback_data="stg_admin_remove"),
+            InlineKeyboardButton("📋 ʟɪsᴛ",   callback_data="stg_admin_list")
         ],
-        [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+        [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
     ])
 
 
 def _ban_markup():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("🚫 Ban",    callback_data="stg_ban_add"),
-            InlineKeyboardButton("✅ Unban",  callback_data="stg_ban_remove"),
-            InlineKeyboardButton("📋 List",   callback_data="stg_ban_list")
+            InlineKeyboardButton("🚫 ʙᴀɴ",    callback_data="stg_ban_add"),
+            InlineKeyboardButton("✅ ᴜɴʙᴀɴ",  callback_data="stg_ban_remove"),
+            InlineKeyboardButton("📋 ʟɪsᴛ",   callback_data="stg_ban_list")
         ],
-        [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+        [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
     ])
 
 
 def _fsub_markup():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("➕ Add",    callback_data="stg_fsub_add"),
-            InlineKeyboardButton("➖ Remove", callback_data="stg_fsub_remove"),
-            InlineKeyboardButton("📋 List",   callback_data="stg_fsub_list")
+            InlineKeyboardButton("➕ ᴀᴅᴅ",    callback_data="stg_fsub_add"),
+            InlineKeyboardButton("➖ ʀᴇᴍᴏᴠᴇ", callback_data="stg_fsub_remove"),
+            InlineKeyboardButton("📋 ʟɪsᴛ",   callback_data="stg_fsub_list")
         ],
-        [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+        [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
     ])
 
 
@@ -119,7 +119,7 @@ async def settings_cb(client: Bot, query: CallbackQuery):
     if data == "stg_back":
         _pending.pop(uid, None)
         await _edit(query,
-            "<b>⚙️ Settings Panel</b>\n\nSelect a category to manage:",
+            "<b>⚙️ sᴇᴛᴛɪɴɢs ᴘᴀɴᴇʟ</b>\n\nsᴇʟᴇᴄᴛ ᴀ ᴄᴀᴛᴇɢᴏʀʏ ᴛᴏ ᴍᴀɴᴀɢᴇ:",
             _main_markup()
         )
 
@@ -129,21 +129,21 @@ async def settings_cb(client: Bot, query: CallbackQuery):
 
     elif data == "stg_admin":
         _pending.pop(uid, None)
-        await _edit(query, "<b>👑 Admin Management</b>\n\nChoose an action:", _admin_markup())
+        await _edit(query, "<b>👑 ᴀᴅᴍɪɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄʜᴏᴏsᴇ ᴀɴ ᴀᴄᴛɪᴏɴ:", _admin_markup())
 
     elif data == "stg_admin_add":
         _pending[uid] = {"action": "admin_add", "msg_id": query.message.id, "chat_id": query.message.chat.id}
         await _edit(query,
-            "<b>➕ Add Admin</b>\n\n📤 Send the <b>User ID</b> to add as admin:",
-            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="stg_admin")]])
+            "<b>➕ ᴀᴅᴅ ᴀᴅᴍɪɴ</b>\n\n📤 sᴇɴᴅ ᴛʜᴇ <b>ᴜsᴇʀ ɪᴅ</b> ᴛᴏ ᴀᴅᴅ ᴀs ᴀᴅᴍɪɴ:",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="stg_admin")]])
         )
 
     elif data == "stg_admin_remove":
         _pending.pop(uid, None)
         admins = await db.get_all_admins()
         if not admins:
-            await _edit(query, "<b>📋 No admins to remove.</b>",
-                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_admin")]]))
+            await _edit(query, "<b>📋 ɴᴏ ᴀᴅᴍɪɴs ᴛᴏ ʀᴇᴍᴏᴠᴇ.</b>",
+                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_admin")]]))
             return
         buttons = []
         for aid in admins:
@@ -153,27 +153,27 @@ async def settings_cb(client: Bot, query: CallbackQuery):
             except Exception:
                 label = f"❌ {aid}"
             buttons.append([InlineKeyboardButton(label, callback_data=f"stg_deladmin_{aid}")])
-        buttons.append([InlineKeyboardButton("🔙 Back", callback_data="stg_admin")])
-        await _edit(query, "<b>➖ Remove Admin</b>\n\nTap an admin to remove:", InlineKeyboardMarkup(buttons))
+        buttons.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_admin")])
+        await _edit(query, "<b>➖ ʀᴇᴍᴏᴠᴇ ᴀᴅᴍɪɴ</b>\n\nᴛᴀᴘ ᴀɴ ᴀᴅᴍɪɴ ᴛᴏ ʀᴇᴍᴏᴠᴇ:", InlineKeyboardMarkup(buttons))
 
     elif data.startswith("stg_deladmin_"):
         _pending.pop(uid, None)
         aid = int(data.replace("stg_deladmin_", ""))
         await db.del_admin(aid)
         await _edit(query,
-            f"<b>✅ Admin <code>{aid}</code> removed.</b>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_admin")]])
+            f"<b>✅ ᴀᴅᴍɪɴ <code>{aid}</code> ʀᴇᴍᴏᴠᴇᴅ.</b>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_admin")]])
         )
 
     elif data == "stg_admin_list":
         _pending.pop(uid, None)
         admins = await db.get_all_admins()
         if not admins:
-            text = "<b>📋 Admin list is empty.</b>"
+            text = "<b>📋 ᴀᴅᴍɪɴ ʟɪsᴛ ɪs ᴇᴍᴘᴛʏ.</b>"
         else:
             rows = "\n".join([f"• <code>{a}</code>" for a in admins])
-            text = f"<b>👑 Admins ({len(admins)}):</b>\n\n{rows}"
-        await _edit(query, text, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_admin")]]))
+            text = f"<b>👑 ᴀᴅᴍɪɴs ({len(admins)}):</b>\n\n{rows}"
+        await _edit(query, text, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_admin")]]))
 
     # ══════════════════════════════════════════════════════════
     #  BAN PANEL
@@ -181,31 +181,31 @@ async def settings_cb(client: Bot, query: CallbackQuery):
 
     elif data == "stg_ban":
         _pending.pop(uid, None)
-        await _edit(query, "<b>🚫 Ban Management</b>\n\nChoose an action:", _ban_markup())
+        await _edit(query, "<b>🚫 ʙᴀɴ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ</b>\n\nᴄʜᴏᴏsᴇ ᴀɴ ᴀᴄᴛɪᴏɴ:", _ban_markup())
 
     elif data == "stg_ban_add":
         _pending[uid] = {"action": "ban_add", "msg_id": query.message.id, "chat_id": query.message.chat.id}
         await _edit(query,
-            "<b>🚫 Ban User</b>\n\n📤 Send the <b>User ID</b> to ban:",
-            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="stg_ban")]])
+            "<b>🚫 ʙᴀɴ ᴜsᴇʀ</b>\n\n📤 sᴇɴᴅ ᴛʜᴇ <b>ᴜsᴇʀ ɪᴅ</b> ᴛᴏ ʙᴀɴ:",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="stg_ban")]])
         )
 
     elif data == "stg_ban_remove":
         _pending[uid] = {"action": "ban_remove", "msg_id": query.message.id, "chat_id": query.message.chat.id}
         await _edit(query,
-            "<b>✅ Unban User</b>\n\n📤 Send the <b>User ID</b> to unban:",
-            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="stg_ban")]])
+            "<b>✅ ᴜɴʙᴀɴ ᴜsᴇʀ</b>\n\n📤 sᴇɴᴅ ᴛʜᴇ <b>ᴜsᴇʀ ɪᴅ</b> ᴛᴏ ᴜɴʙᴀɴ:",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="stg_ban")]])
         )
 
     elif data == "stg_ban_list":
         _pending.pop(uid, None)
         banned = await db.get_ban_users()
         if not banned:
-            text = "<b>📋 No banned users.</b>"
+            text = "<b>📋 ɴᴏ ʙᴀɴɴᴇᴅ ᴜsᴇʀs.</b>"
         else:
             rows = "\n".join([f"• <code>{u}</code>" for u in banned])
-            text = f"<b>🚫 Banned Users ({len(banned)}):</b>\n\n{rows}"
-        await _edit(query, text, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_ban")]]))
+            text = f"<b>🚫 ʙᴀɴɴᴇᴅ ᴜsᴇʀs ({len(banned)}):</b>\n\n{rows}"
+        await _edit(query, text, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_ban")]]))
 
     # ══════════════════════════════════════════════════════════
     #  USERS
@@ -215,8 +215,8 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         _pending.pop(uid, None)
         users = await db.full_userbase()
         await _edit(query,
-            f"<b>👥 Users Info</b>\n\n<b>Total Users in DB:</b> <code>{len(users)}</code>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_back")]])
+            f"<b>👥 ᴜsᴇʀs ɪɴғᴏ</b>\n\n<b>ᴛᴏᴛᴀʟ ᴜsᴇʀs ɪɴ ᴅʙ:</b> <code>{len(users)}</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]])
         )
 
     # ══════════════════════════════════════════════════════════
@@ -232,26 +232,26 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         uptime = get_readable_time(int((now - client.uptime).total_seconds()))
 
         text = (
-            f"<b>📊 Bot & System Stats</b>\n\n"
-            f"<b>⏰ Uptime:</b> <code>{uptime}</code>\n\n"
-            f"<b>🧠 RAM</b>\n"
-            f"├ Total: <code>{round(ram.total  / 1024**3, 2)} GB</code>\n"
-            f"├ Used:  <code>{round(ram.used   / 1024**3, 2)} GB ({ram.percent}%)</code>\n"
-            f"└ Free:  <code>{round(ram.available / 1024**3, 2)} GB</code>\n\n"
-            f"<b>💾 Disk</b>\n"
-            f"├ Total: <code>{round(disk.total / 1024**3, 2)} GB</code>\n"
-            f"├ Used:  <code>{round(disk.used  / 1024**3, 2)} GB ({disk.percent}%)</code>\n"
-            f"└ Free:  <code>{round(disk.free  / 1024**3, 2)} GB</code>\n\n"
-            f"<b>⚙️ CPU:</b> <code>{cpu}%</code>"
+            f"<b>📊 ʙᴏᴛ & sʏsᴛᴇᴍ sᴛᴀᴛs</b>\n\n"
+            f"<b>⏰ ᴜᴘᴛɪᴍᴇ:</b> <code>{uptime}</code>\n\n"
+            f"<b>🧠 ʀᴀᴍ</b>\n"
+            f"├ ᴛᴏᴛᴀʟ: <code>{round(ram.total  / 1024**3, 2)} GB</code>\n"
+            f"├ ᴜsᴇᴅ:  <code>{round(ram.used   / 1024**3, 2)} GB ({ram.percent}%)</code>\n"
+            f"└ ғʀᴇᴇ:  <code>{round(ram.available / 1024**3, 2)} GB</code>\n\n"
+            f"<b>💾 ᴅɪsᴋ</b>\n"
+            f"├ ᴛᴏᴛᴀʟ: <code>{round(disk.total / 1024**3, 2)} GB</code>\n"
+            f"├ ᴜsᴇᴅ:  <code>{round(disk.used  / 1024**3, 2)} GB ({disk.percent}%)</code>\n"
+            f"└ ғʀᴇᴇ:  <code>{round(disk.free  / 1024**3, 2)} GB</code>\n\n"
+            f"<b>⚙️ ᴄᴘᴜ:</b> <code>{cpu}%</code>"
         )
-        await _edit(query, text, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_back")]]))
+        await _edit(query, text, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]]))
 
     elif data == "stg_count":
         _pending.pop(uid, None)
         total = await db.get_total_verify_count()
         await _edit(query,
-            f"<b>🔢 Verification Count</b>\n\n<b>Total verified tokens today:</b> <code>{total}</code>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_back")]])
+            f"<b>🔢 ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ᴄᴏᴜɴᴛ</b>\n\n<b>ᴛᴏᴛᴀʟ ᴠᴇʀɪғɪᴇᴅ ᴛᴏᴋᴇɴs ᴛᴏᴅᴀʏ:</b> <code>{total}</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]])
         )
 
     elif data == "stg_delreq":
@@ -259,8 +259,8 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         channels = await db.show_channels()
         if not channels:
             await _edit(query,
-                "<b>❌ No force-sub channels found.</b>",
-                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_back")]])
+                "<b>❌ ɴᴏ ғᴏʀᴄᴇ-sᴜʙ ᴄʜᴀɴɴᴇʟs ғᴏᴜɴᴅ.</b>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]])
             )
             return
         buttons = []
@@ -271,9 +271,9 @@ async def settings_cb(client: Bot, query: CallbackQuery):
             except Exception:
                 name = str(ch_id)
             buttons.append([InlineKeyboardButton(f"🧹 {name}", callback_data=f"stg_delreq_clean_{ch_id}")])
-        buttons.append([InlineKeyboardButton("🔙 Back", callback_data="stg_back")])
+        buttons.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")])
         await _edit(query,
-            "<b>🧹 Delete Request Cleanup</b>\n\nSelect a channel to remove leftover request users:",
+            "<b>🧹 ᴅᴇʟᴇᴛᴇ ʀᴇǫᴜᴇsᴛ ᴄʟᴇᴀɴᴜᴘ</b>\n\nsᴇʟᴇᴄᴛ ᴀ ᴄʜᴀɴɴᴇʟ ᴛᴏ ʀᴇᴍᴏᴠᴇ ʟᴇғᴛᴏᴠᴇʀ ʀᴇǫᴜᴇsᴛ ᴜsᴇʀs:",
             InlineKeyboardMarkup(buttons)
         )
 
@@ -283,16 +283,16 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         channel_data = await db.rqst_fsub_Channel_data.find_one({'_id': channel_id})
         if not channel_data:
             await _edit(query,
-                f"<b>ℹ️ No request channel found for:</b> <code>{channel_id}</code>",
-                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_delreq")]])
+                f"<b>ℹ️ ɴᴏ ʀᴇǫᴜᴇsᴛ ᴄʜᴀɴɴᴇʟ ғᴏᴜɴᴅ ғᴏʀ:</b> <code>{channel_id}</code>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_delreq")]])
             )
             return
 
         user_ids = channel_data.get("user_ids", [])
         if not user_ids:
             await _edit(query,
-                f"<b>✅ No users to process for:</b> <code>{channel_id}</code>",
-                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_delreq")]])
+                f"<b>✅ ɴᴏ ᴜsᴇʀs ᴛᴏ ᴘʀᴏᴄᴇss ғᴏʀ:</b> <code>{channel_id}</code>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_delreq")]])
             )
             return
 
@@ -325,11 +325,11 @@ async def settings_cb(client: Bot, query: CallbackQuery):
                 removed += 1
 
         await _edit(query,
-            f"<b>✅ Cleanup done for channel</b> <code>{channel_id}</code>\n\n"
-            f"👤 Removed (left channel): <code>{left_users}</code>\n"
-            f"🗑️ Removed (leftover): <code>{removed}</code>\n"
-            f"✅ Still members: <code>{skipped}</code>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_delreq")]])
+            f"<b>✅ ᴄʟᴇᴀɴᴜᴘ ᴅᴏɴᴇ ғᴏʀ ᴄʜᴀɴɴᴇʟ</b> <code>{channel_id}</code>\n\n"
+            f"👤 ʀᴇᴍᴏᴠᴇᴅ (ʟᴇғᴛ ᴄʜᴀɴɴᴇʟ): <code>{left_users}</code>\n"
+            f"🗑️ ʀᴇᴍᴏᴠᴇᴅ (ʟᴇғᴛᴏᴠᴇʀ): <code>{removed}</code>\n"
+            f"✅ sᴛɪʟʟ ᴍᴇᴍʙᴇʀs: <code>{skipped}</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_delreq")]])
         )
 
     # ══════════════════════════════════════════════════════════
@@ -339,24 +339,24 @@ async def settings_cb(client: Bot, query: CallbackQuery):
     elif data == "stg_fsub":
         _pending.pop(uid, None)
         await _edit(query,
-            "<b>📢 Force Sub Settings</b>\n\nManage your force subscription channels:",
+            "<b>📢 ғᴏʀᴄᴇ sᴜʙ sᴇᴛᴛɪɴɢs</b>\n\nᴍᴀɴᴀɢᴇ ʏᴏᴜʀ ғᴏʀᴄᴇ sᴜʙsᴄʀɪᴘᴛɪᴏɴ ᴄʜᴀɴɴᴇʟs:",
             _fsub_markup()
         )
 
     elif data == "stg_fsub_add":
         _pending[uid] = {"action": "fsub_add", "msg_id": query.message.id, "chat_id": query.message.chat.id}
         await _edit(query,
-            "<b>➕ Add Force Sub Channel</b>\n\n"
-            "📤 Send the <b>Channel ID</b> (e.g. <code>-100xxxxxxxxxx</code>)\n\n"
-            "<i>The bot must be admin in that channel.</i>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="stg_fsub")]])
+            "<b>➕ ᴀᴅᴅ ғᴏʀᴄᴇ sᴜʙ ᴄʜᴀɴɴᴇʟ</b>\n\n"
+            "📤 sᴇɴᴅ ᴛʜᴇ <b>ᴄʜᴀɴɴᴇʟ ɪᴅ</b> (ᴇ.ɢ. <code>-100xxxxxxxxxx</code>)\n\n"
+            "<i>ᴛʜᴇ ʙᴏᴛ ᴍᴜsᴛ ʙᴇ ᴀᴅᴍɪɴ ɪɴ ᴛʜᴀᴛ ᴄʜᴀɴɴᴇʟ.</i>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="stg_fsub")]])
         )
 
     elif data == "stg_fsub_remove":
         _pending.pop(uid, None)
         channels = await db.show_channels()
         if not channels:
-            await query.answer("❌ No channels added yet!", show_alert=True)
+            await query.answer("❌ ɴᴏ ᴄʜᴀɴɴᴇʟs ᴀᴅᴅᴇᴅ ʏᴇᴛ!", show_alert=True)
             return
         buttons = []
         for ch_id in channels:
@@ -366,18 +366,18 @@ async def settings_cb(client: Bot, query: CallbackQuery):
             except Exception:
                 name = str(ch_id)
             buttons.append([InlineKeyboardButton(f"🗑 {name}", callback_data=f"stg_fsub_del_{ch_id}")])
-        buttons.append([InlineKeyboardButton("🔙 Back", callback_data="stg_fsub")])
-        await _edit(query, "<b>➖ Select a channel to remove:</b>", InlineKeyboardMarkup(buttons))
+        buttons.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_fsub")])
+        await _edit(query, "<b>➖ sᴇʟᴇᴄᴛ ᴀ ᴄʜᴀɴɴᴇʟ ᴛᴏ ʀᴇᴍᴏᴠᴇ:</b>", InlineKeyboardMarkup(buttons))
 
     elif data.startswith("stg_fsub_del_"):
         _pending.pop(uid, None)
         ch_id = int(data.split("stg_fsub_del_")[1])
         await db.rem_channel(ch_id)
-        await query.answer("✅ Removed!", show_alert=True)
+        await query.answer("✅ ʀᴇᴍᴏᴠᴇᴅ!", show_alert=True)
         channels = await db.show_channels()
         if not channels:
             await _edit(query,
-                "<b>📢 Force Sub Settings</b>\n\nManage your force subscription channels:",
+                "<b>📢 ғᴏʀᴄᴇ sᴜʙ sᴇᴛᴛɪɴɢs</b>\n\nᴍᴀɴᴀɢᴇ ʏᴏᴜʀ ғᴏʀᴄᴇ sᴜʙsᴄʀɪᴘᴛɪᴏɴ ᴄʜᴀɴɴᴇʟs:",
                 _fsub_markup()
             )
             return
@@ -389,17 +389,17 @@ async def settings_cb(client: Bot, query: CallbackQuery):
             except Exception:
                 name = str(cid)
             buttons.append([InlineKeyboardButton(f"🗑 {name}", callback_data=f"stg_fsub_del_{cid}")])
-        buttons.append([InlineKeyboardButton("🔙 Back", callback_data="stg_fsub")])
-        await _edit(query, "<b>➖ Select a channel to remove:</b>", InlineKeyboardMarkup(buttons))
+        buttons.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_fsub")])
+        await _edit(query, "<b>➖ sᴇʟᴇᴄᴛ ᴀ ᴄʜᴀɴɴᴇʟ ᴛᴏ ʀᴇᴍᴏᴠᴇ:</b>", InlineKeyboardMarkup(buttons))
 
     elif data == "stg_fsub_list":
         _pending.pop(uid, None)
         channels = await db.show_channels()
         if not channels:
-            await _edit(query, "<b>❌ No force-sub channels added yet.</b>",
-                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_fsub")]]))
+            await _edit(query, "<b>❌ ɴᴏ ғᴏʀᴄᴇ-sᴜʙ ᴄʜᴀɴɴᴇʟs ᴀᴅᴅᴇᴅ ʏᴇᴛ.</b>",
+                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_fsub")]]))
             return
-        text = "<b>📋 Force Sub Channels:</b>\n\n"
+        text = "<b>📋 ғᴏʀᴄᴇ sᴜʙ ᴄʜᴀɴɴᴇʟs:</b>\n\n"
         for ch_id in channels:
             try:
                 chat = await client.get_chat(ch_id)
@@ -408,7 +408,7 @@ async def settings_cb(client: Bot, query: CallbackQuery):
                 text += f"• <b>{chat.title}</b> [{status}]\n  └ <code>{ch_id}</code>\n\n"
             except Exception:
                 text += f"• ⚠️ <code>{ch_id}</code> — Unavailable\n\n"
-        await _edit(query, text, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_fsub")]]))
+        await _edit(query, text, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_fsub")]]))
 
     # ══════════════════════════════════════════════════════════
     #  REQUEST MODE PANEL
@@ -419,8 +419,8 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         channels = await db.show_channels()
         if not channels:
             await _edit(query,
-                "<b>�� No force-sub channels found.\nAdd channels first via Force Sub.</b>",
-                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_back")]])
+                "<b>�� ɴᴏ ғᴏʀᴄᴇ-sᴜʙ ᴄʜᴀɴɴᴇʟs ғᴏᴜɴᴅ.\nᴀᴅᴅ ᴄʜᴀɴɴᴇʟs ғɪʀsᴛ ᴠɪᴀ ғᴏʀᴄᴇ sᴜʙ.</b>",
+                InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]])
             )
             return
         buttons = []
@@ -432,12 +432,12 @@ async def settings_cb(client: Bot, query: CallbackQuery):
                 buttons.append([InlineKeyboardButton(f"{status} — {chat.title}", callback_data=f"stg_rq_{ch_id}")])
             except Exception:
                 buttons.append([InlineKeyboardButton(f"⚠️ {ch_id}", callback_data=f"stg_rq_{ch_id}")])
-        buttons.append([InlineKeyboardButton("🔙 Back", callback_data="stg_back")])
+        buttons.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")])
         await _edit(query,
-            "<b>🔄 Request Mode</b>\n\n"
-            "<b>🟢 ON</b>  → Join request required\n"
-            "<b>🔴 OFF</b> → Direct join\n\n"
-            "<i>Tap a channel to toggle:</i>",
+            "<b>🔄 ʀᴇǫᴜᴇsᴛ ᴍᴏᴅᴇ</b>\n\n"
+            "<b>🟢 ᴏɴ</b>  → ᴊᴏɪɴ ʀᴇǫᴜᴇsᴛ ʀᴇǫᴜɪʀᴇᴅ\n"
+            "<b>🔴 ᴏғғ</b> → ᴅɪʀᴇᴄᴛ ᴊᴏɪɴ\n\n"
+            "<i>ᴛᴀᴘ ᴀ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴛᴏɢɢʟᴇ:</i>",
             InlineKeyboardMarkup(buttons)
         )
 
@@ -448,7 +448,7 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         new_mode = "off" if current == "on" else "on"
         await db.set_channel_mode(ch_id, new_mode)
         label = "🟢 Request Mode ON" if new_mode == "on" else "🔴 Direct Join"
-        await query.answer(f"Toggled → {label}", show_alert=True)
+        await query.answer(f"ᴛᴏɢɢʟᴇᴅ → {label}", show_alert=True)
 
         channels = await db.show_channels()
         buttons = []
@@ -460,12 +460,12 @@ async def settings_cb(client: Bot, query: CallbackQuery):
                 buttons.append([InlineKeyboardButton(f"{status} — {chat.title}", callback_data=f"stg_rq_{cid}")])
             except Exception:
                 buttons.append([InlineKeyboardButton(f"⚠️ {cid}", callback_data=f"stg_rq_{cid}")])
-        buttons.append([InlineKeyboardButton("🔙 Back", callback_data="stg_back")])
+        buttons.append([InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")])
         await _edit(query,
-            "<b>🔄 Request Mode</b>\n\n"
-            "<b>🟢 ON</b>  → Join request required\n"
-            "<b>🔴 OFF</b> → Direct join\n\n"
-            "<i>Tap a channel to toggle:</i>",
+            "<b>🔄 ʀᴇǫᴜᴇsᴛ ᴍᴏᴅᴇ</b>\n\n"
+            "<b>🟢 ᴏɴ</b>  → ᴊᴏɪɴ ʀᴇǫᴜᴇsᴛ ʀᴇǫᴜɪʀᴇᴅ\n"
+            "<b>🔴 ᴏғғ</b> → ᴅɪʀᴇᴄᴛ ᴊᴏɪɴ\n\n"
+            "<i>ᴛᴀᴘ ᴀ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴛᴏɢɢʟᴇ:</i>",
             InlineKeyboardMarkup(buttons)
         )
 
@@ -479,13 +479,13 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         enabled = await db.get_protect_content()
         status = "🟢 True" if enabled else "🔴 False"
         await _edit(query,
-            f"<b>🔐 Protect Content</b>\n\n<b>Current:</b> <code>{status}</code>\n\n<i>Premium users will always receive files with protect content OFF.</i>",
+            f"<b>🔐 ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ</b>\n\n<b>ᴄᴜʀʀᴇɴᴛ:</b> <code>{status}</code>\n\n<i>ᴘʀᴇᴍɪᴜᴍ ᴜsᴇʀs ᴡɪʟʟ ᴀʟᴡᴀʏs ʀᴇᴄᴇɪᴠᴇ ғɪʟᴇs ᴡɪᴛʜ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ ᴏғғ.</i>",
             InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("🟢 True", callback_data="stg_protect_true"),
-                    InlineKeyboardButton("🔴 False", callback_data="stg_protect_false")
+                    InlineKeyboardButton("🟢 ᴛʀᴜᴇ", callback_data="stg_protect_true"),
+                    InlineKeyboardButton("🔴 ғᴀʟsᴇ", callback_data="stg_protect_false")
                 ],
-                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
             ])
         )
 
@@ -493,16 +493,16 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         _pending.pop(uid, None)
         await db.set_protect_content(True)
         await _edit(query,
-            "<b>✅ Protect Content set to:</b> <code>True</code>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_protect")]])
+            "<b>✅ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ sᴇᴛ ᴛᴏ:</b> <code>True</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_protect")]])
         )
 
     elif data == "stg_protect_false":
         _pending.pop(uid, None)
         await db.set_protect_content(False)
         await _edit(query,
-            "<b>✅ Protect Content set to:</b> <code>False</code>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_protect")]])
+            "<b>✅ ᴘʀᴏᴛᴇᴄᴛ ᴄᴏɴᴛᴇɴᴛ sᴇᴛ ᴛᴏ:</b> <code>False</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_protect")]])
         )
 
     elif data == "stg_caption":
@@ -510,29 +510,29 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         caption = await db.get_custom_caption()
         current = f"<code>{caption}</code>" if caption else "<code>Disabled</code>"
         await _edit(query,
-            f"<b>📝 Custom Caption</b>\n\n<b>Current:</b> {current}\n\n<i>You can use {{previouscaption}} and {{filename}} placeholders.</i>",
+            f"<b>📝 ᴄᴜsᴛᴏᴍ ᴄᴀᴘᴛɪᴏɴ</b>\n\n<b>ᴄᴜʀʀᴇɴᴛ:</b> {current}\n\n<i>ʏᴏᴜ ᴄᴀɴ ᴜsᴇ {{previouscaption}} ᴀɴᴅ {{filename}} ᴘʟᴀᴄᴇʜᴏʟᴅᴇʀs.</i>",
             InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("✏️ Set Caption", callback_data="stg_caption_set"),
-                    InlineKeyboardButton("❌ Clear", callback_data="stg_caption_clear")
+                    InlineKeyboardButton("✏️ sᴇᴛ ᴄᴀᴘᴛɪᴏɴ", callback_data="stg_caption_set"),
+                    InlineKeyboardButton("❌ ᴄʟᴇᴀʀ", callback_data="stg_caption_clear")
                 ],
-                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
             ])
         )
 
     elif data == "stg_caption_set":
         _pending[uid] = {"action": "caption_set", "msg_id": query.message.id, "chat_id": query.message.chat.id}
         await _edit(query,
-            "<b>📝 Set Custom Caption</b>\n\n📤 Send the caption text now.\n\nAvailable placeholders:\n<code>{previouscaption}</code>\n<code>{filename}</code>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="stg_caption")]])
+            "<b>📝 sᴇᴛ ᴄᴜsᴛᴏᴍ ᴄᴀᴘᴛɪᴏɴ</b>\n\n📤 sᴇɴᴅ ᴛʜᴇ ᴄᴀᴘᴛɪᴏɴ ᴛᴇxᴛ ɴᴏᴡ.\n\nᴀᴠᴀɪʟᴀʙʟᴇ ᴘʟᴀᴄᴇʜᴏʟᴅᴇʀs:\n<code>{previouscaption}</code>\n<code>{filename}</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="stg_caption")]])
         )
 
     elif data == "stg_caption_clear":
         _pending.pop(uid, None)
         await db.set_custom_caption(None)
         await _edit(query,
-            "<b>✅ Custom Caption cleared.</b>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_caption")]])
+            "<b>✅ ᴄᴜsᴛᴏᴍ ᴄᴀᴘᴛɪᴏɴ ᴄʟᴇᴀʀᴇᴅ.</b>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_caption")]])
         )
 
     elif data == "stg_antibypass":
@@ -540,13 +540,13 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         enabled = await db.get_anti_bypass()
         status = "🟢 ON" if enabled else "🔴 OFF"
         await _edit(query,
-            f"<b>🛡 Anti Bypass</b>\n\n<b>Current:</b> <code>{status}</code>\n\n<i>Default is ON. It checks suspicious browser/server requests, repeated attempts, and too-fast verification.</i>",
+            f"<b>🛡 ᴀɴᴛɪ ʙʏᴘᴀss</b>\n\n<b>ᴄᴜʀʀᴇɴᴛ:</b> <code>{status}</code>\n\n<i>ᴅᴇғᴀᴜʟᴛ ɪs ᴏɴ. ɪᴛ ᴄʜᴇᴄᴋs sᴜsᴘɪᴄɪᴏᴜs ʙʀᴏᴡsᴇʀ/sᴇʀᴠᴇʀ ʀᴇǫᴜᴇsᴛs, ʀᴇᴘᴇᴀᴛᴇᴅ ᴀᴛᴛᴇᴍᴘᴛs, ᴀɴᴅ ᴛᴏᴏ-ғᴀsᴛ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ.</i>",
             InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("🟢 ON", callback_data="stg_antibypass_on"),
-                    InlineKeyboardButton("🔴 OFF", callback_data="stg_antibypass_off")
+                    InlineKeyboardButton("🟢 ᴏɴ", callback_data="stg_antibypass_on"),
+                    InlineKeyboardButton("🔴 ᴏғғ", callback_data="stg_antibypass_off")
                 ],
-                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
             ])
         )
 
@@ -554,16 +554,16 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         _pending.pop(uid, None)
         await db.set_anti_bypass(True)
         await _edit(query,
-            "<b>✅ Anti Bypass set to:</b> <code>ON</code>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_antibypass")]])
+            "<b>✅ ᴀɴᴛɪ ʙʏᴘᴀss sᴇᴛ ᴛᴏ:</b> <code>ON</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_antibypass")]])
         )
 
     elif data == "stg_antibypass_off":
         _pending.pop(uid, None)
         await db.set_anti_bypass(False)
         await _edit(query,
-            "<b>✅ Anti Bypass set to:</b> <code>OFF</code>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_antibypass")]])
+            "<b>✅ ᴀɴᴛɪ ʙʏᴘᴀss sᴇᴛ ᴛᴏ:</b> <code>OFF</code>",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_antibypass")]])
         )
 
     # ══════════════════════════════════════════════════════════
@@ -573,7 +573,7 @@ async def settings_cb(client: Bot, query: CallbackQuery):
     elif data == "stg_shortner":
         _pending.pop(uid, None)
         if uid != OWNER_ID:
-            await query.answer("⛔ Only Owner can manage Shortner settings!", show_alert=True)
+            await query.answer("⛔ ᴏɴʟʏ ᴏᴡɴᴇʀ ᴄᴀɴ ᴍᴀɴᴀɢᴇ sʜᴏʀᴛɴᴇʀ sᴇᴛᴛɪɴɢs!", show_alert=True)
             return
         import config as _cfg
         settings = await db.get_shortner_settings()
@@ -584,39 +584,39 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         is_enabled = await db.get_shortner_enabled()
         status_icon = "🟢 ON" if is_enabled else "🔴 OFF"
         toggle_cb   = "stg_shortner_off" if is_enabled else "stg_shortner_on"
-        toggle_lbl  = "Turn OFF" if is_enabled else "Turn ON"
+        toggle_lbl  = "ᴛᴜʀɴ ᴏғғ" if is_enabled else "ᴛᴜʀɴ ᴏɴ"
         await _edit(query,
-            "<b>🔗 Shortner Settings</b>\n\n"
-            f"<b>Status:</b> {status_icon}\n\n"
-            f"<b>🌐 URL:</b> <code>{url}</code>\n"
-            f"<b>🔑 API:</b> <code>{api}</code>\n"
-            f"<b>⏱ Token Expire:</b> <code>{expire}</code> seconds\n"
-            f"<b>🎬 Tutorial Video:</b> <code>{tut}</code>\n\n"
-            "<i>Edit a field then press <b>Save Change</b> to apply.</i>",
+            "<b>🔗 sʜᴏʀᴛɴᴇʀ sᴇᴛᴛɪɴɢs</b>\n\n"
+            f"<b>sᴛᴀᴛᴜs:</b> {status_icon}\n\n"
+            f"<b>🌐 ᴜʀʟ:</b> <code>{url}</code>\n"
+            f"<b>🔑 ᴀᴘɪ:</b> <code>{api}</code>\n"
+            f"<b>⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ:</b> <code>{expire}</code> sᴇᴄᴏɴᴅs\n"
+            f"<b>🎬 ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ:</b> <code>{tut}</code>\n\n"
+            "<i>ᴇᴅɪᴛ ᴀ ғɪᴇʟᴅ ᴛʜᴇɴ ᴘʀᴇss <b>sᴀᴠᴇ ᴄʜᴀɴɢᴇ</b> ᴛᴏ ᴀᴘᴘʟʏ.</i>",
             InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton(f"{'🔴' if is_enabled else '🟢'} {toggle_lbl}", callback_data=toggle_cb)
                 ],
                 [
-                    InlineKeyboardButton("🌐 Add Shortner", callback_data="srt_url"),
-                    InlineKeyboardButton("🔑 Api",           callback_data="srt_api")
+                    InlineKeyboardButton("🌐 ᴀᴅᴅ sʜᴏʀᴛɴᴇʀ", callback_data="srt_url"),
+                    InlineKeyboardButton("🔑 ᴀᴘɪ",           callback_data="srt_api")
                 ],
                 [
-                    InlineKeyboardButton("🎬 Tutorial Video", callback_data="srt_tut"),
-                    InlineKeyboardButton("⏱ Token Expire",   callback_data="srt_expire")
+                    InlineKeyboardButton("🎬 ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ", callback_data="srt_tut"),
+                    InlineKeyboardButton("⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ",   callback_data="srt_expire")
                 ],
-                [InlineKeyboardButton("💾 Save Change",      callback_data="srt_save")],
-                [InlineKeyboardButton("🔙 Back",             callback_data="stg_back")]
+                [InlineKeyboardButton("💾 sᴀᴠᴇ ᴄʜᴀɴɢᴇ",      callback_data="srt_save")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ",             callback_data="stg_back")]
             ])
         )
 
     elif data == "stg_shortner_on":
         _pending.pop(uid, None)
         if uid != OWNER_ID:
-            await query.answer("⛔ Only Owner!", show_alert=True)
+            await query.answer("⛔ ᴏɴʟʏ ᴏᴡɴᴇʀ!", show_alert=True)
             return
         await db.set_shortner_enabled(True)
-        await query.answer("✅ Shortner turned ON", show_alert=True)
+        await query.answer("✅ sʜᴏʀᴛɴᴇʀ ᴛᴜʀɴᴇᴅ ᴏɴ", show_alert=True)
         # Refresh the shortner panel
         import config as _cfg
         settings = await db.get_shortner_settings()
@@ -625,28 +625,28 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         expire = str(settings.get("expire", _cfg.VERIFY_EXPIRE or 60))
         tut    = settings.get("tut_vid", _cfg.TUT_VID or "not set")
         await _edit(query,
-            "<b>🔗 Shortner Settings</b>\n\n"
-            "<b>Status:</b> 🟢 ON\n\n"
-            f"<b>🌐 URL:</b> <code>{url}</code>\n"
-            f"<b>🔑 API:</b> <code>{api}</code>\n"
-            f"<b>⏱ Token Expire:</b> <code>{expire}</code> seconds\n"
-            f"<b>🎬 Tutorial Video:</b> <code>{tut}</code>",
+            "<b>🔗 sʜᴏʀᴛɴᴇʀ sᴇᴛᴛɪɴɢs</b>\n\n"
+            "<b>sᴛᴀᴛᴜs:</b> 🟢 ᴏɴ\n\n"
+            f"<b>🌐 ᴜʀʟ:</b> <code>{url}</code>\n"
+            f"<b>🔑 ᴀᴘɪ:</b> <code>{api}</code>\n"
+            f"<b>⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ:</b> <code>{expire}</code> sᴇᴄᴏɴᴅs\n"
+            f"<b>🎬 ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ:</b> <code>{tut}</code>",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔴 Turn OFF", callback_data="stg_shortner_off")],
-                [InlineKeyboardButton("🌐 Add Shortner", callback_data="srt_url"), InlineKeyboardButton("🔑 Api", callback_data="srt_api")],
-                [InlineKeyboardButton("🎬 Tutorial Video", callback_data="srt_tut"), InlineKeyboardButton("⏱ Token Expire", callback_data="srt_expire")],
-                [InlineKeyboardButton("💾 Save Change", callback_data="srt_save")],
-                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+                [InlineKeyboardButton("🔴 ᴛᴜʀɴ ᴏғғ", callback_data="stg_shortner_off")],
+                [InlineKeyboardButton("🌐 ᴀᴅᴅ sʜᴏʀᴛɴᴇʀ", callback_data="srt_url"), InlineKeyboardButton("🔑 ᴀᴘɪ", callback_data="srt_api")],
+                [InlineKeyboardButton("🎬 ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ", callback_data="srt_tut"), InlineKeyboardButton("⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ", callback_data="srt_expire")],
+                [InlineKeyboardButton("💾 sᴀᴠᴇ ᴄʜᴀɴɢᴇ", callback_data="srt_save")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
             ])
         )
 
     elif data == "stg_shortner_off":
         _pending.pop(uid, None)
         if uid != OWNER_ID:
-            await query.answer("⛔ Only Owner!", show_alert=True)
+            await query.answer("⛔ ᴏɴʟʏ ᴏᴡɴᴇʀ!", show_alert=True)
             return
         await db.set_shortner_enabled(False)
-        await query.answer("✅ Shortner turned OFF — Free Link system active", show_alert=True)
+        await query.answer("✅ sʜᴏʀᴛɴᴇʀ ᴛᴜʀɴᴇᴅ ᴏғғ — ғʀᴇᴇ ʟɪɴᴋ sʏsᴛᴇᴍ ᴀᴄᴛɪᴠᴇ", show_alert=True)
         import config as _cfg
         settings = await db.get_shortner_settings()
         url    = settings.get("url",  _cfg.SHORTLINK_URL  or "not set")
@@ -654,18 +654,18 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         expire = str(settings.get("expire", _cfg.VERIFY_EXPIRE or 60))
         tut    = settings.get("tut_vid", _cfg.TUT_VID or "not set")
         await _edit(query,
-            "<b>🔗 Shortner Settings</b>\n\n"
-            "<b>Status:</b> 🔴 OFF\n\n"
-            f"<b>🌐 URL:</b> <code>{url}</code>\n"
-            f"<b>🔑 API:</b> <code>{api}</code>\n"
-            f"<b>⏱ Token Expire:</b> <code>{expire}</code> seconds\n"
-            f"<b>🎬 Tutorial Video:</b> <code>{tut}</code>",
+            "<b>🔗 sʜᴏʀᴛɴᴇʀ sᴇᴛᴛɪɴɢs</b>\n\n"
+            "<b>sᴛᴀᴛᴜs:</b> 🔴 ᴏғғ\n\n"
+            f"<b>🌐 ᴜʀʟ:</b> <code>{url}</code>\n"
+            f"<b>🔑 ᴀᴘɪ:</b> <code>{api}</code>\n"
+            f"<b>⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ:</b> <code>{expire}</code> sᴇᴄᴏɴᴅs\n"
+            f"<b>🎬 ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ:</b> <code>{tut}</code>",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("🟢 Turn ON", callback_data="stg_shortner_on")],
-                [InlineKeyboardButton("🌐 Add Shortner", callback_data="srt_url"), InlineKeyboardButton("🔑 Api", callback_data="srt_api")],
-                [InlineKeyboardButton("🎬 Tutorial Video", callback_data="srt_tut"), InlineKeyboardButton("⏱ Token Expire", callback_data="srt_expire")],
-                [InlineKeyboardButton("💾 Save Change", callback_data="srt_save")],
-                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+                [InlineKeyboardButton("🟢 ᴛᴜʀɴ ᴏɴ", callback_data="stg_shortner_on")],
+                [InlineKeyboardButton("🌐 ᴀᴅᴅ sʜᴏʀᴛɴᴇʀ", callback_data="srt_url"), InlineKeyboardButton("🔑 ᴀᴘɪ", callback_data="srt_api")],
+                [InlineKeyboardButton("🎬 ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ", callback_data="srt_tut"), InlineKeyboardButton("⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ", callback_data="srt_expire")],
+                [InlineKeyboardButton("💾 sᴀᴠᴇ ᴄʜᴀɴɢᴇ", callback_data="srt_save")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
             ])
         )
 
@@ -677,12 +677,12 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         _pending.pop(uid, None)
         limit = await db.get_free_link_limit()
         shortner_on = await db.get_shortner_enabled()
-        mode_txt = "Shortner ON (token required after free links)" if shortner_on else "Shortner OFF (premium required after free links)"
+        mode_txt = "sʜᴏʀᴛɴᴇʀ ᴏɴ (ᴛᴏᴋᴇɴ ʀᴇǫᴜɪʀᴇᴅ ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs)" if shortner_on else "sʜᴏʀᴛɴᴇʀ ᴏғғ (ᴘʀᴇᴍɪᴜᴍ ʀᴇǫᴜɪʀᴇᴅ ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs)"
         await _edit(query,
-            f"<b>🆓 Free Link Settings</b>\n\n"
-            f"<b>Daily Free Links:</b> <code>{limit}</code> per user\n"
-            f"<b>Mode:</b> {mode_txt}\n\n"
-            "<i>Select the daily free link limit below:</i>",
+            f"<b>🆓 ғʀᴇᴇ ʟɪɴᴋ sᴇᴛᴛɪɴɢs</b>\n\n"
+            f"<b>ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋs:</b> <code>{limit}</code> ᴘᴇʀ ᴜsᴇʀ\n"
+            f"<b>ᴍᴏᴅᴇ:</b> {mode_txt}\n\n"
+            "<i>sᴇʟᴇᴄᴛ ᴛʜᴇ ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ ʙᴇʟᴏᴡ:</i>",
             InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton("5"  if limit != 5  else "✅ 5",  callback_data="stg_fl_5"),
@@ -690,8 +690,8 @@ async def settings_cb(client: Bot, query: CallbackQuery):
                     InlineKeyboardButton("15" if limit != 15 else "✅ 15", callback_data="stg_fl_15"),
                     InlineKeyboardButton("20" if limit != 20 else "✅ 20", callback_data="stg_fl_20"),
                 ],
-                [InlineKeyboardButton("✏️ Custom", callback_data="stg_fl_custom")],
-                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+                [InlineKeyboardButton("✏️ ᴄᴜsᴛᴏᴍ", callback_data="stg_fl_custom")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
             ])
         )
 
@@ -700,17 +700,17 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         try:
             new_limit = int(data.replace("stg_fl_", ""))
         except ValueError:
-            await query.answer("Invalid!", show_alert=True)
+            await query.answer("ɪɴᴠᴀʟɪᴅ!", show_alert=True)
             return
         await db.set_free_link_limit(new_limit)
-        await query.answer(f"✅ Free Link limit set to {new_limit}/day", show_alert=True)
+        await query.answer(f"✅ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ sᴇᴛ ᴛᴏ {new_limit}/ᴅᴀʏ", show_alert=True)
         shortner_on = await db.get_shortner_enabled()
-        mode_txt = "Shortner ON (token required after free links)" if shortner_on else "Shortner OFF (premium required after free links)"
+        mode_txt = "sʜᴏʀᴛɴᴇʀ ᴏɴ (ᴛᴏᴋᴇɴ ʀᴇǫᴜɪʀᴇᴅ ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs)" if shortner_on else "sʜᴏʀᴛɴᴇʀ ᴏғғ (ᴘʀᴇᴍɪᴜᴍ ʀᴇǫᴜɪʀᴇᴅ ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs)"
         await _edit(query,
-            f"<b>🆓 Free Link Settings</b>\n\n"
-            f"<b>Daily Free Links:</b> <code>{new_limit}</code> per user\n"
-            f"<b>Mode:</b> {mode_txt}\n\n"
-            "<i>Select the daily free link limit below:</i>",
+            f"<b>🆓 ғʀᴇᴇ ʟɪɴᴋ sᴇᴛᴛɪɴɢs</b>\n\n"
+            f"<b>ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋs:</b> <code>{new_limit}</code> ᴘᴇʀ ᴜsᴇʀ\n"
+            f"<b>ᴍᴏᴅᴇ:</b> {mode_txt}\n\n"
+            "<i>sᴇʟᴇᴄᴛ ᴛʜᴇ ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ ʙᴇʟᴏᴡ:</i>",
             InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton("5"  if new_limit != 5  else "✅ 5",  callback_data="stg_fl_5"),
@@ -718,17 +718,17 @@ async def settings_cb(client: Bot, query: CallbackQuery):
                     InlineKeyboardButton("15" if new_limit != 15 else "✅ 15", callback_data="stg_fl_15"),
                     InlineKeyboardButton("20" if new_limit != 20 else "✅ 20", callback_data="stg_fl_20"),
                 ],
-                [InlineKeyboardButton("✏️ Custom", callback_data="stg_fl_custom")],
-                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+                [InlineKeyboardButton("✏️ ᴄᴜsᴛᴏᴍ", callback_data="stg_fl_custom")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
             ])
         )
 
     elif data == "stg_fl_custom":
         _pending[uid] = {"action": "freelink_custom", "msg_id": query.message.id, "chat_id": query.message.chat.id}
         await _edit(query,
-            "<b>✏️ Custom Free Link Limit</b>\n\n"
-            "📤 Send a <b>number</b> (e.g. <code>25</code>) as the daily free link limit:",
-            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="stg_freelink")]])
+            "<b>✏️ ᴄᴜsᴛᴏᴍ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ</b>\n\n"
+            "📤 sᴇɴᴅ ᴀ <b>ɴᴜᴍʙᴇʀ</b> (ᴇ.ɢ. <code>25</code>) ᴀs ᴛʜᴇ ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ:",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="stg_freelink")]])
         )
 
     # ══════════════════════════════════════════════════════════
@@ -744,34 +744,34 @@ async def settings_cb(client: Bot, query: CallbackQuery):
             val = 0
         status = f"<code>{val}s</code>" if val > 0 else "<code>Disabled</code>"
         await _edit(query,
-            f"<b>⏱ Auto Delete</b>\n\n"
-            f"<b>Current Timer:</b> {status}\n\n"
-            "<i>Files sent by bot will be auto-deleted after the set time.</i>",
+            f"<b>⏱ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ</b>\n\n"
+            f"<b>ᴄᴜʀʀᴇɴᴛ ᴛɪᴍᴇʀ:</b> {status}\n\n"
+            "<i>ғɪʟᴇs sᴇɴᴛ ʙʏ ʙᴏᴛ ᴡɪʟʟ ʙᴇ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇᴅ ᴀғᴛᴇʀ ᴛʜᴇ sᴇᴛ ᴛɪᴍᴇ.</i>",
             InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("✏️ Set Timer", callback_data="stg_autodel_set"),
-                    InlineKeyboardButton("❌ Disable",   callback_data="stg_autodel_off")
+                    InlineKeyboardButton("✏️ sᴇᴛ ᴛɪᴍᴇʀ", callback_data="stg_autodel_set"),
+                    InlineKeyboardButton("❌ ᴅɪsᴀʙʟᴇ",   callback_data="stg_autodel_off")
                 ],
-                [InlineKeyboardButton("🔙 Back", callback_data="stg_back")]
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
             ])
         )
 
     elif data == "stg_autodel_set":
         _pending[uid] = {"action": "autodel_set", "msg_id": query.message.id, "chat_id": query.message.chat.id}
         await _edit(query,
-            "<b>⏱ Set Auto Delete Timer</b>\n\n"
-            "📤 Send the time in <b>seconds</b>\n"
-            "(e.g. <code>300</code> = 5 minutes, <code>3600</code> = 1 hour)\n\n"
-            "Send <code>0</code> to disable.",
-            InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="stg_autodel")]])
+            "<b>⏱ sᴇᴛ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ</b>\n\n"
+            "📤 sᴇɴᴅ ᴛʜᴇ ᴛɪᴍᴇ ɪɴ <b>sᴇᴄᴏɴᴅs</b>\n"
+            "(ᴇ.ɢ. <code>300</code> = 5 ᴍɪɴᴜᴛᴇs, <code>3600</code> = 1 ʜᴏᴜʀ)\n\n"
+            "sᴇɴᴅ <code>0</code> ᴛᴏ ᴅɪsᴀʙʟᴇ.",
+            InlineKeyboardMarkup([[InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="stg_autodel")]])
         )
 
     elif data == "stg_autodel_off":
         _pending.pop(uid, None)
         await db.set_del_timer(0)
         await _edit(query,
-            "<b>✅ Auto Delete Disabled</b>\n\nFiles will no longer be auto-deleted.",
-            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_autodel")]])
+            "<b>✅ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴅɪsᴀʙʟᴇᴅ</b>\n\nғɪʟᴇs ᴡɪʟʟ ɴᴏ ʟᴏɴɢᴇʀ ʙᴇ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇᴅ.",
+            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_autodel")]])
         )
 
     elif data == "stg_maintenance":
@@ -781,13 +781,13 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         toggle_label = "🟢 Turn OFF" if is_on else "🔴 Turn ON"
         toggle_data  = "stg_maintenance_off" if is_on else "stg_maintenance_on"
         await _edit(query,
-            f"<b>🔧 Maintenance Mode</b>\n\n"
-            f"<b>Status:</b> {status_text}\n\n"
-            f"<i>When ON — only admins can use the bot.\n"
-            f"Regular users will see a maintenance message.</i>",
+            f"<b>🔧 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ</b>\n\n"
+            f"<b>sᴛᴀᴛᴜs:</b> {status_text}\n\n"
+            f"<i>ᴡʜᴇɴ ᴏɴ — ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴜsᴇ ᴛʜᴇ ʙᴏᴛ.\n"
+            f"ʀᴇɢᴜʟᴀʀ ᴜsᴇʀs ᴡɪʟʟ sᴇᴇ ᴀ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴇssᴀɢᴇ.</i>",
             InlineKeyboardMarkup([
                 [InlineKeyboardButton(toggle_label, callback_data=toggle_data)],
-                [InlineKeyboardButton("🔙 Back",    callback_data="stg_back")]
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ",    callback_data="stg_back")]
             ])
         )
 
@@ -795,11 +795,11 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         _pending.pop(uid, None)
         await db.set_maintenance(True)
         await _edit(query,
-            "<b>🔧 Maintenance Mode: 🔴 ON</b>\n\n"
-            "<i>Bot is now in maintenance. Only admins can use it.</i>",
+            "<b>🔧 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ: 🔴 ᴏɴ</b>\n\n"
+            "<i>ʙᴏᴛ ɪs ɴᴏᴡ ɪɴ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ. ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴜsᴇ ɪᴛ.</i>",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("🟢 Turn OFF", callback_data="stg_maintenance_off")],
-                [InlineKeyboardButton("🔙 Back",     callback_data="stg_maintenance")]
+                [InlineKeyboardButton("🟢 ᴛᴜʀɴ ᴏғғ", callback_data="stg_maintenance_off")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ",     callback_data="stg_maintenance")]
             ])
         )
 
@@ -807,11 +807,11 @@ async def settings_cb(client: Bot, query: CallbackQuery):
         _pending.pop(uid, None)
         await db.set_maintenance(False)
         await _edit(query,
-            "<b>🔧 Maintenance Mode: 🟢 OFF</b>\n\n"
-            "<i>Bot is back to normal. All users can access it.</i>",
+            "<b>🔧 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ: 🟢 ᴏғғ</b>\n\n"
+            "<i>ʙᴏᴛ ɪs ʙᴀᴄᴋ ᴛᴏ ɴᴏʀᴍᴀʟ. ᴀʟʟ ᴜsᴇʀs ᴄᴀɴ ᴀᴄᴄᴇss ɪᴛ.</i>",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔴 Turn ON", callback_data="stg_maintenance_on")],
-                [InlineKeyboardButton("🔙 Back",    callback_data="stg_maintenance")]
+                [InlineKeyboardButton("🔴 ᴛᴜʀɴ ᴏɴ", callback_data="stg_maintenance_on")],
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ",    callback_data="stg_maintenance")]
             ])
         )
 
@@ -854,16 +854,16 @@ async def handle_settings_input(client: Bot, message: Message):
         try:
             target_id = int(raw)
         except ValueError:
-            await patch("<b>❌ Invalid ID. Send a valid numeric User ID.</b>",
-                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_admin")]]))
+            await patch("<b>❌ ɪɴᴠᴀʟɪᴅ ɪᴅ. sᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ɴᴜᴍᴇʀɪᴄ ᴜsᴇʀ ɪᴅ.</b>",
+                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_admin")]]))
             raise StopPropagation
 
         await db.add_admin(target_id)
         await patch(
-            f"<b>✅ User <code>{target_id}</code> added as Admin.</b>",
+            f"<b>✅ ᴜsᴇʀ <code>{target_id}</code> ᴀᴅᴅᴇᴅ ᴀs ᴀᴅᴍɪɴ.</b>",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("➕ Add Another", callback_data="stg_admin_add"),
-                 InlineKeyboardButton("🔙 Back",        callback_data="stg_admin")]
+                [InlineKeyboardButton("➕ ᴀᴅᴅ ᴀɴᴏᴛʜᴇʀ", callback_data="stg_admin_add"),
+                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ",        callback_data="stg_admin")]
             ])
         )
 
@@ -872,21 +872,21 @@ async def handle_settings_input(client: Bot, message: Message):
         try:
             target_id = int(raw)
         except ValueError:
-            await patch("<b>❌ Invalid ID. Send a valid numeric User ID.</b>",
-                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_ban")]]))
+            await patch("<b>❌ ɪɴᴠᴀʟɪᴅ ɪᴅ. sᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ɴᴜᴍᴇʀɪᴄ ᴜsᴇʀ ɪᴅ.</b>",
+                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_ban")]]))
             raise StopPropagation
 
         if target_id == OWNER_ID or await db.admin_exist(target_id):
-            await patch("<b>⛔ Cannot ban an admin or owner.</b>",
-                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_ban")]]))
+            await patch("<b>⛔ ᴄᴀɴɴᴏᴛ ʙᴀɴ ᴀɴ ᴀᴅᴍɪɴ ᴏʀ ᴏᴡɴᴇʀ.</b>",
+                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_ban")]]))
             raise StopPropagation
 
         await db.add_ban_user(target_id)
         await patch(
-            f"<b>✅ User <code>{target_id}</code> has been banned.</b>",
+            f"<b>✅ ᴜsᴇʀ <code>{target_id}</code> ʜᴀs ʙᴇᴇɴ ʙᴀɴɴᴇᴅ.</b>",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("🚫 Ban Another", callback_data="stg_ban_add"),
-                 InlineKeyboardButton("🔙 Back",        callback_data="stg_ban")]
+                [InlineKeyboardButton("🚫 ʙᴀɴ ᴀɴᴏᴛʜᴇʀ", callback_data="stg_ban_add"),
+                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ",        callback_data="stg_ban")]
             ])
         )
 
@@ -895,16 +895,16 @@ async def handle_settings_input(client: Bot, message: Message):
         try:
             target_id = int(raw)
         except ValueError:
-            await patch("<b>❌ Invalid ID. Send a valid numeric User ID.</b>",
-                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_ban")]]))
+            await patch("<b>❌ ɪɴᴠᴀʟɪᴅ ɪᴅ. sᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ɴᴜᴍᴇʀɪᴄ ᴜsᴇʀ ɪᴅ.</b>",
+                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_ban")]]))
             raise StopPropagation
 
         await db.del_ban_user(target_id)
         await patch(
-            f"<b>✅ User <code>{target_id}</code> has been unbanned.</b>",
+            f"<b>✅ ᴜsᴇʀ <code>{target_id}</code> ʜᴀs ʙᴇᴇɴ ᴜɴʙᴀɴɴᴇᴅ.</b>",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("✅ Unban Another", callback_data="stg_ban_remove"),
-                 InlineKeyboardButton("🔙 Back",          callback_data="stg_ban")]
+                [InlineKeyboardButton("✅ ᴜɴʙᴀɴ ᴀɴᴏᴛʜᴇʀ", callback_data="stg_ban_remove"),
+                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ",          callback_data="stg_ban")]
             ])
         )
 
@@ -913,58 +913,58 @@ async def handle_settings_input(client: Bot, message: Message):
         try:
             ch_id = int(raw)
         except ValueError:
-            await patch("<b>❌ Invalid ID. Send a valid numeric Channel ID.</b>",
-                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_fsub")]]))
+            await patch("<b>❌ ɪɴᴠᴀʟɪᴅ ɪᴅ. sᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ɴᴜᴍᴇʀɪᴄ ᴄʜᴀɴɴᴇʟ ɪᴅ.</b>",
+                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_fsub")]]))
             raise StopPropagation
 
         existing = await db.show_channels()
         if ch_id in existing:
-            await patch(f"<b>⚠️ Channel already exists:</b> <code>{ch_id}</code>",
-                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_fsub")]]))
+            await patch(f"<b>⚠️ ᴄʜᴀɴɴᴇʟ ᴀʟʀᴇᴀᴅʏ ᴇxɪsᴛs:</b> <code>{ch_id}</code>",
+                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_fsub")]]))
             raise StopPropagation
 
         try:
             chat = await client.get_chat(ch_id)
             if chat.type not in [ChatType.CHANNEL, ChatType.SUPERGROUP]:
-                await patch("<b>❌ Only channels/supergroups are allowed.</b>",
-                            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_fsub")]]))
+                await patch("<b>❌ ᴏɴʟʏ ᴄʜᴀɴɴᴇʟs/sᴜᴘᴇʀɢʀᴏᴜᴘs ᴀʀᴇ ᴀʟʟᴏᴡᴇᴅ.</b>",
+                            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_fsub")]]))
                 raise StopPropagation
 
             bot_member = await client.get_chat_member(chat.id, "me")
             if bot_member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-                await patch("<b>❌ Bot must be admin in that channel.</b>",
-                            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_fsub")]]))
+                await patch("<b>❌ ʙᴏᴛ ᴍᴜsᴛ ʙᴇ ᴀᴅᴍɪɴ ɪɴ ᴛʜᴀᴛ ᴄʜᴀɴɴᴇʟ.</b>",
+                            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_fsub")]]))
                 raise StopPropagation
 
             await db.add_channel(ch_id)
             await patch(
-                f"<b>✅ Added Successfully!</b>\n\n"
-                f"<b>Name:</b> {chat.title}\n"
-                f"<b>ID:</b> <code>{ch_id}</code>",
+                f"<b>✅ ᴀᴅᴅᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ!</b>\n\n"
+                f"<b>ɴᴀᴍᴇ:</b> {chat.title}\n"
+                f"<b>ɪᴅ:</b> <code>{ch_id}</code>",
                 InlineKeyboardMarkup([
-                    [InlineKeyboardButton("➕ Add Another", callback_data="stg_fsub_add"),
-                     InlineKeyboardButton("🔙 Back",        callback_data="stg_fsub")]
+                    [InlineKeyboardButton("➕ ᴀᴅᴅ ᴀɴᴏᴛʜᴇʀ", callback_data="stg_fsub_add"),
+                     InlineKeyboardButton("🔙 ʙᴀᴄᴋ",        callback_data="stg_fsub")]
                 ])
             )
         except StopPropagation:
             raise
         except Exception as e:
-            await patch(f"<b>❌ Failed:</b> <code>{e}</code>",
-                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_fsub")]]))
+            await patch(f"<b>❌ ғᴀɪʟᴇᴅ:</b> <code>{e}</code>",
+                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_fsub")]]))
 
     # ── CUSTOM CAPTION SET ───────────────────────────────────
     elif action == "caption_set":
         caption = raw or None
         await db.set_custom_caption(caption)
         if caption:
-            msg_txt = f"<b>✅ Custom Caption updated.</b>\n\n<code>{caption}</code>"
+            msg_txt = f"<b>✅ ᴄᴜsᴛᴏᴍ ᴄᴀᴘᴛɪᴏɴ ᴜᴘᴅᴀᴛᴇᴅ.</b>\n\n<code>{caption}</code>"
         else:
-            msg_txt = "<b>✅ Custom Caption cleared.</b>"
+            msg_txt = "<b>✅ ᴄᴜsᴛᴏᴍ ᴄᴀᴘᴛɪᴏɴ ᴄʟᴇᴀʀᴇᴅ.</b>"
 
         await patch(msg_txt,
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("✏️ Change", callback_data="stg_caption_set"),
-                 InlineKeyboardButton("🔙 Back",   callback_data="stg_caption")]
+                [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ", callback_data="stg_caption_set"),
+                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ",   callback_data="stg_caption")]
             ])
         )
 
@@ -973,23 +973,23 @@ async def handle_settings_input(client: Bot, message: Message):
         try:
             seconds = int(raw)
         except ValueError:
-            await patch("<b>❌ Invalid. Send a number (seconds).</b>",
-                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_autodel")]]))
+            await patch("<b>❌ ɪɴᴠᴀʟɪᴅ. sᴇɴᴅ ᴀ ɴᴜᴍʙᴇʀ (sᴇᴄᴏɴᴅs).</b>",
+                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_autodel")]]))
             raise StopPropagation
 
         await db.set_del_timer(seconds)
         if seconds == 0:
-            msg_txt = "<b>✅ Auto Delete Disabled.</b>"
+            msg_txt = "<b>✅ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴅɪsᴀʙʟᴇᴅ.</b>"
         else:
             mins = seconds // 60
             secs = seconds % 60
             readable = f"{mins}m {secs}s" if mins else f"{secs}s"
-            msg_txt = f"<b>✅ Auto Delete set to <code>{seconds}s</code> ({readable}).</b>"
+            msg_txt = f"<b>✅ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ sᴇᴛ ᴛᴏ <code>{seconds}s</code> ({readable}).</b>"
 
         await patch(msg_txt,
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("✏️ Change", callback_data="stg_autodel_set"),
-                 InlineKeyboardButton("🔙 Back",   callback_data="stg_autodel")]
+                [InlineKeyboardButton("✏️ ᴄʜᴀɴɢᴇ", callback_data="stg_autodel_set"),
+                 InlineKeyboardButton("🔙 ʙᴀᴄᴋ",   callback_data="stg_autodel")]
             ])
         )
 
@@ -1000,18 +1000,18 @@ async def handle_settings_input(client: Bot, message: Message):
             if new_limit < 1:
                 raise ValueError
         except ValueError:
-            await patch("<b>❌ Invalid. Send a positive number (e.g. <code>25</code>).</b>",
-                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="stg_freelink")]]))
+            await patch("<b>❌ ɪɴᴠᴀʟɪᴅ. sᴇɴᴅ ᴀ ᴘᴏsɪᴛɪᴠᴇ ɴᴜᴍʙᴇʀ (ᴇ.ɢ. <code>25</code>).</b>",
+                        InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_freelink")]]))
             raise StopPropagation
 
         await db.set_free_link_limit(new_limit)
         shortner_on = await db.get_shortner_enabled()
-        mode_txt = "Shortner ON (token after free links)" if shortner_on else "Shortner OFF (premium after free links)"
+        mode_txt = "sʜᴏʀᴛɴᴇʀ ᴏɴ (ᴛᴏᴋᴇɴ ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs)" if shortner_on else "sʜᴏʀᴛɴᴇʀ ᴏғғ (ᴘʀᴇᴍɪᴜᴍ ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs)"
         await patch(
-            f"<b>✅ Free Link limit set to <code>{new_limit}</code>/day.</b>\n\n"
-            f"<b>Mode:</b> {mode_txt}",
+            f"<b>✅ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ sᴇᴛ ᴛᴏ <code>{new_limit}</code>/ᴅᴀʏ.</b>\n\n"
+            f"<b>ᴍᴏᴅᴇ:</b> {mode_txt}",
             InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔙 Back", callback_data="stg_freelink")]
+                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_freelink")]
             ])
         )
 

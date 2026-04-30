@@ -37,12 +37,12 @@ async def is_subscribed(client, user_id):
 async def is_sub(client, user_id, channel_id):
     mode = await db.get_channel_mode(channel_id)
 
-    # Request Mode ON: sirf join request send karna kaafi hai access ke liye
+    # Request Mode ON: just sending a join request is enough for access
     if mode == "on":
         if await db.req_user_exist(channel_id, user_id):
             return True
 
-    # Normal check: actual membership verify karo
+    # Normal check: verify actual membership
     try:
         member = await client.get_chat_member(channel_id, user_id)
         status = member.status
@@ -83,13 +83,14 @@ async def get_messages(client, message_ids):
                 message_ids=temb_ids
             )
         except FloodWait as e:
-            await asyncio.sleep(e.x)
+            await asyncio.sleep(e.value)
             msgs = await client.get_messages(
                 chat_id=client.db_channel.id,
                 message_ids=temb_ids
             )
-        except:
-            pass
+        except Exception as ex:
+            print(f"[!] get_messages error: {ex}")
+            msgs = []
         total_messages += len(temb_ids)
         messages.extend(msgs)
     return messages
@@ -103,8 +104,8 @@ async def get_message_id(client, message):
     elif message.forward_sender_name:
         return 0
     elif message.text:
-        pattern = "https://t.me/(?:c/)?(.*)/(\d+)"
-        matches = re.match(pattern,message.text)
+        pattern = r"https://t\.me/(?:c/)?(.*)/(\d+)"
+        matches = re.match(pattern, message.text)
         if not matches:
             return 0
         channel_id = matches.group(1)
@@ -115,6 +116,7 @@ async def get_message_id(client, message):
         else:
             if channel_id == client.db_channel.username:
                 return msg_id
+        return 0
     else:
         return 0
 
