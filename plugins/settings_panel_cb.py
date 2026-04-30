@@ -31,34 +31,31 @@ _pending: dict = {}   # user_id -> { action, msg_id, chat_id }
 # ═══════════════════════════════════════════════════════════════
 
 def _main_markup():
+    # 3 buttons per row layout (14 entries -> 4 full rows of 3 + 1 row of 2).
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton("👑 ᴀᴅᴍɪɴ",      callback_data="stg_admin"),
-            InlineKeyboardButton("🚫 ʙᴀɴ ᴜsᴇʀs",  callback_data="stg_ban")
-        ],
-        [
+            InlineKeyboardButton("🚫 ʙᴀɴ",         callback_data="stg_ban"),
             InlineKeyboardButton("👥 ᴜsᴇʀs",      callback_data="stg_users"),
-            InlineKeyboardButton("📊 sᴛᴀᴛs",      callback_data="stg_stats")
         ],
         [
+            InlineKeyboardButton("📊 sᴛᴀᴛs",      callback_data="stg_stats"),
             InlineKeyboardButton("🧹 ᴅᴇʟʀᴇǫ",     callback_data="stg_delreq"),
-            InlineKeyboardButton("📢 ғᴏʀᴄᴇ sᴜʙ",  callback_data="stg_fsub")
+            InlineKeyboardButton("📢 ғsᴜʙ",       callback_data="stg_fsub"),
         ],
         [
-            InlineKeyboardButton("🔄 ʀᴇǫᴜᴇsᴛ ᴍᴏᴅᴇ", callback_data="stg_reqmode"),
-            InlineKeyboardButton("⏱ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="stg_autodel")
+            InlineKeyboardButton("🔄 ʀᴇǫ ᴍᴏᴅᴇ",   callback_data="stg_reqmode"),
+            InlineKeyboardButton("⏱ ᴀᴜᴛᴏ ᴅᴇʟ",   callback_data="stg_autodel"),
+            InlineKeyboardButton("🆓 ғʀᴇᴇ ʟɪɴᴋ",  callback_data="stg_freelink"),
         ],
         [
-            InlineKeyboardButton("🆓 ғʀᴇᴇ ʟɪɴᴋ",   callback_data="stg_freelink"),
-            InlineKeyboardButton("🔐 ᴘʀᴏᴛᴇᴄᴛ",     callback_data="stg_protect")
-        ],
-        [
-            InlineKeyboardButton("📝 ᴄᴀᴘᴛɪᴏɴ",     callback_data="stg_caption"),
-            InlineKeyboardButton("🔧 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ", callback_data="stg_maintenance")
+            InlineKeyboardButton("🔐 ᴘʀᴏᴛᴇᴄᴛ",    callback_data="stg_protect"),
+            InlineKeyboardButton("📝 ᴄᴀᴘᴛɪᴏɴ",    callback_data="stg_caption"),
+            InlineKeyboardButton("🔧 ᴍᴀɪɴᴛ.",     callback_data="stg_maintenance"),
         ],
         [
             InlineKeyboardButton("🆘 sᴜᴘᴘᴏʀᴛ",       callback_data="stg_support"),
-            InlineKeyboardButton("🔘 ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴs", callback_data="stg_mbtn")
+            InlineKeyboardButton("🔘 ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴs", callback_data="stg_mbtn"),
         ]
     ])
 
