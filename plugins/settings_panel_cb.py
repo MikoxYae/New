@@ -30,34 +30,71 @@ _pending: dict = {}   # user_id -> { action, msg_id, chat_id }
 #  MARKUP HELPERS
 # ═══════════════════════════════════════════════════════════════
 
-def _main_markup():
-    # 3 buttons per row layout (14 entries -> 4 full rows of 3 + 1 row of 2).
-    return InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("👑 ᴀᴅᴍɪɴ",      callback_data="stg_admin"),
-            InlineKeyboardButton("🚫 ʙᴀɴ",         callback_data="stg_ban"),
-            InlineKeyboardButton("👥 ᴜsᴇʀs",      callback_data="stg_users"),
-        ],
-        [
-            InlineKeyboardButton("📊 sᴛᴀᴛs",      callback_data="stg_stats"),
-            InlineKeyboardButton("🧹 ᴅᴇʟʀᴇǫ",     callback_data="stg_delreq"),
-            InlineKeyboardButton("📢 ғsᴜʙ",       callback_data="stg_fsub"),
-        ],
-        [
-            InlineKeyboardButton("🔄 ʀᴇǫ ᴍᴏᴅᴇ",   callback_data="stg_reqmode"),
-            InlineKeyboardButton("⏱ ᴀᴜᴛᴏ ᴅᴇʟ",   callback_data="stg_autodel"),
-            InlineKeyboardButton("🆓 ғʀᴇᴇ ʟɪɴᴋ",  callback_data="stg_freelink"),
-        ],
-        [
-            InlineKeyboardButton("🔐 ᴘʀᴏᴛᴇᴄᴛ",    callback_data="stg_protect"),
-            InlineKeyboardButton("📝 ᴄᴀᴘᴛɪᴏɴ",    callback_data="stg_caption"),
-            InlineKeyboardButton("🔧 ᴍᴀɪɴᴛ.",     callback_data="stg_maintenance"),
-        ],
-        [
-            InlineKeyboardButton("🆘 sᴜᴘᴘᴏʀᴛ",       callback_data="stg_support"),
-            InlineKeyboardButton("🔘 ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴs", callback_data="stg_mbtn"),
-        ]
-    ])
+# ── Paginated main settings menu ────────────────────────────────
+# Each page shows _PAGE_SIZE settings (in 2-col grid). When there is
+# a next page, the "Next ➡️" button takes the trailing slot of the
+# grid (replacing the empty cell after the last setting). "⬅️ Prev"
+# sits on its own row below.
+
+_SETTINGS_ITEMS = [
+    ("👑 ᴀᴅᴍɪɴ",         "stg_admin"),
+    ("🚫 ʙᴀɴ ᴜsᴇʀs",     "stg_ban"),
+    ("👥 ᴜsᴇʀs",         "stg_users"),
+    ("📊 sᴛᴀᴛs",         "stg_stats"),
+    ("🧹 ᴅᴇʟʀᴇǫ",        "stg_delreq"),
+    ("📢 ғᴏʀᴄᴇ sᴜʙ",     "stg_fsub"),
+    ("🔄 ʀᴇǫ ᴍᴏᴅᴇ",      "stg_reqmode"),
+    ("⏱ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ",   "stg_autodel"),
+    ("🆓 ғʀᴇᴇ ʟɪɴᴋ",     "stg_freelink"),
+    ("🔐 ᴘʀᴏᴛᴇᴄᴛ",       "stg_protect"),
+    ("📝 ᴄᴀᴘᴛɪᴏɴ",       "stg_caption"),
+    ("🔧 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ",  "stg_maintenance"),
+    ("🆘 sᴜᴘᴘᴏʀᴛ",        "stg_support"),
+    ("🔘 ᴍᴇᴅɪᴀ ʙᴜᴛᴛᴏɴs",  "stg_mbtn"),
+]
+_PAGE_SIZE = 3
+
+
+def _total_pages() -> int:
+    return max(1, (len(_SETTINGS_ITEMS) + _PAGE_SIZE - 1) // _PAGE_SIZE)
+
+
+def _main_text(page: int = 1) -> str:
+    total = _total_pages()
+    page = max(1, min(page, total))
+    return (
+        "<b>⚙️ sᴇᴛᴛɪɴɢs ᴘᴀɴᴇʟ</b>\n"
+        f"<i>ᴘᴀɢᴇ {page} / {total}</i>\n\n"
+        "sᴇʟᴇᴄᴛ ᴀ ᴄᴀᴛᴇɢᴏʀʏ ᴛᴏ ᴍᴀɴᴀɢᴇ:"
+    )
+
+
+def _main_markup(page: int = 1):
+    total = _total_pages()
+    page = max(1, min(page, total))
+    start = (page - 1) * _PAGE_SIZE
+    chunk = _SETTINGS_ITEMS[start:start + _PAGE_SIZE]
+
+    has_next = page < total
+    has_prev = page > 1
+
+    # Build setting buttons
+    setting_btns = [InlineKeyboardButton(label, callback_data=cb) for (label, cb) in chunk]
+
+    rows = []
+    if has_next:
+        # Append Next as the trailing slot of the grid -> pair into rows of 2
+        slots = setting_btns + [InlineKeyboardButton("ɴᴇxᴛ ➡️", callback_data=f"stg_page_{page + 1}")]
+    else:
+        slots = setting_btns
+
+    for i in range(0, len(slots), 2):
+        rows.append(slots[i:i + 2])
+
+    if has_prev:
+        rows.append([InlineKeyboardButton("⬅️ ᴘʀᴇᴠ", callback_data=f"stg_page_{page - 1}")])
+
+    return InlineKeyboardMarkup(rows)
 
 
 def _mbtn_markup():
@@ -163,10 +200,18 @@ async def settings_cb(client: Bot, query: CallbackQuery):
     # ── BACK TO MAIN ──────────────────────────────────────────
     if data == "stg_back":
         _pending.pop(uid, None)
-        await _edit(query,
-            "<b>⚙️ sᴇᴛᴛɪɴɢs ᴘᴀɴᴇʟ</b>\n\nsᴇʟᴇᴄᴛ ᴀ ᴄᴀᴛᴇɢᴏʀʏ ᴛᴏ ᴍᴀɴᴀɢᴇ:",
-            _main_markup()
-        )
+        await _edit(query, _main_text(1), _main_markup(1))
+        return
+
+    # ── PAGINATE MAIN MENU ────────────────────────────────────
+    if data.startswith("stg_page_"):
+        try:
+            page = int(data.split("_", 2)[2])
+        except (ValueError, IndexError):
+            page = 1
+        _pending.pop(uid, None)
+        await _edit(query, _main_text(page), _main_markup(page))
+        return
 
     # ══════════════════════════════════════════════════════════
     #  ADMIN PANEL
