@@ -9,6 +9,7 @@ from io import BytesIO
 import aiohttp
 import qrcode
 from motor.motor_asyncio import AsyncIOMotorClient
+from pytz import timezone as _tz
 from pyrogram import Client, filters
 from pyrogram.types import (
     CallbackQuery,
@@ -310,6 +311,7 @@ async def pick_plan(client: Bot, query: CallbackQuery):
         "user_id":    user_id,
         "amount":     amount,
         "plan_id":    plan_id_for_order,
+        "plan_label": label,
         "time_value": time_value,
         "time_unit":  time_unit,
         "tier":       tier,
@@ -451,14 +453,79 @@ async def i_have_paid(client: Bot, query: CallbackQuery):
 
     asyncio.create_task(monitor_premium_expiry(client, user_id))
 
-    await query.message.reply(
-        f"<b>✅ ᴘᴀʏᴍᴇɴᴛ ᴠᴇʀɪғɪᴇᴅ — ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ!</b>\n\n"
-        f"<b>ᴏʀᴅᴇʀ ɪᴅ:</b> <code>{order_id}</code>\n"
-        f"<b>ᴀᴍᴏᴜɴᴛ:</b> ₹{order['amount']}\n"
-        f"<b>ᴅᴜʀᴀᴛɪᴏɴ:</b> {order['time_value']}{order['time_unit']}\n"
-        f"<b>ᴇxᴘɪʀᴇs ᴏɴ:</b> {expiration_time}\n\n"
-        f"<i>ᴇɴᴊᴏʏ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss! 🎉</i>"
+    # ── DELETE THE QR / INSTRUCTIONS MESSAGE ─────────────────────
+    # query.message is the photo message (QR + caption + buttons)
+    # the user paid against. Once payment is confirmed we no longer
+    # need it on the user's screen; replace it with the receipt.
+    qr_chat_id = query.message.chat.id
+    try:
+        await query.message.delete()
+    except Exception:
+        pass
+
+    # ── BUILD THE DETAILED RECEIPT ───────────────────────────────
+    txn_id = data.get("txn_id") or "—"
+
+    # Active date = right now, formatted in IST (matches expiry style).
+    try:
+        active_date = datetime.now(_tz("Asia/Kolkata")).strftime(
+            "%Y-%m-%d %H:%M:%S %p IST"
+        )
+    except Exception:
+        active_date = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+
+    # Build a readable user name (first + last + @username when present)
+    u = query.from_user
+    full_name = (u.first_name or "").strip()
+    if getattr(u, "last_name", None):
+        full_name = f"{full_name} {u.last_name}".strip()
+    if not full_name:
+        full_name = "—"
+    if getattr(u, "username", None):
+        full_name = f"{full_name} (@{u.username})"
+
+    plan_label = (
+        order.get("plan_label")
+        or f"{order['time_value']}{order['time_unit']}"
     )
+    tier_emoji = "🥇" if tier == "gold" else "💎"
+
+    receipt = (
+        f"<b>🧾 ᴘᴀʏᴍᴇɴᴛ ʀᴇᴄᴇɪᴘᴛ — ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ!</b>\n"
+        f"<code>━━━━━━━━━━━━━━━━━━━━━━━</code>\n\n"
+        f"👤 <b>ᴜsᴇʀ ɴᴀᴍᴇ:</b> {full_name}\n"
+        f"🆔 <b>ᴜsᴇʀ ɪᴅ:</b> <code>{user_id}</code>\n"
+        f"{tier_emoji} <b>ᴘʟᴀɴ ᴛʏᴘᴇ:</b> {plan_label}\n"
+        f"💰 <b>ᴘʟᴀɴ ᴀᴍᴏᴜɴᴛ:</b> ₹{order['amount']}\n"
+        f"📦 <b>ᴏʀᴅᴇʀ ɪᴅ:</b> <code>{order_id}</code>\n"
+        f"🔖 <b>ᴛxɴ ɪᴅ:</b> <code>{txn_id}</code>\n"
+        f"📅 <b>ᴀᴄᴛɪᴠᴇ ᴅᴀᴛᴇ:</b> <code>{active_date}</code>\n"
+        f"⏳ <b>ᴇxᴘɪʀᴇ ᴅᴀᴛᴇ:</b> <code>{expiration_time}</code>\n\n"
+        f"<code>━━━━━━━━━━━━━━━━━━━━━━━</code>\n"
+        f"<i>✨ ᴇɴᴊᴏʏ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss! ᴋᴇᴇᴘ ᴛʜɪs ʀᴇᴄᴇɪᴘᴛ ғᴏʀ ʀᴇғᴇʀᴇɴᴄᴇ.</i>"
+    )
+
+    receipt_kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🆘 sᴜᴘᴘᴏʀᴛ", url=SUPPORT_URL)],
+        [InlineKeyboardButton("🔒 ᴄʟᴏsᴇ", callback_data="pa_close")],
+    ])
+
+    # Send the receipt as a fresh message (the QR is now gone).
+    try:
+        await client.send_message(
+            chat_id=qr_chat_id,
+            text=receipt,
+            reply_markup=receipt_kb,
+            disable_web_page_preview=True,
+        )
+    except Exception:
+        # Last-resort fallback: plain reply via the (possibly already-
+        # deleted) query.message handle. Telegram will just send a new
+        # message in that chat in this case.
+        try:
+            await query.message.reply(receipt, reply_markup=receipt_kb)
+        except Exception:
+            pass
 
     # ── GIFT CHANNEL DELIVERY ────────────────────────────────────
     if order.get("gift_channel_id"):
