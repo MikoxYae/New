@@ -1,9 +1,7 @@
 import asyncio
 import os
-import random
 import sys
 import re
-import string
 import time
 from datetime import datetime
 from pyrogram import Client, filters, __version__
@@ -16,7 +14,6 @@ from config import *
 from helper_func import *
 from database.database import *
 from database.db_premium import *
-import config as _cfg
 
 # Fallback: if BAN_SUPPORT is not configured, point to OWNER's profile so the
 # "Contact Support" button is always a valid URL.
@@ -64,38 +61,9 @@ async def start_command(client: Client, message: Message):
 
     text = message.text
     if len(text) > 7:
-        verify_status = await db.get_verify_status(id)
         is_admin = await db.admin_exist(id)
-        shortner_enabled = await db.get_shortner_enabled()
 
-        # ── Handle verify_ token confirmation (shortner must be on + configured) ──
-        if _cfg.SHORTLINK_URL or _cfg.SHORTLINK_API:
-            if verify_status['is_verified'] and _cfg.VERIFY_EXPIRE < (time.time() - verify_status['verified_time']):
-                await db.update_verify_status(user_id, is_verified=False)
-                verify_status = await db.get_verify_status(id)
-
-            if "verify_" in message.text:
-                _, token = message.text.split("_", 1)
-                if verify_status['verify_token'] != token:
-                    return await message.reply_photo(
-                        photo=PREMIUM_PIC,
-                        caption="<b>⚠️ 𝖨𝗇𝗏𝖺𝗅𝗂𝖽 𝗍𝗈𝗄𝖾𝗇. 𝖯𝗅𝖾𝖺𝗌𝖾 /sᴛᴀʀᴛ 𝖺𝗀𝖺𝗂𝗇.</b>"
-                    )
-                # Security: web human verification must be completed before token is accepted
-                if not verify_status.get('web_passed'):
-                    return await message.reply_photo(
-                        photo=PREMIUM_PIC,
-                        caption="<b>⚠️ ᴘʟᴇᴀsᴇ ᴏᴘᴇɴ ᴛʜᴇ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ʟɪɴᴋ ᴀɴᴅ ᴄᴏᴍᴘʟᴇᴛᴇ ʜᴜᴍᴀɴ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ғɪʀsᴛ.</b>"
-                    )
-                await db.update_verify_status(id, is_verified=True, verified_time=time.time())
-                current = await db.get_verify_count(id)
-                await db.set_verify_count(id, current + 1)
-                return await message.reply_photo(
-                    photo=PREMIUM_PIC,
-                    caption=f"<b>✅ 𝗧𝗼𝗸𝗲𝗻 𝘃𝗲𝗿𝗶𝗳𝗶𝗲𝗱! ᴠᴀʟɪᴅ ғᴏʀ {get_exp_time(_cfg.VERIFY_EXPIRE)}</b>"
-                )
-
-        # ── Access gate: free link count → token or premium ──────────────────────
+        # ── Access gate: free daily link count → premium after limit ─────────────
         if tier is None and id != OWNER_ID and not is_admin:
             free_limit = await db.get_free_link_limit()
             daily_count = await db.get_user_daily_links(id)
@@ -104,47 +72,18 @@ async def start_command(client: Client, message: Message):
                 # Free link available — increment count and allow through
                 await db.increment_user_daily_links(id)
             else:
-                # Free links exhausted
-                if shortner_enabled and (_cfg.SHORTLINK_URL or _cfg.SHORTLINK_API):
-                    # Mode: Shortner ON — require token after free limit
-                    if not verify_status['is_verified']:
-                        token = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
-                        direct_tg_link = f'https://telegram.dog/{client.username}?start=verify_{token}'
-                        shortlink = await get_shortlink(_cfg.SHORTLINK_URL, _cfg.SHORTLINK_API, direct_tg_link)
-                        await db.update_verify_status(id, verify_token=token, link=shortlink, created_at=time.time())
-                        if await db.get_anti_bypass() and WEB_VERIFY_BASE_URL:
-                            btn_url = get_verify_link(WEB_VERIFY_BASE_URL, id, token, client.username)
-                        else:
-                            btn_url = shortlink
-                        btn = [
-                            [InlineKeyboardButton("• ᴏᴘᴇɴ ʟɪɴᴋ •", url=btn_url),
-                             InlineKeyboardButton("• ᴛᴜᴛᴏʀɪᴀʟ •", url=_cfg.TUT_VID)],
-                            [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
-                        ]
-                        return await message.reply_photo(
-                            photo=PREMIUM_PIC,
-                            caption=(
-                                f"<b>🔒 ʏᴏᴜʀ {free_limit} ғʀᴇᴇ ᴅᴀɪʟʏ ʟɪɴᴋs ʜᴀᴠᴇ ʙᴇᴇɴ ᴜsᴇᴅ!</b>\n\n"
-                                f"<b>ᴘʟᴇᴀsᴇ ʀᴇғʀᴇsʜ ʏᴏᴜʀ ᴛᴏᴋᴇɴ ᴛᴏ ᴄᴏɴᴛɪɴᴜᴇ ᴜsɪɴɢ ᴛʜᴇ ʙᴏᴛ.</b>\n\n"
-                                f"<b>ᴛᴏᴋᴇɴ ᴛɪᴍᴇᴏᴜᴛ:</b> {get_exp_time(_cfg.VERIFY_EXPIRE)}\n\n"
-                                f"<b>ᴛʜɪs ɪs ᴀɴ ᴀᴅs ᴛᴏᴋᴇɴ. ᴘᴀssɪɴɢ ᴏɴᴇ ᴀᴅ ᴀʟʟᴏᴡs ʏᴏᴜ ᴛᴏ ᴜsᴇ ᴛʜᴇ ʙᴏᴛ ᴜɴᴛɪʟ ᴛʜᴇ ɴᴇxᴛ ᴅᴀʏ.</b>\n\n"
-                                f"<blockquote><b>ᴛᴏ sᴋɪᴘ ᴛʜᴇ ᴛᴏᴋᴇɴ, ɢᴇᴛ ᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ғᴏʀ ᴜɴʟɪᴍɪᴛᴇᴅ ᴀᴄᴄᴇss.</b></blockquote>"
-                            ),
-                            reply_markup=InlineKeyboardMarkup(btn)
-                        )
-                else:
-                    # Mode: Shortner OFF — require premium after free limit
-                    return await message.reply_photo(
-                        photo=PREMIUM_PIC,
-                        caption=(
-                            f"<b>🔒 ʏᴏᴜʀ {free_limit} ғʀᴇᴇ ᴅᴀɪʟʏ ʟɪɴᴋs ʜᴀᴠᴇ ʙᴇᴇɴ ᴜsᴇᴅ!</b>\n\n"
-                            f"<b>ᴅᴀɪʟʏ ʟɪᴍɪᴛ ʀᴇᴀᴄʜᴇᴅ. ᴄᴏᴍᴇ ʙᴀᴄᴋ ᴛᴏᴍᴏʀʀᴏᴡ ғᴏʀ {free_limit} ᴍᴏʀᴇ ғʀᴇᴇ ʟɪɴᴋs.</b>\n\n"
-                            f"<b>ɢᴇᴛ ᴘʀᴇᴍɪᴜᴍ ғᴏʀ ᴜɴʟɪᴍɪᴛᴇᴅ ᴀᴄᴄᴇss ᴡɪᴛʜ ɴᴏ ᴅᴀɪʟʏ ʀᴇsᴛʀɪᴄᴛɪᴏɴs!</b>"
-                        ),
-                        reply_markup=InlineKeyboardMarkup([
-                            [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
-                        ])
-                    )
+                # Free links exhausted — premium required
+                return await message.reply_photo(
+                    photo=PREMIUM_PIC,
+                    caption=(
+                        f"<b>🔒 ʏᴏᴜʀ {free_limit} ғʀᴇᴇ ᴅᴀɪʟʏ ʟɪɴᴋs ʜᴀᴠᴇ ʙᴇᴇɴ ᴜsᴇᴅ!</b>\n\n"
+                        f"<b>ᴅᴀɪʟʏ ʟɪᴍɪᴛ ʀᴇᴀᴄʜᴇᴅ. ᴄᴏᴍᴇ ʙᴀᴄᴋ ᴛᴏᴍᴏʀʀᴏᴡ ғᴏʀ {free_limit} ᴍᴏʀᴇ ғʀᴇᴇ ʟɪɴᴋs.</b>\n\n"
+                        f"<b>ɢᴇᴛ ᴘʀᴇᴍɪᴜᴍ ғᴏʀ ᴜɴʟɪᴍɪᴛᴇᴅ ᴀᴄᴄᴇss ᴡɪᴛʜ ɴᴏ ᴅᴀɪʟʏ ʀᴇsᴛʀɪᴄᴛɪᴏɴs!</b>"
+                    ),
+                    reply_markup=InlineKeyboardMarkup([
+                        [InlineKeyboardButton("• ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ •", callback_data="premium")]
+                    ])
+                )
 
         try:
             base64_string = text.split(" ", 1)[1]

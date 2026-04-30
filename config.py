@@ -23,22 +23,6 @@ START_PIC = os.environ.get("START_PIC", "https://graph.org/file/c3298a2f4d623e7f
 FORCE_PIC = os.environ.get("FORCE_PIC", "https://graph.org/file/c3298a2f4d623e7f204c1-882cbd3ff41094cb41.jpg")
 PREMIUM_PIC = os.environ.get("PREMIUM_PIC", "https://graph.org/file/c3298a2f4d623e7f204c1-882cbd3ff41094cb41.jpg")
 #------------------------------------------------------------------------------------------------------------------------------------------------
-SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "linkshortify.com")
-SHORTLINK_API = os.environ.get("SHORTLINK_API", "d568956721f5beb08837393f7e8efbccffeb1902")
-VERIFY_EXPIRE = int(os.environ.get('VERIFY_EXPIRE', "43200"))
-TUT_VID = os.environ.get("TUT_VID","https://t.me/How_To_Take_Tokens/12")
-ANTI_BYPASS_ENABLED = True if os.environ.get("ANTI_BYPASS_ENABLED", "True") == "True" else False
-ANTI_BYPASS_MIN_WAIT = int(os.environ.get("ANTI_BYPASS_MIN_WAIT", "8"))
-ANTI_BYPASS_BLOCK_SCORE = int(os.environ.get("ANTI_BYPASS_BLOCK_SCORE", "70"))
-WEB_VERIFY_BASE_URL = os.environ.get("WEB_VERIFY_BASE_URL", "https://believes-contacting-assessment-editorial.trycloudflare.com").strip().rstrip("/")
-if not WEB_VERIFY_BASE_URL:
-    _public_host = (
-        os.environ.get("RENDER_EXTERNAL_HOSTNAME") or
-        os.environ.get("KOYEB_PUBLIC_DOMAIN") or
-        os.environ.get("RAILWAY_PUBLIC_DOMAIN")
-    )
-    WEB_VERIFY_BASE_URL = f"https://{_public_host}" if _public_host else ""
-#------------------------------------------------------------------------------------------------------------------------------------------------
 ABOUT_TXT = ""
 HELP_TXT = ""
 START_MSG = os.environ.get("START_MESSAGE", "<b>ʜᴇʟʟᴏ {first}\n\nɪ ᴀᴍ ғɪʟᴇ sᴛᴏʀᴇ ʙᴏᴛ, ɪ ᴄᴀɴ sᴛᴏʀᴇ ᴘʀɪᴠᴀᴛᴇ ғɪʟᴇs ɪɴ sᴘᴇᴄɪғɪᴇᴅ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ᴏᴛʜᴇʀ ᴜsᴇʀs ᴄᴀɴ ᴀᴄᴄᴇss ɪᴛ ғʀᴏᴍ sᴘᴇᴄɪᴀʟ ʟɪɴᴋ.</b>")

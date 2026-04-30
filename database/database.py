@@ -5,7 +5,7 @@ import motor, asyncio
 import motor.motor_asyncio
 import time
 import pymongo, os
-from config import DB_URI, DB_NAME, PROTECT_CONTENT, CUSTOM_CAPTION, ANTI_BYPASS_ENABLED
+from config import DB_URI, DB_NAME, PROTECT_CONTENT, CUSTOM_CAPTION
 import logging
 from datetime import datetime, timedelta
 
@@ -14,22 +14,9 @@ database = dbclient[DB_NAME]
 
 logging.basicConfig(level=logging.INFO)
 
-default_verify = {
-    'is_verified': False,
-    'verified_time': 0,
-    'verify_token': "",
-    'link': ""
-}
-
 def new_user(id):
     return {
         '_id': id,
-        'verify_status': {
-            'is_verified': False,
-            'verified_time': "",
-            'verify_token': "",
-            'link': ""
-        }
     }
 
 class Rohit:
@@ -41,16 +28,13 @@ class Rohit:
         self.channel_data = self.database['channels']
         self.admins_data = self.database['admins']
         self.user_data = self.database['users']
-        self.sex_data = self.database['sex']
         self.banned_user_data = self.database['banned_user']
         self.autho_user_data = self.database['autho_user']
         self.del_timer_data = self.database['del_timer']
         self.bot_settings_data = self.database['bot_settings']
-        self.verify_attempts_data = self.database['verify_attempts']
         self.fsub_data = self.database['fsub']   
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
-        self.shortner_settings_data = self.database['shortner_settings']
         self.maintenance_data = self.database['maintenance']
         
 
@@ -159,20 +143,6 @@ class Rohit:
             return CUSTOM_CAPTION
         return data.get('value')
 
-    async def set_anti_bypass(self, value: bool):
-        await self.bot_settings_data.update_one(
-            {'_id': 'anti_bypass'},
-            {'$set': {'value': bool(value)}},
-            upsert=True
-        )
-
-    async def get_anti_bypass(self):
-        data = await self.bot_settings_data.find_one({'_id': 'anti_bypass'})
-        if data is None:
-            return ANTI_BYPASS_ENABLED
-        return bool(data.get('value', ANTI_BYPASS_ENABLED))
-
-
     # CHANNEL MANAGEMENT
     async def channel_exist(self, channel_id: int):
         found = await self.fsub_data.find_one({'_id': channel_id})
@@ -269,112 +239,6 @@ class Rohit:
 
 
 
-    # VERIFICATION MANAGEMENT
-    async def db_verify_status(self, user_id):
-        user = await self.user_data.find_one({'_id': user_id})
-        if user:
-            return user.get('verify_status', default_verify)
-        return default_verify
-
-    async def db_update_verify_status(self, user_id, verify):
-        await self.user_data.update_one({'_id': user_id}, {'$set': {'verify_status': verify}})
-
-    async def get_verify_status(self, user_id):
-        verify = await self.db_verify_status(user_id)
-        return verify
-
-    async def update_verify_status(self, user_id, verify_token="", is_verified=False, verified_time=0, link="", created_at=None, risk_score=0, risk_reasons=None):
-        current = await self.db_verify_status(user_id)
-        current['verify_token'] = verify_token
-        current['is_verified'] = is_verified
-        current['verified_time'] = verified_time
-        current['link'] = link
-        if created_at is not None:
-            current['created_at'] = created_at
-        if risk_reasons is not None:
-            current['risk_score'] = risk_score
-            current['risk_reasons'] = risk_reasons
-        await self.db_update_verify_status(user_id, current)
-
-    async def mark_verify_passed(self, user_id, token, ip="", user_agent="", risk_score=0, risk_reasons=None):
-        current = await self.db_verify_status(user_id)
-        if current.get('verify_token') != token:
-            return False
-        current['is_verified'] = True
-        current['verified_time'] = time.time()
-        current['verified_ip'] = ip
-        current['verified_user_agent'] = user_agent
-        current['risk_score'] = risk_score
-        current['risk_reasons'] = risk_reasons or []
-        await self.db_update_verify_status(user_id, current)
-        return True
-
-    async def mark_web_verified(self, user_id, token, ip="", user_agent="", risk_score=0, risk_reasons=None):
-        """Mark that user passed human verification on web page.
-        Does NOT set is_verified — that only happens after shortener is completed."""
-        current = await self.db_verify_status(user_id)
-        if current.get('verify_token') != token:
-            return False
-        current['web_passed'] = True
-        current['web_ip'] = ip
-        current['web_user_agent'] = user_agent[:300] if user_agent else ""
-        current['web_risk_score'] = risk_score
-        current['web_risk_reasons'] = risk_reasons or []
-        await self.db_update_verify_status(user_id, current)
-        return True
-
-
-    async def log_verify_attempt(self, user_id, token, ip="", user_agent="", passed=False, risk_score=0, risk_reasons=None):
-        now = time.time()
-        await self.verify_attempts_data.insert_one({
-            'user_id': int(user_id),
-            'token': token,
-            'ip': ip,
-            'user_agent': user_agent[:300] if user_agent else "",
-            'passed': bool(passed),
-            'risk_score': int(risk_score),
-            'risk_reasons': risk_reasons or [],
-            'created_at': now
-        })
-        await self.verify_attempts_data.delete_many({'created_at': {'$lt': now - 86400}})
-
-    async def count_recent_verify_attempts(self, ip="", user_agent="", seconds=600):
-        since = time.time() - seconds
-        ip_count = 0
-        ua_count = 0
-        if ip:
-            ip_count = await self.verify_attempts_data.count_documents({'ip': ip, 'created_at': {'$gte': since}})
-        if user_agent:
-            ua_count = await self.verify_attempts_data.count_documents({'user_agent': user_agent[:300], 'created_at': {'$gte': since}})
-        return ip_count, ua_count
-
-    # Set verify count (overwrite with new value)
-    async def set_verify_count(self, user_id: int, count: int):
-        await self.sex_data.update_one({'_id': user_id}, {'$set': {'verify_count': count}}, upsert=True)
-
-    # Get verify count (default to 0 if not found)
-    async def get_verify_count(self, user_id: int):
-        user = await self.sex_data.find_one({'_id': user_id})
-        if user:
-            return user.get('verify_count', 0)
-        return 0
-
-    # Reset all users' verify counts to 0
-    async def reset_all_verify_counts(self):
-        await self.sex_data.update_many(
-            {},
-            {'$set': {'verify_count': 0}} 
-        )
-
-    # Get total verify count across all users
-    async def get_total_verify_count(self):
-        pipeline = [
-            {"$group": {"_id": None, "total": {"$sum": "$verify_count"}}}
-        ]
-        result = await self.sex_data.aggregate(pipeline).to_list(length=1)
-        return result[0]["total"] if result else 0
-
-
     # MAINTENANCE MODE
     async def get_maintenance(self):
         doc = await self.maintenance_data.find_one({'_id': 'maintenance'})
@@ -384,18 +248,6 @@ class Rohit:
         await self.maintenance_data.update_one(
             {'_id': 'maintenance'},
             {'$set': {'enabled': enabled}},
-            upsert=True
-        )
-
-    # SHORTNER ENABLED / DISABLED TOGGLE
-    async def get_shortner_enabled(self):
-        doc = await self.bot_settings_data.find_one({'_id': 'shortner_enabled'})
-        return bool(doc.get('value', True)) if doc else True
-
-    async def set_shortner_enabled(self, value: bool):
-        await self.bot_settings_data.update_one(
-            {'_id': 'shortner_enabled'},
-            {'$set': {'value': bool(value)}},
             upsert=True
         )
 
@@ -433,29 +285,6 @@ class Rohit:
         else:
             new_daily = {'date': today, 'count': int(daily.get('count', 0)) + 1}
         await self.user_data.update_one({'_id': user_id}, {'$set': {'daily_links': new_daily}})
-
-    # SHORTNER SETTINGS
-    async def get_shortner_settings(self):
-        doc = await self.shortner_settings_data.find_one({'_id': 'shortner'})
-        if doc:
-            return doc
-        return {}
-
-    async def save_shortner_settings(self, draft: dict):
-        try:
-            expire = int(draft.get('expire', 60))
-        except (ValueError, TypeError):
-            expire = 60
-        await self.shortner_settings_data.update_one(
-            {'_id': 'shortner'},
-            {'$set': {
-                'url':     draft.get('url', ''),
-                'api':     draft.get('api', ''),
-                'expire':  expire,
-                'tut_vid': draft.get('tut_vid', ''),
-            }},
-            upsert=True
-        )
 
 
 db = Rohit(DB_URI, DB_NAME)

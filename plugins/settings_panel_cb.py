@@ -36,16 +36,12 @@ def _main_markup():
             InlineKeyboardButton("📊 sᴛᴀᴛs",      callback_data="stg_stats")
         ],
         [
-            InlineKeyboardButton("🔢 ᴄᴏᴜɴᴛ",      callback_data="stg_count"),
-            InlineKeyboardButton("🧹 ᴅᴇʟʀᴇǫ",     callback_data="stg_delreq")
+            InlineKeyboardButton("🧹 ᴅᴇʟʀᴇǫ",     callback_data="stg_delreq"),
+            InlineKeyboardButton("📢 ғᴏʀᴄᴇ sᴜʙ",  callback_data="stg_fsub")
         ],
         [
-            InlineKeyboardButton("📢 ғᴏʀᴄᴇ sᴜʙ",  callback_data="stg_fsub"),
-            InlineKeyboardButton("🔄 ʀᴇǫᴜᴇsᴛ ᴍᴏᴅᴇ", callback_data="stg_reqmode")
-        ],
-        [
-            InlineKeyboardButton("⏱ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="stg_autodel"),
-            InlineKeyboardButton("🔗 sʜᴏʀᴛɴᴇʀ",    callback_data="stg_shortner")
+            InlineKeyboardButton("🔄 ʀᴇǫᴜᴇsᴛ ᴍᴏᴅᴇ", callback_data="stg_reqmode"),
+            InlineKeyboardButton("⏱ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ", callback_data="stg_autodel")
         ],
         [
             InlineKeyboardButton("🆓 ғʀᴇᴇ ʟɪɴᴋ",   callback_data="stg_freelink"),
@@ -53,9 +49,6 @@ def _main_markup():
         ],
         [
             InlineKeyboardButton("📝 ᴄᴀᴘᴛɪᴏɴ",     callback_data="stg_caption"),
-            InlineKeyboardButton("🛡 ᴀɴᴛɪ ʙʏᴘᴀss", callback_data="stg_antibypass")
-        ],
-        [
             InlineKeyboardButton("🔧 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ", callback_data="stg_maintenance")
         ]
     ])
@@ -245,14 +238,6 @@ async def settings_cb(client: Bot, query: CallbackQuery):
             f"<b>⚙️ ᴄᴘᴜ:</b> <code>{cpu}%</code>"
         )
         await _edit(query, text, InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]]))
-
-    elif data == "stg_count":
-        _pending.pop(uid, None)
-        total = await db.get_total_verify_count()
-        await _edit(query,
-            f"<b>🔢 ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ᴄᴏᴜɴᴛ</b>\n\n<b>ᴛᴏᴛᴀʟ ᴠᴇʀɪғɪᴇᴅ ᴛᴏᴋᴇɴs ᴛᴏᴅᴀʏ:</b> <code>{total}</code>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]])
-        )
 
     elif data == "stg_delreq":
         _pending.pop(uid, None)
@@ -535,140 +520,6 @@ async def settings_cb(client: Bot, query: CallbackQuery):
             InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_caption")]])
         )
 
-    elif data == "stg_antibypass":
-        _pending.pop(uid, None)
-        enabled = await db.get_anti_bypass()
-        status = "🟢 ON" if enabled else "🔴 OFF"
-        await _edit(query,
-            f"<b>🛡 ᴀɴᴛɪ ʙʏᴘᴀss</b>\n\n<b>ᴄᴜʀʀᴇɴᴛ:</b> <code>{status}</code>\n\n<i>ᴅᴇғᴀᴜʟᴛ ɪs ᴏɴ. ɪᴛ ᴄʜᴇᴄᴋs sᴜsᴘɪᴄɪᴏᴜs ʙʀᴏᴡsᴇʀ/sᴇʀᴠᴇʀ ʀᴇǫᴜᴇsᴛs, ʀᴇᴘᴇᴀᴛᴇᴅ ᴀᴛᴛᴇᴍᴘᴛs, ᴀɴᴅ ᴛᴏᴏ-ғᴀsᴛ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ.</i>",
-            InlineKeyboardMarkup([
-                [
-                    InlineKeyboardButton("🟢 ᴏɴ", callback_data="stg_antibypass_on"),
-                    InlineKeyboardButton("🔴 ᴏғғ", callback_data="stg_antibypass_off")
-                ],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
-            ])
-        )
-
-    elif data == "stg_antibypass_on":
-        _pending.pop(uid, None)
-        await db.set_anti_bypass(True)
-        await _edit(query,
-            "<b>✅ ᴀɴᴛɪ ʙʏᴘᴀss sᴇᴛ ᴛᴏ:</b> <code>ON</code>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_antibypass")]])
-        )
-
-    elif data == "stg_antibypass_off":
-        _pending.pop(uid, None)
-        await db.set_anti_bypass(False)
-        await _edit(query,
-            "<b>✅ ᴀɴᴛɪ ʙʏᴘᴀss sᴇᴛ ᴛᴏ:</b> <code>OFF</code>",
-            InlineKeyboardMarkup([[InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_antibypass")]])
-        )
-
-    # ══════════════════════════════════════════════════════════
-    #  SHORTNER PANEL  (Owner Only)
-    # ══════════════════════════════════════════════════════════
-
-    elif data == "stg_shortner":
-        _pending.pop(uid, None)
-        if uid != OWNER_ID:
-            await query.answer("⛔ ᴏɴʟʏ ᴏᴡɴᴇʀ ᴄᴀɴ ᴍᴀɴᴀɢᴇ sʜᴏʀᴛɴᴇʀ sᴇᴛᴛɪɴɢs!", show_alert=True)
-            return
-        import config as _cfg
-        settings = await db.get_shortner_settings()
-        url    = settings.get("url",     _cfg.SHORTLINK_URL  or "not set")
-        api    = settings.get("api",     _cfg.SHORTLINK_API  or "not set")
-        expire = str(settings.get("expire", _cfg.VERIFY_EXPIRE or 60))
-        tut    = settings.get("tut_vid", _cfg.TUT_VID         or "not set")
-        is_enabled = await db.get_shortner_enabled()
-        status_icon = "🟢 ON" if is_enabled else "🔴 OFF"
-        toggle_cb   = "stg_shortner_off" if is_enabled else "stg_shortner_on"
-        toggle_lbl  = "ᴛᴜʀɴ ᴏғғ" if is_enabled else "ᴛᴜʀɴ ᴏɴ"
-        await _edit(query,
-            "<b>🔗 sʜᴏʀᴛɴᴇʀ sᴇᴛᴛɪɴɢs</b>\n\n"
-            f"<b>sᴛᴀᴛᴜs:</b> {status_icon}\n\n"
-            f"<b>🌐 ᴜʀʟ:</b> <code>{url}</code>\n"
-            f"<b>🔑 ᴀᴘɪ:</b> <code>{api}</code>\n"
-            f"<b>⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ:</b> <code>{expire}</code> sᴇᴄᴏɴᴅs\n"
-            f"<b>🎬 ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ:</b> <code>{tut}</code>\n\n"
-            "<i>ᴇᴅɪᴛ ᴀ ғɪᴇʟᴅ ᴛʜᴇɴ ᴘʀᴇss <b>sᴀᴠᴇ ᴄʜᴀɴɢᴇ</b> ᴛᴏ ᴀᴘᴘʟʏ.</i>",
-            InlineKeyboardMarkup([
-                [
-                    InlineKeyboardButton(f"{'🔴' if is_enabled else '🟢'} {toggle_lbl}", callback_data=toggle_cb)
-                ],
-                [
-                    InlineKeyboardButton("🌐 ᴀᴅᴅ sʜᴏʀᴛɴᴇʀ", callback_data="srt_url"),
-                    InlineKeyboardButton("🔑 ᴀᴘɪ",           callback_data="srt_api")
-                ],
-                [
-                    InlineKeyboardButton("🎬 ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ", callback_data="srt_tut"),
-                    InlineKeyboardButton("⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ",   callback_data="srt_expire")
-                ],
-                [InlineKeyboardButton("💾 sᴀᴠᴇ ᴄʜᴀɴɢᴇ",      callback_data="srt_save")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ",             callback_data="stg_back")]
-            ])
-        )
-
-    elif data == "stg_shortner_on":
-        _pending.pop(uid, None)
-        if uid != OWNER_ID:
-            await query.answer("⛔ ᴏɴʟʏ ᴏᴡɴᴇʀ!", show_alert=True)
-            return
-        await db.set_shortner_enabled(True)
-        await query.answer("✅ sʜᴏʀᴛɴᴇʀ ᴛᴜʀɴᴇᴅ ᴏɴ", show_alert=True)
-        # Refresh the shortner panel
-        import config as _cfg
-        settings = await db.get_shortner_settings()
-        url    = settings.get("url",  _cfg.SHORTLINK_URL  or "not set")
-        api    = settings.get("api",  _cfg.SHORTLINK_API  or "not set")
-        expire = str(settings.get("expire", _cfg.VERIFY_EXPIRE or 60))
-        tut    = settings.get("tut_vid", _cfg.TUT_VID or "not set")
-        await _edit(query,
-            "<b>🔗 sʜᴏʀᴛɴᴇʀ sᴇᴛᴛɪɴɢs</b>\n\n"
-            "<b>sᴛᴀᴛᴜs:</b> 🟢 ᴏɴ\n\n"
-            f"<b>🌐 ᴜʀʟ:</b> <code>{url}</code>\n"
-            f"<b>🔑 ᴀᴘɪ:</b> <code>{api}</code>\n"
-            f"<b>⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ:</b> <code>{expire}</code> sᴇᴄᴏɴᴅs\n"
-            f"<b>🎬 ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ:</b> <code>{tut}</code>",
-            InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔴 ᴛᴜʀɴ ᴏғғ", callback_data="stg_shortner_off")],
-                [InlineKeyboardButton("🌐 ᴀᴅᴅ sʜᴏʀᴛɴᴇʀ", callback_data="srt_url"), InlineKeyboardButton("🔑 ᴀᴘɪ", callback_data="srt_api")],
-                [InlineKeyboardButton("🎬 ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ", callback_data="srt_tut"), InlineKeyboardButton("⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ", callback_data="srt_expire")],
-                [InlineKeyboardButton("💾 sᴀᴠᴇ ᴄʜᴀɴɢᴇ", callback_data="srt_save")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
-            ])
-        )
-
-    elif data == "stg_shortner_off":
-        _pending.pop(uid, None)
-        if uid != OWNER_ID:
-            await query.answer("⛔ ᴏɴʟʏ ᴏᴡɴᴇʀ!", show_alert=True)
-            return
-        await db.set_shortner_enabled(False)
-        await query.answer("✅ sʜᴏʀᴛɴᴇʀ ᴛᴜʀɴᴇᴅ ᴏғғ — ғʀᴇᴇ ʟɪɴᴋ sʏsᴛᴇᴍ ᴀᴄᴛɪᴠᴇ", show_alert=True)
-        import config as _cfg
-        settings = await db.get_shortner_settings()
-        url    = settings.get("url",  _cfg.SHORTLINK_URL  or "not set")
-        api    = settings.get("api",  _cfg.SHORTLINK_API  or "not set")
-        expire = str(settings.get("expire", _cfg.VERIFY_EXPIRE or 60))
-        tut    = settings.get("tut_vid", _cfg.TUT_VID or "not set")
-        await _edit(query,
-            "<b>🔗 sʜᴏʀᴛɴᴇʀ sᴇᴛᴛɪɴɢs</b>\n\n"
-            "<b>sᴛᴀᴛᴜs:</b> 🔴 ᴏғғ\n\n"
-            f"<b>🌐 ᴜʀʟ:</b> <code>{url}</code>\n"
-            f"<b>🔑 ᴀᴘɪ:</b> <code>{api}</code>\n"
-            f"<b>⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ:</b> <code>{expire}</code> sᴇᴄᴏɴᴅs\n"
-            f"<b>🎬 ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ:</b> <code>{tut}</code>",
-            InlineKeyboardMarkup([
-                [InlineKeyboardButton("🟢 ᴛᴜʀɴ ᴏɴ", callback_data="stg_shortner_on")],
-                [InlineKeyboardButton("🌐 ᴀᴅᴅ sʜᴏʀᴛɴᴇʀ", callback_data="srt_url"), InlineKeyboardButton("🔑 ᴀᴘɪ", callback_data="srt_api")],
-                [InlineKeyboardButton("🎬 ᴛᴜᴛᴏʀɪᴀʟ ᴠɪᴅᴇᴏ", callback_data="srt_tut"), InlineKeyboardButton("⏱ ᴛᴏᴋᴇɴ ᴇxᴘɪʀᴇ", callback_data="srt_expire")],
-                [InlineKeyboardButton("💾 sᴀᴠᴇ ᴄʜᴀɴɢᴇ", callback_data="srt_save")],
-                [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_back")]
-            ])
-        )
-
     # ══════════════════════════════════════════════════════════
     #  FREE LINK PANEL
     # ══════════════════════════════════════════════════════════
@@ -676,12 +527,10 @@ async def settings_cb(client: Bot, query: CallbackQuery):
     elif data == "stg_freelink":
         _pending.pop(uid, None)
         limit = await db.get_free_link_limit()
-        shortner_on = await db.get_shortner_enabled()
-        mode_txt = "sʜᴏʀᴛɴᴇʀ ᴏɴ (ᴛᴏᴋᴇɴ ʀᴇǫᴜɪʀᴇᴅ ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs)" if shortner_on else "sʜᴏʀᴛɴᴇʀ ᴏғғ (ᴘʀᴇᴍɪᴜᴍ ʀᴇǫᴜɪʀᴇᴅ ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs)"
         await _edit(query,
             f"<b>🆓 ғʀᴇᴇ ʟɪɴᴋ sᴇᴛᴛɪɴɢs</b>\n\n"
             f"<b>ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋs:</b> <code>{limit}</code> ᴘᴇʀ ᴜsᴇʀ\n"
-            f"<b>ᴍᴏᴅᴇ:</b> {mode_txt}\n\n"
+            f"<b>ᴍᴏᴅᴇ:</b> ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs, ᴘʀᴇᴍɪᴜᴍ ʀᴇǫᴜɪʀᴇᴅ\n\n"
             "<i>sᴇʟᴇᴄᴛ ᴛʜᴇ ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ ʙᴇʟᴏᴡ:</i>",
             InlineKeyboardMarkup([
                 [
@@ -704,12 +553,10 @@ async def settings_cb(client: Bot, query: CallbackQuery):
             return
         await db.set_free_link_limit(new_limit)
         await query.answer(f"✅ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ sᴇᴛ ᴛᴏ {new_limit}/ᴅᴀʏ", show_alert=True)
-        shortner_on = await db.get_shortner_enabled()
-        mode_txt = "sʜᴏʀᴛɴᴇʀ ᴏɴ (ᴛᴏᴋᴇɴ ʀᴇǫᴜɪʀᴇᴅ ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs)" if shortner_on else "sʜᴏʀᴛɴᴇʀ ᴏғғ (ᴘʀᴇᴍɪᴜᴍ ʀᴇǫᴜɪʀᴇᴅ ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs)"
         await _edit(query,
             f"<b>🆓 ғʀᴇᴇ ʟɪɴᴋ sᴇᴛᴛɪɴɢs</b>\n\n"
             f"<b>ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋs:</b> <code>{new_limit}</code> ᴘᴇʀ ᴜsᴇʀ\n"
-            f"<b>ᴍᴏᴅᴇ:</b> {mode_txt}\n\n"
+            f"<b>ᴍᴏᴅᴇ:</b> ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs, ᴘʀᴇᴍɪᴜᴍ ʀᴇǫᴜɪʀᴇᴅ\n\n"
             "<i>sᴇʟᴇᴄᴛ ᴛʜᴇ ᴅᴀɪʟʏ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ ʙᴇʟᴏᴡ:</i>",
             InlineKeyboardMarkup([
                 [
@@ -1005,11 +852,9 @@ async def handle_settings_input(client: Bot, message: Message):
             raise StopPropagation
 
         await db.set_free_link_limit(new_limit)
-        shortner_on = await db.get_shortner_enabled()
-        mode_txt = "sʜᴏʀᴛɴᴇʀ ᴏɴ (ᴛᴏᴋᴇɴ ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs)" if shortner_on else "sʜᴏʀᴛɴᴇʀ ᴏғғ (ᴘʀᴇᴍɪᴜᴍ ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs)"
         await patch(
             f"<b>✅ ғʀᴇᴇ ʟɪɴᴋ ʟɪᴍɪᴛ sᴇᴛ ᴛᴏ <code>{new_limit}</code>/ᴅᴀʏ.</b>\n\n"
-            f"<b>ᴍᴏᴅᴇ:</b> {mode_txt}",
+            f"<b>ᴍᴏᴅᴇ:</b> ᴀғᴛᴇʀ ғʀᴇᴇ ʟɪɴᴋs, ᴘʀᴇᴍɪᴜᴍ ʀᴇǫᴜɪʀᴇᴅ",
             InlineKeyboardMarkup([
                 [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="stg_freelink")]
             ])

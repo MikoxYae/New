@@ -2,12 +2,10 @@ import base64
 import re
 import asyncio
 import time
-import urllib.parse
 from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
 from config import *
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
-from shortzy import Shortzy
 from pyrogram.errors import FloodWait
 from database.database import *
 
@@ -149,15 +147,6 @@ def get_exp_time(seconds):
             period_value, seconds = divmod(seconds, period_seconds)
             result += f'{int(period_value)} {period_name}'
     return result
-
-async def get_shortlink(url, api, link):
-    shortzy = Shortzy(api_key=api, base_site=url)
-    link = await shortzy.convert(link)
-    return link
-
-def get_verify_link(base_url, user_id, token, bot_username):
-    bot_username = urllib.parse.quote(str(bot_username), safe="")
-    return f"{base_url.rstrip('/')}/verify/{int(user_id)}/{token}/{bot_username}"
 
 subscribed = filters.create(is_subscribed)
 admin = filters.create(check_admin)

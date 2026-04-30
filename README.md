@@ -1,7 +1,7 @@
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 
   <h2 align="center">
-      ──「ᴍɪᴋᴏ ᴀᴅᴠᴀɴᴄᴇ ᴛᴏᴋᴇɴ ғɪʟᴇ sʜᴀʀɪɴɢ ʙᴏᴛ」──
+      ──「ᴍɪᴋᴏ ᴀᴅᴠᴀɴᴄᴇ ғɪʟᴇ sʜᴀʀɪɴɢ ʙᴏᴛ」──
   </h2>
 
   <p align="center">
@@ -21,22 +21,14 @@
   • <b>User Management:</b> Ban/unban users and view banlist via `/ban`, `/unban`, `/banlist`
   • <b>Multi Force Subscription:</b> Add, delete, and manage multiple Force Sub channels
   • <b>Admin Control:</b> Add or remove admins with `/add_admin`, `/deladmin`, view list via `/admins`
-  • <b>Token Verification:</b> Secure access via shortlink token with anti-bypass protection
 
   <b>🆓 Free Link System:</b>
 
   • <b>Daily Free Links:</b> Every user gets N free file links per day (default 5, configurable from Settings)
-  • <b>Shortner ON Mode:</b> After free limit → user must complete shortner token to continue
-  • <b>Shortner OFF Mode:</b> After free limit → user is prompted to buy Premium
+  • <b>After Free Limit:</b> User is prompted to buy Premium for unlimited access
   • <b>Bypass:</b> Admins, Owner, and Premium users skip the daily limit entirely
   • <b>Auto Reset:</b> Daily count resets automatically — no cron job needed
   • <b>Presets:</b> 5 / 10 / 15 / 20 / Custom — configurable from Settings panel
-
-  <b>🔗 Shortner On/Off Toggle:</b>
-
-  • Toggle shortner system ON or OFF directly from <b>Settings → Shortner</b> panel
-  • <b>ON:</b> Token required after free links (ad-based access)
-  • <b>OFF:</b> Premium required after free links (no shortner token at all)
 
   <b>💎 Premium System (Auto UPI Verification):</b>
 
@@ -73,10 +65,8 @@
   <b>🔧 Bot Settings Panel:</b>
 
   • Maintenance mode — block all non-admin users instantly
-  • Toggle protect content, anti-bypass, shortner settings from `/settings`
-  • Shortner URL/API/expire time configurable from panel
+  • Toggle protect content from `/settings`
   • <b>Free Link panel</b> — set daily free link limit (5/10/15/20/Custom)
-  • <b>Shortner toggle</b> — switch between token mode and premium-only mode
 
   <b>💎 Premium Plan Manager (`/psetting`):</b>
 
@@ -121,20 +111,7 @@
   |----------|-------------|
   | `START_PIC` | Image shown on /start |
   | `FORCE_PIC` | Image shown on force subscribe screen |
-  | `PREMIUM_PIC` | Image shown on token/premium screen |
-
-  ## Token / Shortner Variables
-
-  | Variable | Default | Description |
-  |----------|---------|-------------|
-  | `SHORTLINK_URL` | — | Shortner domain (e.g. `linkshortify.com`) |
-  | `SHORTLINK_API` | — | Shortner API key |
-  | `VERIFY_EXPIRE` | `60` | Token validity in seconds |
-  | `TUT_VID` | — | Tutorial video link shown on token screen |
-  | `ANTI_BYPASS_ENABLED` | `True` | Enable anti-bypass protection |
-  | `ANTI_BYPASS_MIN_WAIT` | `8` | Minimum wait time for verification (seconds) |
-  | `ANTI_BYPASS_BLOCK_SCORE` | `70` | Risk score threshold for blocking |
-  | `WEB_VERIFY_BASE_URL` | — | Public URL for web verification page |
+  | `PREMIUM_PIC` | Image shown on premium screen |
 
   ## Flood Protection Variables
 
@@ -235,7 +212,6 @@
   commands  - Legacy short admin-cmds list (kept for backward compat)
   stats     - Check bot uptime + orders stats (see Admin Orders above)
   users     - View total user count
-  count     - Count shortner clicks
   dlt_time  - Set auto-delete timer for files
   ```
 
@@ -245,6 +221,7 @@
 
   Full changelog with code snippets and rationale lives in **[`newadd.md`](./newadd.md)**. Highlights:
 
+  - **v1.8** — Token / Shortner / Anti-Bypass system fully removed — bot is now free-links → premium only
   - **v1.7** — UPI / Sellgram credentials rotated to `paytm.s20gmbu@pty` + new API key
   - **v1.6** — New `/help` command: button-driven, paginated, every command documented with examples
   - **v1.5** — `/custom_batch` double-copy + STOP-junk-link bug fix

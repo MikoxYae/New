@@ -21,16 +21,12 @@ async def settings_command(client: Client, message: Message):
                 InlineKeyboardButton("📊 sᴛᴀᴛs",        callback_data="stg_stats")
             ],
             [
-                InlineKeyboardButton("🔢 ᴄᴏᴜɴᴛ",        callback_data="stg_count"),
-                InlineKeyboardButton("🧹 ᴅᴇʟʀᴇǫ",       callback_data="stg_delreq")
+                InlineKeyboardButton("🧹 ᴅᴇʟʀᴇǫ",       callback_data="stg_delreq"),
+                InlineKeyboardButton("📢 ғᴏʀᴄᴇ sᴜʙ",    callback_data="stg_fsub")
             ],
             [
-                InlineKeyboardButton("📢 ғᴏʀᴄᴇ sᴜʙ",    callback_data="stg_fsub"),
-                InlineKeyboardButton("🔄 ʀᴇǫᴜᴇsᴛ ᴍᴏᴅᴇ", callback_data="stg_reqmode")
-            ],
-            [
-                InlineKeyboardButton("⏱ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ",  callback_data="stg_autodel"),
-                InlineKeyboardButton("🔗 sʜᴏʀᴛɴᴇʀ",     callback_data="stg_shortner")
+                InlineKeyboardButton("🔄 ʀᴇǫᴜᴇsᴛ ᴍᴏᴅᴇ", callback_data="stg_reqmode"),
+                InlineKeyboardButton("⏱ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ",  callback_data="stg_autodel")
             ],
             [
                 InlineKeyboardButton("🆓 ғʀᴇᴇ ʟɪɴᴋ",    callback_data="stg_freelink"),
@@ -38,9 +34,6 @@ async def settings_command(client: Client, message: Message):
             ],
             [
                 InlineKeyboardButton("📝 ᴄᴀᴘᴛɪᴏɴ",      callback_data="stg_caption"),
-                InlineKeyboardButton("🛡 ᴀɴᴛɪ ʙʏᴘᴀss",  callback_data="stg_antibypass")
-            ],
-            [
                 InlineKeyboardButton("🔧 ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ",  callback_data="stg_maintenance")
             ]
         ])

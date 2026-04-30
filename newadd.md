@@ -5,6 +5,46 @@ replaces the previous manual Gold / Platinum screenshot-based flow.
 
 ---
 
+## 🔥 v1.8 — Token / Shortner / Anti-Bypass System Fully Removed
+
+The bot now runs in a clean **free-link → premium-only** mode. Every
+shortlink / token-verification / anti-bypass code path has been deleted
+end-to-end. Users get the configured number of free daily links, and
+once that limit is hit they are prompted to buy Premium — there is no
+longer any ad-token gate.
+
+### Files removed
+| File | Reason |
+|------|--------|
+| `plugins/shortner.py` | Whole token-verification + anti-bypass plugin (token rotation, score checks, web verify hand-off) gone. |
+
+### Files trimmed
+| File | What was removed |
+|------|------------------|
+| `plugins/route.py` | Replaced with a tiny aiohttp app that only serves `/` for healthcheck. All `/verify`, `/api/verify`, `/passed`, web-challenge HTML, and rate-limit logic gone. |
+| `config.py` | `SHORTLINK_URL`, `SHORTLINK_API`, `VERIFY_EXPIRE`, `TUT_VID`, `ANTI_BYPASS_ENABLED`, `ANTI_BYPASS_MIN_WAIT`, `ANTI_BYPASS_BLOCK_SCORE`, `WEB_VERIFY_BASE_URL`. |
+| `helper_func.py` | `get_shortlink()`, `get_verify_link()`, `urllib.parse` import, `from shortzy import Shortzy`. |
+| `bot.py` | `daily_reset_task` scheduler job + the shortner-settings DB load on startup. |
+| `database/database.py` | Collections `sex_data`, `verify_attempts_data`, `shortner_settings_data` and every method that touched them: `db_verify_status`, `get_verify_status`, `update_verify_status`, `get_verify_count`, `set_verify_count`, `get_total_verify_count`, `get_anti_bypass`, `set_anti_bypass`, `get_shortner_enabled`, `set_shortner_enabled`, `get_shortner_settings`, `save_shortner_settings`. The `verify_status` defaults are no longer written into new user docs. |
+| `plugins/start.py` | Token-confirmation branch (`verify_*` deep links) and the shortner-ON post-free-limit branch deleted. The free-link gate now goes straight to "buy premium" once the daily limit is reached. `import config as _cfg`, `random`, `string` imports removed. |
+| `plugins/settings.py` | `🔢 ᴄᴏᴜɴᴛ`, `🔗 sʜᴏʀᴛɴᴇʀ`, `🛡 ᴀɴᴛɪ ʙʏᴘᴀss` buttons removed and the keyboard rebalanced. |
+| `plugins/settings_panel_cb.py` | All handlers for `stg_count`, `stg_antibypass*`, `stg_shortner*`, and the `srt_*` field-edit flow deleted. The Free Link panel no longer mentions shortner mode — it just states "after free links, premium required". |
+| `requirements.txt` | `shortzy` dependency removed. |
+| `README.md` | "Token Verification" feature bullet, "Shortner ON/OFF Mode" + "Shortner On/Off Toggle" sections, the entire **Token / Shortner Variables** env-var table, the `count` admin command, and the shortner/anti-bypass mentions in the Settings panel section are gone. Title shortened to "ᴍɪᴋᴏ ᴀᴅᴠᴀɴᴄᴇ ғɪʟᴇ sʜᴀʀɪɴɢ ʙᴏᴛ". |
+
+### What still lives (intentionally)
+- `/forceverify <order_id>` in `plugins/premium_auto.py`, `plugins/admin_orders.py`, `plugins/channel_post.py`, `plugins/help_cmd.py` — this is the **Sellgram payment recovery** command, completely unrelated to the deleted token flow.
+- `is_subscribed` checks in `plugins/start.py` — Force-Sub membership verification, also unrelated.
+- The "verify gift channel" admin check in `plugins/psetting.py` — premium-plan owner verification, unrelated.
+
+### User-visible behavior change
+- Free users get N daily file links (default 5, owner-configurable in `/settings → 🆓 ғʀᴇᴇ ʟɪɴᴋ`).
+- After the Nth link of the day they receive the "ʏᴏᴜʀ N ғʀᴇᴇ ᴅᴀɪʟʏ ʟɪɴᴋs ʜᴀᴠᴇ ʙᴇᴇɴ ᴜsᴇᴅ" message with a single **ʙᴜʏ ᴘʀᴇᴍɪᴜᴍ** button.
+- Premium users, admins, and the owner are unaffected — they bypass the limit as before.
+- No more ad-shortener detours, no more token expiry messages, no more `/verify_<token>` deep-link flow.
+
+---
+
 ## 1. What was removed
 
 | File | Removed |
