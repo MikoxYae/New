@@ -244,6 +244,88 @@ No other files were touched. Existing dependencies in
 
 ## 9. Hotfix log
 
+### v1.5 — `/custom_batch`: double-copy + STOP-junk-link bug fix
+
+**File touched:** `plugins/channel_post.py`
+
+#### 9.5.1 Bugs reported by user
+
+1. **Every media sent during `/custom_batch` was being copied to the DB
+   channel TWICE.**
+2. **Pressing STOP generated the proper batch link but ALSO an extra
+   junk encoded share-link for the literal text `"STOP"`.**
+
+#### 9.5.2 Root cause
+
+`/custom_batch` was using `client.ask` (pyromod) to wait for each
+incoming message. `client.ask` returns the message to the awaiting
+coroutine **but does not stop it from also reaching the regular
+`@Bot.on_message` handlers**. So every media:
+
+1. was returned by `client.ask` → custom_batch copied it to the DB
+   channel (1st copy)
+2. ALSO continued to the catch-all `channel_post` handler → which
+   copied it AGAIN and replied with a share-link (2nd copy + junk
+   reply)
+
+The `not_in_batch` filter on `channel_post` was supposed to block this,
+but the discard of the user-id from `_in_custom_batch` ran inside
+`finally` and could happen before the STOP message's filter check,
+creating a race that let STOP slip through and produce its own junk
+encoded link.
+
+#### 9.5.3 Fix — high-priority capture handler + per-user queue
+
+A new handler is registered in **group `-5`** (i.e. before the default
+group `0` where `channel_post` lives):
+
+```python
+@Bot.on_message(filters.private & admin & in_batch, group=-5)
+async def _capture_batch_messages(client, message):
+    q = _batch_queues.get(message.from_user.id)
+    if q is not None:
+        q.put_nowait(message)
+    raise StopPropagation
+```
+
+It pushes the incoming message into a per-user `asyncio.Queue` and then
+raises `StopPropagation`, which means **no later-group handler (including
+`channel_post`) can ever see the same message a second time.**
+
+`/custom_batch` no longer uses `client.ask`; instead it pulls from the
+queue:
+
+```python
+q = asyncio.Queue()
+_batch_queues[uid] = q
+_in_custom_batch.add(uid)
+...
+user_msg = await asyncio.wait_for(q.get(), timeout=300)
+if user_msg.text and user_msg.text.strip().upper() == "STOP":
+    break  # never copy STOP to db_channel
+```
+
+Result:
+
+- Each media is copied **exactly once**.
+- STOP is consumed by the queue, recognised in the loop, breaks out,
+  and is **never** forwarded to `channel_post`. No junk link.
+- Idle session is auto-ended after 5 min of inactivity (was 60 s
+  before; bumped because batches can take longer).
+- `FloodWait` on the `.copy()` call now retries once instead of
+  failing the message silently.
+
+#### 9.5.4 Side effects / no regressions
+
+- `/batch` and `/genlink` still use `client.ask` (they only collect
+  forwarded refs, not real media — no double-copy risk).
+- Outside `/custom_batch`, the new capture handler is inert because
+  the `in_batch` filter requires the user to be in `_in_custom_batch`.
+- `channel_post`, `/id`, `/ord`, `/amount`, `/stats`, `/checkorder`,
+  `/forceverify` continue to behave as before.
+
+---
+
 ### v1.4 — channel_post: missing-exclusion bug fix + small polish
 
 **File touched:** `plugins/channel_post.py`
